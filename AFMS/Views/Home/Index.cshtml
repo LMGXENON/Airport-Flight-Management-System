@@ -1,0 +1,35 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<!-- custom styles for the dashboard -->
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<!-- add a navbar -->
+<nav class="top-navbar">
+    <!-- left side has the logo and app name -->
+    <div class="navbar-left">
+        <!-- logo box with icon -->
+        <div class="app-logo">
+            <span class="logo-icon">⊞</span>
+        </div>
+        <!-- app name and version -->
+        <div class="app-info">
+            <h1 class="app-title">Airport Manager</h1>
+            <span class="app-version">v1.0</span>
+        </div>
+    </div>
+    
+    <!-- right side shows time and user stuff -->
+    <div class="navbar-right">
+        <!-- clock display -->
+        <div class="current-time">
+            <span class="time-label">Current Time</span>
+            <span class="time-value" id="currentTime">11:03:04</span>
+        </div>
+        <!-- user avatar button -->
+        <div class="user-profile">
+            <button class="profile-button">A</button>
+        </div>
+    </div>
+</nav>

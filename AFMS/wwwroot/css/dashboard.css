@@ -1,0 +1,130 @@
+/* setting up color variables so we can reuse them easily */
+:root {
+    --primary-navy: #1a1f3a;
+    --secondary-navy: #252b4a;
+    --accent-blue: #4169e1;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a8c1;
+    --border-color: #2d3454;
+}
+
+/* base styles for the page */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+    background-color: var(--primary-navy);
+    color: var(--text-primary);
+}
+
+/* main navbar container at the top */
+.top-navbar {
+    background-color: var(--secondary-navy);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* left part of navbar */
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* the blue box that holds the logo icon */
+.app-logo {
+    background-color: var(--accent-blue);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* actual icon inside the logo box */
+.logo-icon {
+    font-size: 24px;
+    color: var(--text-primary);
+}
+
+/* wrapper for title and version */
+.app-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* airport manager title */
+.app-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* small version text */
+.app-version {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* right side of navbar */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+/* time display section */
+.current-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+/* small text above the time */
+.time-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* the actual time numbers */
+.time-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+}
+
+/* circular user profile button */
+.profile-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: var(--accent-blue);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* make the button lighter when you hover over it */
+.profile-button:hover {
+    background-color: #5179f1;
+    transform: scale(1.05);
+}
+
+/* slight shrink when clicking */
+.profile-button:active {
+    transform: scale(0.95);
+}
