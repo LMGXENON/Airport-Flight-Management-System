@@ -1,35 +1,76 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<!-- custom styles for the dashboard -->
 <link rel="stylesheet" href="~/css/dashboard.css" />
 
-<!-- add a navbar -->
-<nav class="top-navbar">
-    <!-- left side has the logo and app name -->
-    <div class="navbar-left">
-        <!-- logo box with icon -->
-        <div class="app-logo">
-            <span class="logo-icon">⊞</span>
+<div class="app-container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+            <div class="app-logo">
+                <span class="logo-icon"></span>
+            </div>
+            <div class="app-info">
+                <h1 class="app-title">Airport Manager</h1>
+            </div>
+            <button class="close-btn">✕</button>
         </div>
-        <!-- app name and version -->
-        <div class="app-info">
-            <h1 class="app-title">Airport Manager</h1>
-            <span class="app-version">v1.0</span>
-        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-label">Add Flight</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-label">Flight Details</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-label">Advanced Search</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-label">Data Import</span>
+            </a>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer"></div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <div class="current-time">
+                    <span class="time-label">Current Time</span>
+                    <span class="time-value" id="currentTime">11:03:04</span>
+                </div>
+                <div class="user-avatar">
+                    <button class="avatar-btn">A</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-container"></div>
     </div>
-    
-    <!-- right side shows time and user stuff -->
-    <div class="navbar-right">
-        <!-- clock display -->
-        <div class="current-time">
-            <span class="time-label">Current Time</span>
-            <span class="time-value" id="currentTime">11:03:04</span>
-        </div>
-        <!-- user avatar button -->
-        <div class="user-profile">
-            <button class="profile-button">A</button>
-        </div>
-    </div>
-</nav>
+</div>
+
+<script>
+    // Update clock every second
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
