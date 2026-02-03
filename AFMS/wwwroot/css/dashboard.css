@@ -1,86 +1,211 @@
-/* setting up color variables so we can reuse them easily */
+/* CSS Variables */
 :root {
-    --primary-navy: #1a1f3a;
-    --secondary-navy: #252b4a;
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #1a1f3a;
+    --bg-card: #252b4a;
     --accent-blue: #4169e1;
     --text-primary: #ffffff;
-    --text-secondary: #a0a8c1;
+    --text-secondary: #8891b2;
     --border-color: #2d3454;
+    --success: #10b981;
+    --danger: #ef4444;
 }
 
-/* base styles for the page */
-body {
+/* Reset & Base */
+* {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-    background-color: var(--primary-navy);
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
     color: var(--text-primary);
+    overflow-x: hidden;
 }
 
-/* main navbar container at the top */
-.top-navbar {
-    background-color: var(--secondary-navy);
-    padding: 16px 32px;
+/* Main Container */
+.app-container {
     display: flex;
-    justify-content: space-between;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+
+.sidebar-header {
+    padding: 20px 24px;
+    display: flex;
     align-items: center;
+    gap: 12px;
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* left part of navbar */
-.navbar-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-/* the blue box that holds the logo icon */
 .app-logo {
-    background-color: var(--accent-blue);
     width: 48px;
     height: 48px;
+    background-color: var(--accent-blue);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-/* actual icon inside the logo box */
 .logo-icon {
     font-size: 24px;
     color: var(--text-primary);
 }
 
-/* wrapper for title and version */
 .app-info {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-/* airport manager title */
 .app-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
-    margin: 0;
     color: var(--text-primary);
+    line-height: 1.2;
 }
 
-/* small version text */
 .app-version {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-secondary);
 }
 
-/* right side of navbar */
-.navbar-right {
+.close-btn {
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    transition: all 0.2s;
+}
+
+.nav-item:hover {
+    background-color: rgba(65, 105, 225, 0.1);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+.nav-icon {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+.nav-label {
+    flex: 1;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top Bar */
+.top-bar {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.top-bar-spacer {
+    flex: 1;
+}
+
+.top-bar-right {
     display: flex;
     align-items: center;
     gap: 24px;
 }
 
-/* time display section */
 .current-time {
     display: flex;
     flex-direction: column;
@@ -88,15 +213,13 @@ body {
     gap: 2px;
 }
 
-/* small text above the time */
 .time-label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* the actual time numbers */
 .time-value {
     font-size: 18px;
     font-weight: 600;
@@ -104,27 +227,209 @@ body {
     font-family: 'Courier New', monospace;
 }
 
-/* circular user profile button */
-.profile-button {
+.avatar-btn {
     width: 44px;
     height: 44px;
     border-radius: 50%;
     background-color: var(--accent-blue);
-    border: 2px solid var(--border-color);
+    border: none;
     color: var(--text-primary);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
 }
 
-/* make the button lighter when you hover over it */
-.profile-button:hover {
-    background-color: #5179f1;
+.avatar-btn:hover {
     transform: scale(1.05);
+    opacity: 0.9;
 }
 
-/* slight shrink when clicking */
-.profile-button:active {
-    transform: scale(0.95);
+/* Dashboard Container */
+.dashboard-container {
+    padding: 32px;
+    flex: 1;
+}
+
+/* Page Header */
+.page-header {
+    margin-bottom: 32px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.page-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    opacity: 0.7;
+}
+
+.stat-content {
+    margin-bottom: 12px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stat-badge.positive {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.stat-badge.negative {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+/* Flights Section */
+.flights-section {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.flights-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.flights-table thead {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.flights-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.flights-table tbody tr {
+    border-bottom: 1px solid rgba(45, 52, 84, 0.5);
+    transition: background-color 0.2s;
+}
+
+.flights-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.flights-table tbody tr:hover {
+    background-color: rgba(65, 105, 225, 0.05);
+}
+
+.flights-table td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.flight-number {
+    font-weight: 600;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-ontime {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.status-boarding {
+    background-color: rgba(65, 105, 225, 0.2);
+    color: var(--accent-blue);
+}
+
+.status-delayed {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+.status-departed {
+    background-color: rgba(136, 145, 178, 0.15);
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 }
