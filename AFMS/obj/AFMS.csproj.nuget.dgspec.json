@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\smoke\\OneDrive - Middlesex University\\SWE Project\\AFMS\\AFMS.csproj": {}
+    "/Users/schneiderrodrigues/Documents/afms/Airport-Flight-Management-System/AFMS/AFMS.csproj": {}
   },
   "projects": {
-    "C:\\Users\\smoke\\OneDrive - Middlesex University\\SWE Project\\AFMS\\AFMS.csproj": {
+    "/Users/schneiderrodrigues/Documents/afms/Airport-Flight-Management-System/AFMS/AFMS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\smoke\\OneDrive - Middlesex University\\SWE Project\\AFMS\\AFMS.csproj",
+        "projectUniqueName": "/Users/schneiderrodrigues/Documents/afms/Airport-Flight-Management-System/AFMS/AFMS.csproj",
         "projectName": "AFMS",
-        "projectPath": "C:\\Users\\smoke\\OneDrive - Middlesex University\\SWE Project\\AFMS\\AFMS.csproj",
-        "packagesPath": "C:\\Users\\smoke\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\smoke\\OneDrive - Middlesex University\\SWE Project\\AFMS\\obj\\",
+        "projectPath": "/Users/schneiderrodrigues/Documents/afms/Airport-Flight-Management-System/AFMS/AFMS.csproj",
+        "packagesPath": "/Users/schneiderrodrigues/.nuget/packages/",
+        "outputPath": "/Users/schneiderrodrigues/Documents/afms/Airport-Flight-Management-System/AFMS/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\smoke\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/schneiderrodrigues/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -64,7 +62,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
