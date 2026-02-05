@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AFMS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+66b9b48f041cb789dfc2c5f19f6a9db2ab60aa4c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bbc547d768fa94f440cc53fd59138a58a2507c26")]
 [assembly: System.Reflection.AssemblyProductAttribute("AFMS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AFMS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
