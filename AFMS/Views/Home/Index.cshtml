@@ -10,10 +10,10 @@
         <!-- Sidebar Header -->
         <div class="sidebar-header">
             <div class="app-logo">
-                <span class="logo-icon"></span>
+                <img src="~/images/AFMS logo.png" alt="AFMS Logo" style="width: 100%; height: 100%; object-fit: contain;" />
             </div>
             <div class="app-info">
-                <h1 class="app-title">Airport Manager</h1>
+                <h1 class="app-title">AFMS</h1>
             </div>
             <button class="close-btn">✕</button>
         </div>
@@ -29,7 +29,7 @@
             <a href="#" class="nav-item">
                 <span class="nav-label">Flight Details</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item">
                 <span class="nav-label">Advanced Search</span>
             </a>
             <a href="#" class="nav-item">
@@ -58,7 +58,111 @@
         </header>
 
         <!-- Dashboard Content -->
-        <div class="dashboard-container"></div>
+        <div class="dashboard-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Overview of airport operations</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Total Flights</div>
+                        <div class="stat-value">248</div>
+                    </div>
+                    <div class="stat-badge positive">+12%</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Total Passengers</div>
+                        <div class="stat-value">45,231</div>
+                    </div>
+                    <div class="stat-badge positive">+8%</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">On Time Rate</div>
+                        <div class="stat-value">94.2%</div>
+                    </div>
+                    <div class="stat-badge positive">+2.1%</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Delayed</div>
+                        <div class="stat-value">14</div>
+                    </div>
+                    <div class="stat-badge negative">-3%</div>
+                </div>
+            </div>
+
+            <!-- Recent Flights Section -->
+            <div class="flights-section">
+                <h2 class="section-title">Recent Flights</h2>
+                <div class="table-wrapper">
+                    <table class="flights-table">
+                        <thead>
+                            <tr>
+                                <th>Flight</th>
+                                <th>Airline</th>
+                                <th>Route</th>
+                                <th>Departure</th>
+                                <th>Arrival</th>
+                                <th>Gate</th>
+                                <th>Passengers</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="flight-number">UA 1234</td>
+                                <td>United Airlines</td>
+                                <td>JFK → LAX</td>
+                                <td>14:30</td>
+                                <td>18:45</td>
+                                <td>B22</td>
+                                <td>186</td>
+                                <td><span class="status-badge status-ontime">On Time</span></td>
+                            </tr>
+                            <tr>
+                                <td class="flight-number">AA 5678</td>
+                                <td>American Airlines</td>
+                                <td>ORD → MIA</td>
+                                <td>10:15</td>
+                                <td>14:30</td>
+                                <td>A15</td>
+                                <td>154</td>
+                                <td><span class="status-badge status-boarding">Boarding</span></td>
+                            </tr>
+                            <tr>
+                                <td class="flight-number">DL 9012</td>
+                                <td>Delta Airlines</td>
+                                <td>ATL → SEA</td>
+                                <td>16:00</td>
+                                <td>18:30</td>
+                                <td>C8</td>
+                                <td>198</td>
+                                <td><span class="status-badge status-delayed">Delayed</span></td>
+                            </tr>
+                            <tr>
+                                <td class="flight-number">SW 3456</td>
+                                <td>Southwest</td>
+                                <td>DEN → PHX</td>
+                                <td>09:45</td>
+                                <td>11:15</td>
+                                <td>D12</td>
+                                <td>143</td>
+                                <td><span class="status-badge status-departed">Departed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
