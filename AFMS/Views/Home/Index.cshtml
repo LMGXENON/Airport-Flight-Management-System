@@ -68,6 +68,7 @@
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
+                    <div class="stat-icon">✈</div>
                     <div class="stat-content">
                         <div class="stat-label">Total Flights</div>
                         <div class="stat-value">248</div>
@@ -76,6 +77,7 @@
                 </div>
 
                 <div class="stat-card">
+                    <div class="stat-icon">👥</div>
                     <div class="stat-content">
                         <div class="stat-label">Total Passengers</div>
                         <div class="stat-value">45,231</div>
@@ -84,19 +86,83 @@
                 </div>
 
                 <div class="stat-card">
+                    <div class="stat-icon">🕐</div>
                     <div class="stat-content">
                         <div class="stat-label">On Time Rate</div>
-                        <div class="stat-value">94.2%</div>
+                        <div class="stat-value">97.2%</div>
                     </div>
                     <div class="stat-badge positive">+2.1%</div>
                 </div>
 
                 <div class="stat-card">
+                    <div class="stat-icon">⏱</div>
                     <div class="stat-content">
                         <div class="stat-label">Delayed</div>
-                        <div class="stat-value">14</div>
+                        <div class="stat-value">8</div>
                     </div>
                     <div class="stat-badge negative">-3%</div>
+                </div>
+            </div>
+            <!-- Recent Flights Section -->
+            <div class="flights-section">
+                <h2 class="section-title">Recent Flights</h2>
+                <div class="table-wrapper">
+                    <table class="flights-table">
+                        <thead>
+                            <tr>
+                                <th>Flight</th>
+                                <th>Airline</th>
+                                <th>Route</th>
+                                <th>Departure</th>
+                                <th>Arrival</th>
+                                <th>Gate</th>
+                                <th>Passengers</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="flight-number">BA 1234</td>
+                                <td>British Airways</td>
+                                <td>LHR → JFK</td>
+                                <td>14:30</td>
+                                <td>18:45</td>
+                                <td>B22</td>
+                                <td>186</td>
+                                <td><span class="status-badge status-ontime">On Time</span></td>
+                            </tr>
+                            <tr>
+                                <td class="flight-number">BA 5678</td>
+                                <td>British Airways</td>
+                                <td>LHR → DXB</td>
+                                <td>10:15</td>
+                                <td>14:30</td>
+                                <td>A15</td>
+                                <td>154</td>
+                                <td><span class="status-badge status-boarding">Boarding</span></td>
+                            </tr>
+                            <tr>
+                                <td class="flight-number">BA 9012</td>
+                                <td>British Airways</td>
+                                <td>LHR → CDG</td>
+                                <td>16:00</td>
+                                <td>18:30</td>
+                                <td>C8</td>
+                                <td>198</td>
+                                <td><span class="status-badge status-delayed">Delayed</span></td>
+                            </tr>
+                            <tr>
+                                <td class="flight-number">BA 3456</td>
+                                <td>British Airways</td>
+                                <td>LHR → SYD</td>
+                                <td>09:45</td>
+                                <td>11:15</td>
+                                <td>D12</td>
+                                <td>143</td>
+                                <td><span class="status-badge status-departed">Departed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
