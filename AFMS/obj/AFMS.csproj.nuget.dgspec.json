@@ -1,6 +1,7 @@
 {
   "format": 1,
   "restore": {
+<<<<<<< HEAD
     "/Users/schneiderrodrigues/Documents/afms/Airport-Flight-Management-System/AFMS/AFMS.csproj": {}
   },
   "projects": {
@@ -15,11 +16,31 @@
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/schneiderrodrigues/.nuget/NuGet/NuGet.Config"
+=======
+    "/Users/lmgxenon/Downloads/Airport-Flight-Management-System/AFMS/AFMS.csproj": {}
+  },
+  "projects": {
+    "/Users/lmgxenon/Downloads/Airport-Flight-Management-System/AFMS/AFMS.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/lmgxenon/Downloads/Airport-Flight-Management-System/AFMS/AFMS.csproj",
+        "projectName": "AFMS",
+        "projectPath": "/Users/lmgxenon/Downloads/Airport-Flight-Management-System/AFMS/AFMS.csproj",
+        "packagesPath": "/Users/lmgxenon/.nuget/packages/",
+        "outputPath": "/Users/lmgxenon/Downloads/Airport-Flight-Management-System/AFMS/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/lmgxenon/.nuget/NuGet/NuGet.Config"
+>>>>>>> 1daad317e22f83cd2081e9bf6af7d912862e2471
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+<<<<<<< HEAD
+=======
+          "/usr/local/share/dotnet/library-packs": {},
+>>>>>>> 1daad317e22f83cd2081e9bf6af7d912862e2471
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
