@@ -25,7 +25,7 @@
             <a href="@Url.Action("Index", "Home")" class="nav-item">
                 <span class="nav-label">Dashboard</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="@Url.Action("Add", "Flight")" class="nav-item">
                 <span class="nav-label">Add Flight</span>
             </a>
             <a href="#" class="nav-item">
@@ -93,7 +93,7 @@
                         </div>
                         <div class="form-group">
                             <label for="originAirport" class="form-label">Origin Airport</label>
-                            <input type="text" id="originAirport" class="form-input" placeholder="e.g., JFK" />
+                            <input type="text" id="originAirport" class="form-input" list="airportOptions" placeholder="e.g., JFK" />
                         </div>
                     </div>
 
@@ -101,7 +101,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="destinationAirport" class="form-label">Destination Airport</label>
-                            <input type="text" id="destinationAirport" class="form-input" placeholder="e.g., LAX" />
+                            <input type="text" id="destinationAirport" class="form-input" list="airportOptions" placeholder="e.g., LAX" />
                         </div>
                         <div class="form-group">
                             <label for="dateFrom" class="form-label">Date From</label>
@@ -113,30 +113,46 @@
                         </div>
                     </div>
 
-                    <!-- Flight Status Checkboxes -->
+                    <!-- Temporary Fallback Airport Options (replace with API later) -->
+                    <datalist id="airportOptions">
+                        <option value="JFK">John F. Kennedy (JFK)</option>
+                        <option value="LAX">Los Angeles (LAX)</option>
+                        <option value="ORD">Chicago O'Hare (ORD)</option>
+                        <option value="DFW">Dallas/Fort Worth (DFW)</option>
+                        <option value="DEN">Denver (DEN)</option>
+                        <option value="ATL">Atlanta (ATL)</option>
+                        <option value="SFO">San Francisco (SFO)</option>
+                        <option value="SEA">Seattle (SEA)</option>
+                    </datalist>
+
+                    <!-- Flight Status (single select) -->
                     <div class="form-group-full">
                         <label class="form-label">
                             <span class="filter-icon">🔽</span> Flight Status
                         </label>
                         <div class="checkbox-group">
                             <label class="checkbox-label">
-                                <input type="checkbox" id="statusOnTime" class="checkbox-input" />
+                                <input type="radio" id="statusAny" name="flightStatus" class="checkbox-input" checked />
+                                <span class="checkbox-text">Any</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" id="statusOnTime" name="flightStatus" class="checkbox-input" />
                                 <span class="checkbox-text">On Time</span>
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" id="statusBoarding" class="checkbox-input" />
+                                <input type="radio" id="statusBoarding" name="flightStatus" class="checkbox-input" />
                                 <span class="checkbox-text">Boarding</span>
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" id="statusDelayed" class="checkbox-input" />
+                                <input type="radio" id="statusDelayed" name="flightStatus" class="checkbox-input" />
                                 <span class="checkbox-text">Delayed</span>
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" id="statusDeparted" class="checkbox-input" />
+                                <input type="radio" id="statusDeparted" name="flightStatus" class="checkbox-input" />
                                 <span class="checkbox-text">Departed</span>
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" id="statusCancelled" class="checkbox-input" />
+                                <input type="radio" id="statusCancelled" name="flightStatus" class="checkbox-input" />
                                 <span class="checkbox-text">Cancelled</span>
                             </label>
                         </div>
@@ -148,7 +164,7 @@
                             <span class="btn-icon">🔍</span>
                             Search Flights
                         </button>
-                        <button type="button" class="btn btn-secondary">
+                        <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
                             Clear Filters
                         </button>
                     </div>
@@ -169,5 +185,19 @@
         
         updateTime();
         setInterval(updateTime, 1000);
+
+        // Temporary fallback behavior (remove when API is wired)
+        const clearBtn = document.getElementById('clearFiltersBtn');
+        const form = document.querySelector('.search-form');
+
+        if (clearBtn && form) {
+            clearBtn.addEventListener('click', () => {
+                form.reset();
+                const anyStatus = document.getElementById('statusAny');
+                if (anyStatus) {
+                    anyStatus.checked = true;
+                }
+            });
+        }
     </script>
 }
