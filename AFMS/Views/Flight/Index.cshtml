@@ -1,0 +1,145 @@
+@model IEnumerable<AFMS.Models.Flight>
+
+@{
+    ViewData["Title"] = "All Flights";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="app-container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="app-logo">
+                <img src="~/images/AFMS logo.png" alt="AFMS Logo" style="width: 100%; height: 100%; object-fit: contain;" />
+            </div>
+            <div class="app-info">
+                <h1 class="app-title">AFMS</h1>
+            </div>
+            <button class="close-btn">✕</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="@Url.Action("Index", "Home")" class="nav-item">
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="@Url.Action("Add", "Flight")" class="nav-item">
+                <span class="nav-label">Add Flight</span>
+            </a>
+            <a href="@Url.Action("Index", "Flight")" class="nav-item active">
+                <span class="nav-label">Flight Details</span>
+            </a>
+            <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item">
+                <span class="nav-label">Advanced Search</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer"></div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <div class="current-time">
+                    <span class="time-label">Current Time</span>
+                    <span class="time-value" id="currentTime">00:00:00</span>
+                </div>
+                <div class="user-avatar">
+                    <button class="avatar-btn">A</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 class="page-title">All Flights</h1>
+                    <p class="page-subtitle">View and manage all flights in the system</p>
+                </div>
+                <a href="@Url.Action("Add", "Flight")" class="btn-primary" style="padding: 12px 24px; background: #3b82f6; color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
+                    + Add New Flight
+                </a>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div style="background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px;">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <div style="background: #1e293b; border-radius: 12px; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #334155; color: #94a3b8;">
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Flight #</th>
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Airline</th>
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Destination</th>
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Departure</th>
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Arrival</th>
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Gate</th>
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Terminal</th>
+                            <th style="padding: 16px; text-align: left; font-weight: 500;">Status</th>
+                            <th style="padding: 16px; text-align: center; font-weight: 500;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var flight in Model)
+                        {
+                            var statusColor = flight.Status switch
+                            {
+                                "On Time" => "#10b981",
+                                "Delayed" => "#f59e0b",
+                                "Cancelled" => "#ef4444",
+                                "Boarding" => "#3b82f6",
+                                "Departed" => "#6366f1",
+                                "Arrived" => "#10b981",
+                                _ => "#94a3b8"
+                            };
+                            
+                            <tr style="border-bottom: 1px solid #334155;">
+                                <td style="padding: 16px; color: #f1f5f9; font-weight: 600;">@flight.FlightNumber</td>
+                                <td style="padding: 16px; color: #cbd5e1;">@flight.Airline</td>
+                                <td style="padding: 16px; color: #cbd5e1;">@flight.Destination</td>
+                                <td style="padding: 16px; color: #cbd5e1;">@flight.DepartureTime.ToString("MMM dd, HH:mm")</td>
+                                <td style="padding: 16px; color: #cbd5e1;">@flight.ArrivalTime.ToString("MMM dd, HH:mm")</td>
+                                <td style="padding: 16px; color: #cbd5e1;">@(flight.Gate ?? "TBD")</td>
+                                <td style="padding: 16px; color: #cbd5e1;">@flight.Terminal</td>
+                                <td style="padding: 16px;">
+                                    <span style="background: @statusColor; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">
+                                        @flight.Status
+                                    </span>
+                                </td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <a href="@Url.Action("Details", "Flight", new { id = flight.Id })" style="color: #3b82f6; margin-right: 12px; text-decoration: none;">View</a>
+                                    <a href="@Url.Action("Edit", "Flight", new { id = flight.Id })" style="color: #f59e0b; margin-right: 12px; text-decoration: none;">Edit</a>
+                                    <a href="@Url.Action("Delete", "Flight", new { id = flight.Id })" style="color: #ef4444; text-decoration: none;">Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (!Model.Any())
+                {
+                    <div style="padding: 40px; text-align: center; color: #94a3b8;">
+                        <p style="font-size: 18px;">No flights found</p>
+                        <p>Click "Add New Flight" to create your first flight.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+        document.getElementById('currentTime').textContent = timeString;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
