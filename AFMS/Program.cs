@@ -1,10 +1,14 @@
 using AFMS.Data;
+using AFMS.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add HttpClient for API calls
+builder.Services.AddHttpClient<AeroDataBoxService>();
 
 // Add database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

@@ -1,111 +1,262 @@
-﻿@{
+﻿@model List<AFMS.Models.AeroDataBoxFlight>
+
+@{
     ViewData["Title"] = "Dashboard";
+
+    var totalDepartures = Model.Count(f => f.Direction == "Departure");
+    var totalArrivals = Model.Count(f => f.Direction == "Arrival");
 }
 
 <!-- Page Header -->
 <div class="page-header">
-                <h1 class="page-title">Dashboard</h1>
-                <p class="page-subtitle">Overview of airport operations</p>
-            </div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">London Heathrow Airport (LHR/EGLL) - Live Flight Data</p>
+</div>
 
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">✈</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total Flights</div>
-                        <div class="stat-value">248</div>
-                    </div>
-                    <div class="stat-badge positive">+12%</div>
-                </div>
+<!-- Stats Grid - Main -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">✈</div>
+        <div class="stat-content">
+            <div class="stat-label">Total Flights</div>
+            <div class="stat-value">@Model.Count</div>
+        </div>
+        <div class="stat-badge positive">Live Data</div>
+    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total Passengers</div>
-                        <div class="stat-value">45,231</div>
-                    </div>
-                    <div class="stat-badge positive">+8%</div>
-                </div>
+    <div class="stat-card">
+        <div class="stat-icon">🛫</div>
+        <div class="stat-content">
+            <div class="stat-label">Departures</div>
+            <div class="stat-value">@totalDepartures</div>
+        </div>
+        <div class="stat-badge positive">Live Data</div>
+    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">🕐</div>
-                    <div class="stat-content">
-                        <div class="stat-label">On Time Rate</div>
-                        <div class="stat-value">97.2%</div>
-                    </div>
-                    <div class="stat-badge positive">+2.1%</div>
-                </div>
+    <div class="stat-card">
+        <div class="stat-icon">🛬</div>
+        <div class="stat-content">
+            <div class="stat-label">Arrivals</div>
+            <div class="stat-value">@totalArrivals</div>
+        </div>
+        <div class="stat-badge positive">Live Data</div>
+    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">⏱</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Delayed</div>
-                        <div class="stat-value">8</div>
-                    </div>
-                    <div class="stat-badge negative">-3%</div>
-                </div>
-            </div>
-            <!-- Recent Flights Section -->
-            <div class="flights-section">
-                <h2 class="section-title">Recent Flights</h2>
-                <div class="table-wrapper">
-                    <table class="flights-table">
-                        <thead>
-                            <tr>
-                                <th>Flight</th>
-                                <th>Airline</th>
-                                <th>Route</th>
-                                <th>Departure</th>
-                                <th>Arrival</th>
-                                <th>Gate</th>
-                                <th>Passengers</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="flight-number">BA 1234</td>
-                                <td>British Airways</td>
-                                <td>LHR → JFK</td>
-                                <td>14:30</td>
-                                <td>18:45</td>
-                                <td>B22</td>
-                                <td>186</td>
-                                <td><span class="status-badge status-ontime">On Time</span></td>
-                            </tr>
-                            <tr>
-                                <td class="flight-number">BA 5678</td>
-                                <td>British Airways</td>
-                                <td>LHR → DXB</td>
-                                <td>10:15</td>
-                                <td>14:30</td>
-                                <td>A15</td>
-                                <td>154</td>
-                                <td><span class="status-badge status-boarding">Boarding</span></td>
-                            </tr>
-                            <tr>
-                                <td class="flight-number">BA 9012</td>
-                                <td>British Airways</td>
-                                <td>LHR → CDG</td>
-                                <td>16:00</td>
-                                <td>18:30</td>
-                                <td>C8</td>
-                                <td>198</td>
-                                <td><span class="status-badge status-delayed">Delayed</span></td>
-                            </tr>
-                            <tr>
-                                <td class="flight-number">BA 3456</td>
-                                <td>British Airways</td>
-                                <td>LHR → SYD</td>
-                                <td>09:45</td>
-                                <td>11:15</td>
-                                <td>D12</td>
-                                <td>143</td>
-                                <td><span class="status-badge status-departed">Departed</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+    <div class="stat-card">
+        <div class="stat-icon">🏢</div>
+        <div class="stat-content">
+            <div class="stat-label">Airlines</div>
+            <div class="stat-value">@Model.Select(f => f.Airline?.Name).Where(n => n != null).Distinct().Count()</div>
+        </div>
+        <div class="stat-badge positive">Live Data</div>
     </div>
 </div>
+
+<!-- Flights Section -->
+<div class="flights-section">
+    <div class="flights-header">
+        <h2 class="section-title">Live Flights - London Heathrow (LHR)</h2>
+        <div class="direction-filters">
+            <button class="filter-btn active" data-direction="all">All</button>
+            <button class="filter-btn" data-direction="Departure">🛫 Departures</button>
+            <button class="filter-btn" data-direction="Arrival">🛬 Arrivals</button>
+        </div>
+    </div>
+    <div class="table-wrapper">
+        <table class="flights-table" id="flightsTable">
+            <thead>
+                <tr>
+                    <th>Flight</th>
+                    <th>Airline</th>
+                    <th>Type</th>
+                    <th>Route</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Gate</th>
+                    <th>Terminal</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var flight in Model)
+                {
+                    var rawStatus = (flight.Status ?? "").ToLower();
+                    var isDep = flight.Direction == "Departure";
+
+                    // Status class
+                    var statusClass = rawStatus switch
+                    {
+                        "expected"          => isDep ? "status-scheduled" : "status-expected",
+                        "enroute"           => "status-enroute",
+                        "checkin"           => "status-checkin",
+                        "boarding"          => "status-boarding",
+                        "gateclosed"        => "status-gateclosed",
+                        "departed"          => "status-departed",
+                        "delayed"           => "status-delayed",
+                        "approaching"       => "status-approaching",
+                        "arrived"           => "status-landed",
+                        "canceled"          => "status-cancelled",
+                        "canceleduncertain" => "status-cancelled",
+                        "diverted"          => "status-diverted",
+                        _                   => "status-scheduled"
+                    };
+
+                    // Status label
+                    var statusLabel = rawStatus switch
+                    {
+                        "expected"          => isDep ? "Scheduled" : "Expected",
+                        "enroute"           => "En Route",
+                        "checkin"           => "Check-In Open",
+                        "boarding"          => "Boarding",
+                        "gateclosed"        => "Gate Closed",
+                        "departed"          => "Departed",
+                        "delayed"           => "Delayed",
+                        "approaching"       => "Final Approach",
+                        "arrived"           => isDep ? "Departed" : "Landed",
+                        "canceled"          => "Cancelled",
+                        "canceleduncertain" => "Cancelled",
+                        "diverted"          => "Diverted",
+                        _                   => flight.Status ?? "Scheduled"
+                    };
+
+                    // Airport codes — fill in LHR for the home leg
+                    var depIata = flight.Departure?.Airport?.Iata
+                        ?? (isDep ? "LHR" : (flight.Departure?.Airport?.Name ?? "-"));
+                    var arrIata = flight.Arrival?.Airport?.Iata
+                        ?? (!isDep ? "LHR" : (flight.Arrival?.Airport?.Name ?? "-"));
+
+                    // Departure date/time
+                    var departureTime = "-";
+                    if (DateTime.TryParse(flight.Departure?.ScheduledTime?.Local, out var depParsed))
+                        departureTime = depParsed.ToString("dd MMM HH:mm");
+
+                    // Arrival date/time
+                    var arrivalTime = "-";
+                    if (DateTime.TryParse(flight.Arrival?.ScheduledTime?.Local, out var arrParsed))
+                        arrivalTime = arrParsed.ToString("dd MMM HH:mm");
+
+                    // Gate / Terminal from the LHR leg
+                    var gate = "-";
+                    var terminal = "-";
+                    var lhrLeg = isDep ? flight.Departure : flight.Arrival;
+                    if (lhrLeg != null)
+                    {
+                        gate = !string.IsNullOrEmpty(lhrLeg.Gate) ? lhrLeg.Gate : "-";
+                        terminal = !string.IsNullOrEmpty(lhrLeg.Terminal) ? lhrLeg.Terminal : "-";
+                    }
+
+                    var typeLabel = isDep ? "DEP" : "ARR";
+                    var typeClass = isDep ? "type-dep" : "type-arr";
+
+                    <tr data-direction="@flight.Direction">
+                        <td class="flight-number">@flight.Number</td>
+                        <td>@(flight.Airline?.Name ?? "-")</td>
+                        <td><span class="type-badge @typeClass">@typeLabel</span></td>
+                        <td>@depIata → @arrIata</td>
+                        <td class="mono">@departureTime</td>
+                        <td class="mono">@arrivalTime</td>
+                        <td>@gate</td>
+                        <td>@terminal</td>
+                        <td><span class="status-badge @statusClass">@statusLabel</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <p style="font-size: 18px; margin-bottom: 8px;">No live flight data available</p>
+                <p>The API may not have returned data for the current time window.</p>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    const PAGE_SIZE = 25;
+    let currentPage = 1;
+    let currentDir = 'all';
+
+    const allRows = Array.from(document.querySelectorAll('#flightsTable tbody tr'));
+    const buttons = document.querySelectorAll('.filter-btn');
+    const pagination = document.getElementById('pagination');
+
+    function getFilteredRows() {
+        return allRows.filter(r =>
+            currentDir === 'all' || r.getAttribute('data-direction') === currentDir
+        );
+    }
+
+    function render() {
+        const filtered = getFilteredRows();
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        // Hide all rows first
+        allRows.forEach(r => r.style.display = 'none');
+
+        // Show only current page rows
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        filtered.slice(start, end).forEach(r => r.style.display = '');
+
+        // Build pagination
+        let html = '';
+        html += '<button class="page-btn" data-page="prev" ' + (currentPage === 1 ? 'disabled' : '') + '>‹ Prev</button>';
+
+        const maxButtons = 7;
+        let startPage = Math.max(1, currentPage - 3);
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+        if (endPage - startPage < maxButtons - 1) startPage = Math.max(1, endPage - maxButtons + 1);
+
+        if (startPage > 1) {
+            html += '<button class="page-btn" data-page="1">1</button>';
+            if (startPage > 2) html += '<span class="page-ellipsis">…</span>';
+        }
+        for (let i = startPage; i <= endPage; i++) {
+            html += '<button class="page-btn' + (i === currentPage ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>';
+        }
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += '<span class="page-ellipsis">…</span>';
+            html += '<button class="page-btn" data-page="' + totalPages + '">' + totalPages + '</button>';
+        }
+
+        html += '<button class="page-btn" data-page="next" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next ›</button>';
+        html += '<span class="page-info">Showing ' + (filtered.length ? start + 1 : 0) + '–' + Math.min(end, filtered.length) + ' of ' + filtered.length + '</span>';
+
+        pagination.innerHTML = html;
+    }
+
+    // Direction filter
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            buttons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentDir = this.getAttribute('data-direction');
+            currentPage = 1;
+            render();
+        });
+    });
+
+    // Pagination clicks
+    pagination.addEventListener('click', function (e) {
+        const btn = e.target.closest('.page-btn');
+        if (!btn || btn.disabled) return;
+        const val = btn.getAttribute('data-page');
+        if (val === 'prev') currentPage--;
+        else if (val === 'next') currentPage++;
+        else currentPage = parseInt(val);
+        render();
+        document.querySelector('.flights-section').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    render();
+})();
+</script>
+}
