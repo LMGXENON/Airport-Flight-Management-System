@@ -1,4 +1,3 @@
-
 @model AFMS.Models.Flight
 
 @{
@@ -11,106 +10,105 @@
 
 <!-- Page Header -->
 <div class="page-header">
-                <h1 class="page-title">Add Flight</h1>
-                <p class="page-subtitle">Enter flight details to add a new flight to the system</p>
+    <h1 class="page-title">Add Flight</h1>
+    <p class="page-subtitle">Enter flight details to add a new flight to the system</p>
+</div>
+
+<!-- Add Flight Form Card -->
+<div class="form-card">
+    <form asp-action="Add" method="post" class="flight-form">
+        @Html.AntiForgeryToken()
+
+        <!-- Flight Information Section -->
+        <div class="form-section">
+            <h2 class="section-title">Flight Information</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="FlightNumber" class="form-label">Flight Number</label>
+                    <input asp-for="FlightNumber" class="form-input" placeholder="e.g., AA1234" />
+                    <span asp-validation-for="FlightNumber" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Airline" class="form-label">Airline</label>
+                    <select asp-for="Airline" class="form-select">
+                        <option value="">Select Airline</option>
+                        <option value="American Airlines">American Airlines</option>
+                        <option value="Delta Air Lines">Delta Air Lines</option>
+                        <option value="United Airlines">United Airlines</option>
+                        <option value="Southwest Airlines">Southwest Airlines</option>
+                        <option value="JetBlue Airways">JetBlue Airways</option>
+                        <option value="Alaska Airlines">Alaska Airlines</option>
+                        <option value="Spirit Airlines">Spirit Airlines</option>
+                        <option value="Frontier Airlines">Frontier Airlines</option>
+                        <option value="Hawaiian Airlines">Hawaiian Airlines</option>
+                        <option value="Allegiant Air">Allegiant Air</option>
+                    </select>
+                    <span asp-validation-for="Airline" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Destination" class="form-label">Destination</label>
+                    <input asp-for="Destination" class="form-input" placeholder="e.g., LAX - Los Angeles" />
+                    <span asp-validation-for="Destination" class="validation-error"></span>
+                </div>
             </div>
+        </div>
 
-            <!-- Add Flight Form Card -->
-            <div class="form-card">
-                <form asp-action="Add" method="post" class="flight-form">
-                    @Html.AntiForgeryToken()
+        <!-- Timing Section -->
+        <div class="form-section">
+            <h2 class="section-title">Timing</h2>
+            <div class="form-grid two-columns">
+                <div class="form-group">
+                    <label asp-for="DepartureTime" class="form-label">Departure Time</label>
+                    <input asp-for="DepartureTime" type="datetime-local" class="form-input datetime-input" />
+                    <span asp-validation-for="DepartureTime" class="validation-error"></span>
+                </div>
 
-                    <!-- Flight Information Section -->
-                    <div class="form-section">
-                        <h2 class="section-title">Flight Information</h2>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label asp-for="FlightNumber" class="form-label">Flight Number</label>
-                                <input asp-for="FlightNumber" class="form-input" placeholder="e.g., AA1234" />
-                                <span asp-validation-for="FlightNumber" class="validation-error"></span>
-                            </div>
+                <div class="form-group">
+                    <label asp-for="ArrivalTime" class="form-label">Arrival Time</label>
+                    <input asp-for="ArrivalTime" type="datetime-local" class="form-input datetime-input" />
+                    <span asp-validation-for="ArrivalTime" class="validation-error"></span>
+                </div>
+            </div>
+        </div>
 
-                            <div class="form-group">
-                                <label asp-for="Airline" class="form-label">Airline</label>
-                                <select asp-for="Airline" class="form-select">
-                                    <option value="">Select Airline</option>
-                                    <option value="American Airlines">American Airlines</option>
-                                    <option value="Delta Air Lines">Delta Air Lines</option>
-                                    <option value="United Airlines">United Airlines</option>
-                                    <option value="Southwest Airlines">Southwest Airlines</option>
-                                    <option value="JetBlue Airways">JetBlue Airways</option>
-                                    <option value="Alaska Airlines">Alaska Airlines</option>
-                                    <option value="Spirit Airlines">Spirit Airlines</option>
-                                    <option value="Frontier Airlines">Frontier Airlines</option>
-                                    <option value="Hawaiian Airlines">Hawaiian Airlines</option>
-                                    <option value="Allegiant Air">Allegiant Air</option>
-                                </select>
-                                <span asp-validation-for="Airline" class="validation-error"></span>
-                            </div>
+        <!-- Logistics Section -->
+        <div class="form-section">
+            <h2 class="section-title">Logistics</h2>
+            <div class="form-grid two-columns">
+                <div class="form-group">
+                    <label asp-for="Gate" class="form-label">Gate</label>
+                    <input asp-for="Gate" class="form-input" placeholder="e.g., B12" />
+                    <span asp-validation-for="Gate" class="validation-error"></span>
+                </div>
 
-                            <div class="form-group">
-                                <label asp-for="Destination" class="form-label">Destination</label>
-                                <input asp-for="Destination" class="form-input" placeholder="e.g., LAX - Los Angeles" />
-                                <span asp-validation-for="Destination" class="validation-error"></span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label asp-for="Terminal" class="form-label">Terminal</label>
+                    <select asp-for="Terminal" class="form-select">
+                        <option value="1">Terminal 1</option>
+                        <option value="2">Terminal 2</option>
+                        <option value="3">Terminal 3</option>
+                        <option value="4">Terminal 4</option>
+                        <option value="5">Terminal 5</option>
+                    </select>
+                    <span asp-validation-for="Terminal" class="validation-error"></span>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Timing Section -->
-                    <div class="form-section">
-                        <h2 class="section-title">Timing</h2>
-                        <div class="form-grid two-columns">
-                            <div class="form-group">
-                                <label asp-for="DepartureTime" class="form-label">Departure Time</label>
-                                <input asp-for="DepartureTime" type="datetime-local" class="form-input datetime-input" />
-                                <span asp-validation-for="DepartureTime" class="validation-error"></span>
-                            </div>
-
-                            <div class="form-group">
-                                <label asp-for="ArrivalTime" class="form-label">Arrival Time</label>
-                                <input asp-for="ArrivalTime" type="datetime-local" class="form-input datetime-input" />
-                                <span asp-validation-for="ArrivalTime" class="validation-error"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Logistics Section -->
-                    <div class="form-section">
-                        <h2 class="section-title">Logistics</h2>
-                        <div class="form-grid two-columns">
-                            <div class="form-group">
-                                <label asp-for="Gate" class="form-label">Gate</label>
-                                <input asp-for="Gate" class="form-input" placeholder="e.g., B12" />
-                                <span asp-validation-for="Gate" class="validation-error"></span>
-                            </div>
-
-                            <div class="form-group">
-                                <label asp-for="Terminal" class="form-label">Terminal</label>
-                                <select asp-for="Terminal" class="form-select">
-                                    <option value="1">Terminal 1</option>
-                                    <option value="2">Terminal 2</option>
-                                    <option value="3">Terminal 3</option>
-                                    <option value="4">Terminal 4</option>
-                                    <option value="5">Terminal 5</option>
-                                </select>
-                                <span asp-validation-for="Terminal" class="validation-error"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="btn-icon">💾</span>
-                            SAVE TO DATABASE
-                        </button>
-                        <a href="@Url.Action("Index", "Home")" class="btn btn-danger">
-                            <span class="btn-icon">✕</span>
-                            CANCEL
-                        </a>
-                    </div>
-                </form>
-    </div>
+        <!-- Action Buttons -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <span class="btn-icon">💾</span>
+                SAVE TO DATABASE
+            </button>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-danger">
+                <span class="btn-icon">✕</span>
+                CANCEL
+            </a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

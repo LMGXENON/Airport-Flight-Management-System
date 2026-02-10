@@ -8,15 +8,17 @@
     <link rel="stylesheet" href="~/css/add-flight.css" />
 }
 
+<!-- Page Header -->
 <div class="page-header">
-                <a href="@Url.Action("Index", "Flight")" style="color: #3b82f6; text-decoration: none; margin-bottom: 10px; display: inline-block;">
-                    ← Back to All Flights
-                </a>
-                <h1 class="page-title">Edit Flight @Model.FlightNumber</h1>
-                <p class="page-subtitle">Update flight details</p>
-            </div>
+    <a href="@Url.Action("Index", "Flight")" style="color: #3b82f6; text-decoration: none; margin-bottom: 10px; display: inline-block;">
+        ← Back to All Flights
+    </a>
+    <h1 class="page-title">Edit Flight @Model.FlightNumber</h1>
+    <p class="page-subtitle">Update flight details</p>
+</div>
 
-            <div class="form-card">
+<!-- Edit Flight Form Card -->
+<div class="form-card">
                 <form asp-action="Edit" method="post" class="flight-form">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id" />
@@ -125,7 +127,6 @@
                         </a>
                     </div>
                 </form>
-    </div>
 </div>
 
 @section Scripts {
