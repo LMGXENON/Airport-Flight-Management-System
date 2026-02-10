@@ -437,19 +437,13 @@ body {
     font-weight: 600;
 }
 
-/* Departing — teal/cyan for imminent departure */
-.status-departing {
-    background-color: rgba(6, 182, 212, 0.15);
-    color: #06b6d4;
-}
-
-/* Expected — green, on time arrival expected */
+/* Expected — green, on time */
 .status-expected {
     background-color: rgba(16, 185, 129, 0.15);
     color: var(--success);
 }
 
-/* Check-In Open — soft blue */
+/* Check-In — soft blue */
 .status-checkin {
     background-color: rgba(96, 165, 250, 0.15);
     color: #60a5fa;
@@ -459,12 +453,6 @@ body {
 .status-boarding {
     background-color: rgba(65, 105, 225, 0.2);
     color: var(--accent-blue);
-}
-
-/* Gate Open — green-yellow */
-.status-gateopen {
-    background-color: rgba(132, 204, 22, 0.15);
-    color: #84cc16;
 }
 
 /* Gate Closed — amber/warning */
@@ -485,13 +473,19 @@ body {
     color: #38bdf8;
 }
 
-/* Final Approach — purple */
+/* Approaching — purple */
 .status-approaching {
     background-color: rgba(167, 139, 250, 0.15);
     color: #a78bfa;
 }
 
-/* Landed — bright green */
+/* Arrived — bright green */
+.status-arrived {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+/* Landed (legacy alias) */
 .status-landed {
     background-color: rgba(16, 185, 129, 0.15);
     color: var(--success);
@@ -519,26 +513,6 @@ body {
 .status-scheduled {
     background-color: rgba(136, 145, 178, 0.15);
     color: var(--text-secondary);
-}
-
-/* Type Badges (DEP / ARR) */
-.type-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
-.type-dep {
-    background-color: rgba(6, 182, 212, 0.15);
-    color: #06b6d4;
-}
-
-.type-arr {
-    background-color: rgba(167, 139, 250, 0.15);
-    color: #a78bfa;
 }
 
 /* Monospace for times */

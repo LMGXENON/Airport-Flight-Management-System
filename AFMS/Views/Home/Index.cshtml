@@ -80,13 +80,15 @@
             <tbody>
                 @foreach (var flight in Model)
                 {
-                    var rawStatus = (flight.Status ?? "").ToLower();
                     var isDep = flight.Direction == "Departure";
+                    // Use movement-level status: departure.status for departures, arrival.status for arrivals
+                    var movementStatus = isDep ? flight.Departure?.Status : flight.Arrival?.Status;
+                    var rawStatus = (movementStatus ?? flight.Status ?? "Unknown").ToLower();
 
-                    // Status class
+                    // Direct status mapping from AeroDataBox API
                     var statusClass = rawStatus switch
                     {
-                        "expected"          => isDep ? "status-scheduled" : "status-expected",
+                        "expected"          => "status-expected",
                         "enroute"           => "status-enroute",
                         "checkin"           => "status-checkin",
                         "boarding"          => "status-boarding",
@@ -94,28 +96,30 @@
                         "departed"          => "status-departed",
                         "delayed"           => "status-delayed",
                         "approaching"       => "status-approaching",
-                        "arrived"           => "status-landed",
+                        "arrived"           => "status-arrived",
                         "canceled"          => "status-cancelled",
                         "canceleduncertain" => "status-cancelled",
                         "diverted"          => "status-diverted",
+                        "unknown"           => "status-scheduled",
                         _                   => "status-scheduled"
                     };
 
-                    // Status label
+                    // Direct status labels from API
                     var statusLabel = rawStatus switch
                     {
-                        "expected"          => isDep ? "Scheduled" : "Expected",
+                        "expected"          => "Expected",
                         "enroute"           => "En Route",
-                        "checkin"           => "Check-In Open",
+                        "checkin"           => "Check-In",
                         "boarding"          => "Boarding",
                         "gateclosed"        => "Gate Closed",
                         "departed"          => "Departed",
                         "delayed"           => "Delayed",
-                        "approaching"       => "Final Approach",
-                        "arrived"           => isDep ? "Departed" : "Landed",
+                        "approaching"       => "Approaching",
+                        "arrived"           => "Arrived",
                         "canceled"          => "Cancelled",
                         "canceleduncertain" => "Cancelled",
                         "diverted"          => "Diverted",
+                        "unknown"           => "Scheduled",
                         _                   => flight.Status ?? "Scheduled"
                     };
 
@@ -146,15 +150,14 @@
                     }
 
                     var typeLabel = isDep ? "DEP" : "ARR";
-                    var typeClass = isDep ? "type-dep" : "type-arr";
 
                     <tr data-direction="@flight.Direction">
                         <td class="flight-number">@flight.Number</td>
                         <td>@(flight.Airline?.Name ?? "-")</td>
-                        <td><span class="type-badge @typeClass">@typeLabel</span></td>
+                        <td>@typeLabel</td>
                         <td>@depIata → @arrIata</td>
-                        <td class="mono">@departureTime</td>
-                        <td class="mono">@arrivalTime</td>
+                        <td>@departureTime</td>
+                        <td>@arrivalTime</td>
                         <td>@gate</td>
                         <td>@terminal</td>
                         <td><span class="status-badge @statusClass">@statusLabel</span></td>
