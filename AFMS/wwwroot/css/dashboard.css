@@ -332,11 +332,55 @@ body {
     padding: 24px;
 }
 
+.flights-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.flights-header .section-title {
+    margin-bottom: 0;
+}
+
 .section-title {
     font-size: 20px;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 24px;
+}
+
+/* Direction Filter Buttons */
+.direction-filters {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.filter-btn:hover {
+    background-color: rgba(65, 105, 225, 0.1);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
+}
+
+.filter-btn.active {
+    background-color: var(--accent-blue);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
 }
 
 .table-wrapper {
@@ -393,38 +437,167 @@ body {
     font-weight: 600;
 }
 
-.status-ontime {
+/* Departing — teal/cyan for imminent departure */
+.status-departing {
+    background-color: rgba(6, 182, 212, 0.15);
+    color: #06b6d4;
+}
+
+/* Expected — green, on time arrival expected */
+.status-expected {
     background-color: rgba(16, 185, 129, 0.15);
     color: var(--success);
 }
 
+/* Check-In Open — soft blue */
+.status-checkin {
+    background-color: rgba(96, 165, 250, 0.15);
+    color: #60a5fa;
+}
+
+/* Boarding — bright blue */
 .status-boarding {
     background-color: rgba(65, 105, 225, 0.2);
     color: var(--accent-blue);
 }
 
-.status-delayed {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: var(--danger);
+/* Gate Open — green-yellow */
+.status-gateopen {
+    background-color: rgba(132, 204, 22, 0.15);
+    color: #84cc16;
 }
 
+/* Gate Closed — amber/warning */
+.status-gateclosed {
+    background-color: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
+/* Departed — neutral grey */
 .status-departed {
     background-color: rgba(136, 145, 178, 0.15);
     color: var(--text-secondary);
 }
 
+/* En Route — sky blue */
+.status-enroute {
+    background-color: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+}
+
+/* Final Approach — purple */
+.status-approaching {
+    background-color: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
+}
+
+/* Landed — bright green */
+.status-landed {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+/* Delayed — red */
+.status-delayed {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+/* Cancelled — red */
 .status-cancelled {
     background-color: rgba(239, 68, 68, 0.15);
     color: var(--danger);
 }
 
-.status-arrived {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: var(--success);
+/* Diverted — orange */
+.status-diverted {
+    background-color: rgba(249, 115, 22, 0.15);
+    color: #f97316;
 }
 
+/* Scheduled — neutral */
 .status-scheduled {
     background-color: rgba(136, 145, 178, 0.15);
+    color: var(--text-secondary);
+}
+
+/* Type Badges (DEP / ARR) */
+.type-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.type-dep {
+    background-color: rgba(6, 182, 212, 0.15);
+    color: #06b6d4;
+}
+
+.type-arr {
+    background-color: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
+}
+
+/* Monospace for times */
+.mono {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px 0 4px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.page-btn:hover:not([disabled]) {
+    background-color: rgba(65, 105, 225, 0.1);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
+}
+
+.page-btn.active {
+    background-color: var(--accent-blue);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
+}
+
+.page-btn[disabled] {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.page-ellipsis {
+    color: var(--text-secondary);
+    padding: 0 4px;
+    font-size: 14px;
+}
+
+.page-info {
+    margin-left: 16px;
+    font-size: 13px;
     color: var(--text-secondary);
 }
 
@@ -565,6 +738,9 @@ body {
 /* Responsive */
 @media (max-width: 1200px) {
     .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .stats-grid-status {
         grid-template-columns: repeat(2, 1fr);
     }
 }

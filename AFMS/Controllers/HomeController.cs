@@ -1,14 +1,31 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using AFMS.Models;
+using AFMS.Services;
 
 namespace AFMS.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
+    private readonly AeroDataBoxService _aeroDataBoxService;
+    private readonly IConfiguration _configuration;
+
+    public HomeController(AeroDataBoxService aeroDataBoxService, IConfiguration configuration)
     {
-        return View();
+        _aeroDataBoxService = aeroDataBoxService;
+        _configuration = configuration;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var airportCode = _configuration["AeroDataBox:DefaultAirport"] ?? "EGLL"; // London Heathrow ICAO
+        
+        // Get London local time (GMT/BST)
+        var londonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+        var londonTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTimeZone);
+        
+        var flights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
+        return View(flights);
     }
 
     public IActionResult Privacy()
