@@ -3,83 +3,81 @@
 @{
     ViewData["Title"] = "Flight Details";
     
-    var statusColor = Model.Status switch
+    var statusClass = Model.Status?.ToLower().Replace(" ", "") switch
     {
-        "On Time" => "#10b981",
-        "Delayed" => "#f59e0b",
-        "Cancelled" => "#ef4444",
-        "Boarding" => "#3b82f6",
-        "Departed" => "#6366f1",
-        "Arrived" => "#10b981",
-        _ => "#94a3b8"
+        "ontime" => "status-ontime",
+        "delayed" => "status-delayed",
+        "cancelled" => "status-cancelled",
+        "boarding" => "status-boarding",
+        "departed" => "status-departed",
+        "arrived" => "status-arrived",
+        _ => "status-scheduled"
     };
 }
 
+<!-- Page Header -->
 <div class="page-header">
-                <a href="@Url.Action("Index", "Flight")" style="color: #3b82f6; text-decoration: none; margin-bottom: 10px; display: inline-block;">
-                    ← Back to All Flights
-                </a>
-                <h1 class="page-title">Flight @Model.FlightNumber</h1>
-                <p class="page-subtitle">@Model.Airline - @Model.Destination</p>
-            </div>
+    <a href="@Url.Action("Index", "Flight")" style="color: var(--accent-blue); text-decoration: none; margin-bottom: 10px; display: inline-block;">
+        ← Back to All Flights
+    </a>
+    <h1 class="page-title">Flight @Model.FlightNumber</h1>
+    <p class="page-subtitle">@Model.Airline - @Model.Destination</p>
+</div>
 
-            <div style="background: #1e293b; border-radius: 12px; padding: 32px; margin-bottom: 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 32px;">
-                    <div>
-                        <h2 style="color: #f1f5f9; font-size: 28px; margin: 0 0 8px 0;">@Model.FlightNumber</h2>
-                        <p style="color: #94a3b8; margin: 0;">@Model.Airline</p>
-                    </div>
-                    <span style="background: @statusColor; color: white; padding: 8px 20px; border-radius: 20px; font-weight: 600;">
-                        @Model.Status
-                    </span>
-                </div>
+<!-- Flight Details Card -->
+<div class="details-card">
+    <div class="details-header">
+        <div>
+            <h2 class="details-flight-number">@Model.FlightNumber</h2>
+            <p class="details-airline">@Model.Airline</p>
+        </div>
+        <span class="status-badge @statusClass">@Model.Status</span>
+    </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-                    <div style="background: #0f172a; padding: 20px; border-radius: 8px;">
-                        <p style="color: #64748b; margin: 0 0 8px 0; font-size: 14px;">Destination</p>
-                        <p style="color: #f1f5f9; margin: 0; font-size: 18px; font-weight: 600;">@Model.Destination</p>
-                    </div>
-                    
-                    <div style="background: #0f172a; padding: 20px; border-radius: 8px;">
-                        <p style="color: #64748b; margin: 0 0 8px 0; font-size: 14px;">Departure Time</p>
-                        <p style="color: #f1f5f9; margin: 0; font-size: 18px; font-weight: 600;">@Model.DepartureTime.ToString("MMM dd, yyyy HH:mm")</p>
-                    </div>
-                    
-                    <div style="background: #0f172a; padding: 20px; border-radius: 8px;">
-                        <p style="color: #64748b; margin: 0 0 8px 0; font-size: 14px;">Arrival Time</p>
-                        <p style="color: #f1f5f9; margin: 0; font-size: 18px; font-weight: 600;">@Model.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</p>
-                    </div>
-                    
-                    <div style="background: #0f172a; padding: 20px; border-radius: 8px;">
-                        <p style="color: #64748b; margin: 0 0 8px 0; font-size: 14px;">Gate</p>
-                        <p style="color: #f1f5f9; margin: 0; font-size: 18px; font-weight: 600;">@(Model.Gate ?? "TBD")</p>
-                    </div>
-                    
-                    <div style="background: #0f172a; padding: 20px; border-radius: 8px;">
-                        <p style="color: #64748b; margin: 0 0 8px 0; font-size: 14px;">Terminal</p>
-                        <p style="color: #f1f5f9; margin: 0; font-size: 18px; font-weight: 600;">@Model.Terminal</p>
-                    </div>
-                    
-                    <div style="background: #0f172a; padding: 20px; border-radius: 8px;">
-                        <p style="color: #64748b; margin: 0 0 8px 0; font-size: 14px;">Flight Duration</p>
-                        <p style="color: #f1f5f9; margin: 0; font-size: 18px; font-weight: 600;">
-                            @{
-                                var duration = Model.ArrivalTime - Model.DepartureTime;
-                                @($"{(int)duration.TotalHours}h {duration.Minutes}m")
-                            }
-                        </p>
-                    </div>
-                </div>
-            </div>
+    <div class="details-grid">
+        <div class="detail-item">
+            <p class="detail-label">Destination</p>
+            <p class="detail-value">@Model.Destination</p>
+        </div>
+        
+        <div class="detail-item">
+            <p class="detail-label">Departure Time</p>
+            <p class="detail-value">@Model.DepartureTime.ToString("MMM dd, yyyy HH:mm")</p>
+        </div>
+        
+        <div class="detail-item">
+            <p class="detail-label">Arrival Time</p>
+            <p class="detail-value">@Model.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</p>
+        </div>
+        
+        <div class="detail-item">
+            <p class="detail-label">Gate</p>
+            <p class="detail-value">@(Model.Gate ?? "TBD")</p>
+        </div>
+        
+        <div class="detail-item">
+            <p class="detail-label">Terminal</p>
+            <p class="detail-value">Terminal @Model.Terminal</p>
+        </div>
+        
+        <div class="detail-item">
+            <p class="detail-label">Flight Duration</p>
+            <p class="detail-value">
+                @{
+                    var duration = Model.ArrivalTime - Model.DepartureTime;
+                    @($"{(int)duration.TotalHours}h {duration.Minutes}m")
+                }
+            </p>
+        </div>
+    </div>
+</div>
 
-            <div style="display: flex; gap: 16px;">
-                <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" 
-                   style="padding: 12px 24px; background: #f59e0b; color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
-                    Edit Flight
-                </a>
-                <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" 
-                   style="padding: 12px 24px; background: #ef4444; color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
-                    Delete Flight
-                </a>
+<!-- Action Buttons -->
+<div class="detail-actions">
+    <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" class="btn btn-warning">
+        Edit Flight
+    </a>
+    <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" class="btn btn-danger">
+        Delete Flight
     </a>
 </div>
