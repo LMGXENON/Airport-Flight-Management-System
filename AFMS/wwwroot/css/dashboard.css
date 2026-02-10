@@ -729,6 +729,7 @@ body {
 }
 
 .flight-duration {
+    flex-direction: column;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -751,6 +752,7 @@ body {
     }
     
     .flight-duration {
+    flex-direction: column;
         transform: rotate(90deg);
     }
 }
@@ -1196,6 +1198,7 @@ body {
 }
 
 .flight-duration {
+    flex-direction: column;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1218,6 +1221,7 @@ body {
     }
     
     .flight-duration {
+    flex-direction: column;
         transform: rotate(90deg);
     }
 }
