@@ -4,81 +4,82 @@
     ViewData["Title"] = "All Flights";
 }
 
+<!-- Page Header -->
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1 class="page-title">All Flights</h1>
-                    <p class="page-subtitle">View and manage all flights in the system</p>
-                </div>
-                <a href="@Url.Action("Add", "Flight")" class="btn-primary" style="padding: 12px 24px; background: #3b82f6; color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
-                    + Add New Flight
-                </a>
-            </div>
+    <div>
+        <h1 class="page-title">All Flights</h1>
+        <p class="page-subtitle">View and manage all flights in the system</p>
+    </div>
+    <a href="@Url.Action("Add", "Flight")" class="btn-primary" style="padding: 12px 24px; background: var(--accent-blue); color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
+        + Add New Flight
+    </a>
+</div>
 
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div style="background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px;">
-                    @TempData["SuccessMessage"]
-                </div>
-            }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div style="background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px;">
+        @TempData["SuccessMessage"]
+    </div>
+}
 
-            <div style="background: #1e293b; border-radius: 12px; overflow: hidden;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #334155; color: #94a3b8;">
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Flight #</th>
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Airline</th>
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Destination</th>
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Departure</th>
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Arrival</th>
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Gate</th>
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Terminal</th>
-                            <th style="padding: 16px; text-align: left; font-weight: 500;">Status</th>
-                            <th style="padding: 16px; text-align: center; font-weight: 500;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var flight in Model)
-                        {
-                            var statusColor = flight.Status switch
-                            {
-                                "On Time" => "#10b981",
-                                "Delayed" => "#f59e0b",
-                                "Cancelled" => "#ef4444",
-                                "Boarding" => "#3b82f6",
-                                "Departed" => "#6366f1",
-                                "Arrived" => "#10b981",
-                                _ => "#94a3b8"
-                            };
-                            
-                            <tr style="border-bottom: 1px solid #334155;">
-                                <td style="padding: 16px; color: #f1f5f9; font-weight: 600;">@flight.FlightNumber</td>
-                                <td style="padding: 16px; color: #cbd5e1;">@flight.Airline</td>
-                                <td style="padding: 16px; color: #cbd5e1;">@flight.Destination</td>
-                                <td style="padding: 16px; color: #cbd5e1;">@flight.DepartureTime.ToString("MMM dd, HH:mm")</td>
-                                <td style="padding: 16px; color: #cbd5e1;">@flight.ArrivalTime.ToString("MMM dd, HH:mm")</td>
-                                <td style="padding: 16px; color: #cbd5e1;">@(flight.Gate ?? "TBD")</td>
-                                <td style="padding: 16px; color: #cbd5e1;">@flight.Terminal</td>
-                                <td style="padding: 16px;">
-                                    <span style="background: @statusColor; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">
-                                        @flight.Status
-                                    </span>
-                                </td>
-                                <td style="padding: 16px; text-align: center;">
-                                    <a href="@Url.Action("Details", "Flight", new { id = flight.Id })" style="color: #3b82f6; margin-right: 12px; text-decoration: none;">View</a>
-                                    <a href="@Url.Action("Edit", "Flight", new { id = flight.Id })" style="color: #f59e0b; margin-right: 12px; text-decoration: none;">Edit</a>
-                                    <a href="@Url.Action("Delete", "Flight", new { id = flight.Id })" style="color: #ef4444; text-decoration: none;">Delete</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-                @if (!Model.Any())
+<!-- Flights Section -->
+<div class="flights-section">
+    <div class="table-wrapper">
+        <table class="flights-table">
+            <thead>
+                <tr>
+                    <th>Flight #</th>
+                    <th>Airline</th>
+                    <th>Destination</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Gate</th>
+                    <th>Terminal</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var flight in Model)
                 {
-                    <div style="padding: 40px; text-align: center; color: #94a3b8;">
-                        <p style="font-size: 18px;">No flights found</p>
-                        <p>Click "Add New Flight" to create your first flight.</p>
-                    </div>
+                    var statusClass = flight.Status?.ToLower().Replace(" ", "") switch
+                    {
+                        "ontime" => "status-ontime",
+                        "delayed" => "status-delayed",
+                        "cancelled" => "status-cancelled",
+                        "boarding" => "status-boarding",
+                        "departed" => "status-departed",
+                        "arrived" => "status-arrived",
+                        _ => "status-scheduled"
+                    };
+                    
+                    <tr>
+                        <td class="flight-number">@flight.FlightNumber</td>
+                        <td>@flight.Airline</td>
+                        <td>@flight.Destination</td>
+                        <td>@flight.DepartureTime.ToString("MMM dd, HH:mm")</td>
+                        <td>@flight.ArrivalTime.ToString("MMM dd, HH:mm")</td>
+                        <td>@(flight.Gate ?? "TBD")</td>
+                        <td>Terminal @flight.Terminal</td>
+                        <td>
+                            <span class="status-badge @statusClass">@flight.Status</span>
+                        </td>
+                        <td class="actions-cell">
+                            <a href="@Url.Action("Details", "Flight", new { id = flight.Id })" class="action-link view">View</a>
+                            <a href="@Url.Action("Edit", "Flight", new { id = flight.Id })" class="action-link edit">Edit</a>
+                            <a href="@Url.Action("Delete", "Flight", new { id = flight.Id })" class="action-link delete">Delete</a>
+                        </td>
+                    </tr>
                 }
+            </tbody>
+        </table>
+
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <p style="font-size: 18px; margin-bottom: 8px;">No flights found</p>
+                <p>Click "Add New Flight" to create your first flight.</p>
+            </div>
+        }
     </div>
 </div>
