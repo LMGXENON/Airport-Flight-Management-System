@@ -4,57 +4,11 @@
     ViewData["Title"] = "Edit Flight";
 }
 
-<link rel="stylesheet" href="~/css/dashboard.css" />
-<link rel="stylesheet" href="~/css/add-flight.css" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/add-flight.css" />
+}
 
-<div class="app-container">
-    <!-- Left Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="app-logo">
-                <img src="~/images/AFMS logo.png" alt="AFMS Logo" style="width: 100%; height: 100%; object-fit: contain;" />
-            </div>
-            <div class="app-info">
-                <h1 class="app-title">AFMS</h1>
-            </div>
-            <button class="close-btn">✕</button>
-        </div>
-
-        <nav class="sidebar-nav">
-            <a href="@Url.Action("Index", "Home")" class="nav-item">
-                <span class="nav-label">Dashboard</span>
-            </a>
-            <a href="@Url.Action("Add", "Flight")" class="nav-item">
-                <span class="nav-label">Add Flight</span>
-            </a>
-            <a href="@Url.Action("Index", "Flight")" class="nav-item active">
-                <span class="nav-label">Flight Details</span>
-            </a>
-            <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item">
-                <span class="nav-label">Advanced Search</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-footer"></div>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <header class="top-bar">
-            <div class="top-bar-spacer"></div>
-            <div class="top-bar-right">
-                <div class="current-time">
-                    <span class="time-label">Current Time</span>
-                    <span class="time-value" id="currentTime">00:00:00</span>
-                </div>
-                <div class="user-avatar">
-                    <button class="avatar-btn">A</button>
-                </div>
-            </div>
-        </header>
-
-        <div class="dashboard-container">
-            <div class="page-header">
+<div class="page-header">
                 <a href="@Url.Action("Index", "Flight")" style="color: #3b82f6; text-decoration: none; margin-bottom: 10px; display: inline-block;">
                     ← Back to All Flights
                 </a>
@@ -171,22 +125,8 @@
                         </a>
                     </div>
                 </form>
-            </div>
-        </div>
     </div>
 </div>
-
-<script>
-    function updateClock() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-</script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
