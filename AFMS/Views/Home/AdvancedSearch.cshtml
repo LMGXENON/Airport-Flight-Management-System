@@ -50,6 +50,22 @@
             </div>
         </div>
 
+        <!-- Row 3: Status Buttons -->
+        <div class="form-row">
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label">Flight Status</label>
+                <input type="hidden" id="statusInput" name="status" value="@Model.Status" />
+                <div class="status-buttons">
+                    <button type="button" class="status-btn" data-status="Expected">Scheduled</button>
+                    <button type="button" class="status-btn" data-status="Boarding">Boarding</button>
+                    <button type="button" class="status-btn" data-status="Departed">Departed</button>
+                    <button type="button" class="status-btn" data-status="Arrived">Arrived</button>
+                    <button type="button" class="status-btn" data-status="Delayed">Delayed</button>
+                    <button type="button" class="status-btn" data-status="Canceled">Cancelled</button>
+                </div>
+            </div>
+        </div>
+
         <datalist id="airportOptions">
             <option value="EGLL">London Heathrow (EGLL)</option>
             <option value="KJFK">John F. Kennedy (KJFK)</option>
@@ -192,9 +208,38 @@
     <script>
         const clearBtn = document.getElementById('clearFiltersBtn');
         const form = document.querySelector('.search-form');
+        const statusInput = document.getElementById('statusInput');
+        const statusButtons = document.querySelectorAll('.status-btn');
+
+        // Handle status button clicks
+        statusButtons.forEach(btn => {
+            const btnStatus = btn.dataset.status;
+            
+            // Set initial active state
+            if (statusInput && statusInput.value === btnStatus) {
+                btn.classList.add('active');
+            }
+            
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // If clicking the already active button, deselect it
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    statusInput.value = '';
+                } else {
+                    // Remove active from all buttons
+                    statusButtons.forEach(b => b.classList.remove('active'));
+                    // Add active to clicked button
+                    btn.classList.add('active');
+                    statusInput.value = btnStatus;
+                }
+            });
+        });
 
         if (clearBtn && form) {
             clearBtn.addEventListener('click', () => {
+                statusButtons.forEach(b => b.classList.remove('active'));
                 form.reset();
                 window.location.href = '@Url.Action("AdvancedSearch", "Home")';
             });

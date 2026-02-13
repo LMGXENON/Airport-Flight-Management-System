@@ -41,7 +41,8 @@ public class HomeController : Controller
         string? destination,
         DateTime? departureDate,
         DateTime? arrivalDate,
-        string? terminal)
+        string? terminal,
+        string? status)
     {
         var model = new AdvancedSearchViewModel
         {
@@ -51,6 +52,7 @@ public class HomeController : Controller
             DepartureDate = departureDate,
             ArrivalDate = arrivalDate,
             Terminal = terminal,
+            Status = status,
             HasSearched = !string.IsNullOrWhiteSpace(search)
         };
 
@@ -175,6 +177,12 @@ public class HomeController : Controller
                 var value = ParseLocalDate(f.Arrival?.ScheduledTime?.Local);
                 return value.HasValue && value.Value.Date == arrDate;
             });
+        }
+
+        if (!string.IsNullOrWhiteSpace(model.Status))
+        {
+            var status = model.Status.Trim().ToLower();
+            query = query.Where(f => (f.Status ?? string.Empty).Equals(status, StringComparison.OrdinalIgnoreCase));
         }
 
         return query;

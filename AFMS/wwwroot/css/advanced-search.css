@@ -188,6 +188,42 @@
     font-size: 14px;
 }
 
+/* Status Buttons */
+.status-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.status-btn:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    background-color: rgba(65, 105, 225, 0.1);
+}
+
+.status-btn.active {
+    border-color: var(--accent-blue);
+    background-color: var(--accent-blue);
+    color: #fff;
+}
+
+.status-btn:active {
+    transform: scale(0.97);
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .form-row {
