@@ -83,9 +83,14 @@ public class HomeController : Controller
         }
         else
         {
-            // Keep results broad when dates are missing.
-            from = londonNow.AddHours(-6);
-            to = londonNow.AddHours(24);
+            // When no dates specified, search current day only to avoid multi-day API issues
+            // Start from beginning of today or 6 hours ago, whichever is later
+            var todayStart = londonNow.Date;
+            var sixHoursAgo = londonNow.AddHours(-6);
+            from = sixHoursAgo > todayStart ? sixHoursAgo : todayStart;
+            
+            // End at end of today (23:59:59)
+            to = londonNow.Date.AddDays(1).AddSeconds(-1);
         }
 
         if (to < from)
@@ -93,18 +98,26 @@ public class HomeController : Controller
             to = from.AddHours(24);
         }
 
-        if ((to - from).TotalHours > 48)
-        {
-            to = from.AddHours(48);
-            model.Notice = "Search window limited to 48 hours for API performance.";
-        }
+        // Note: Removed 48-hour limit since we're now staying within single day by default
 
         var flights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, from, to, withCancelled: true);
+        
+        Console.WriteLine($"[DEBUG] Total flights from API: {flights.Count}");
+        Console.WriteLine($"[DEBUG] Search filters - Flight: '{model.Flight}', Airline: '{model.Airline}', Destination: '{model.Destination}', Terminal: '{model.Terminal}'");
+        Console.WriteLine($"[DEBUG] Date range: {from} to {to}");
+        
+        foreach (var f in flights.Take(3))
+        {
+            Console.WriteLine($"[DEBUG] Sample flight: {f.Number}, Airline: {f.Airline?.Name}, Direction: {f.Direction}");
+        }
+        
         model.Results = ApplyFilters(flights, model)
             .OrderBy(f => ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
             .ThenBy(f => f.Number)
             .ToList();
 
+        Console.WriteLine($"[DEBUG] Filtered results: {model.Results.Count}");
+        
         model.UsedAirportCode = airportCode;
         return View(model);
     }
@@ -116,13 +129,18 @@ public class HomeController : Controller
         if (!string.IsNullOrWhiteSpace(model.Flight))
         {
             var flightValue = model.Flight.Trim();
+            Console.WriteLine($"[DEBUG] Filtering by Flight: '{flightValue}'");
             query = query.Where(f => (f.Number ?? string.Empty).Contains(flightValue, StringComparison.OrdinalIgnoreCase));
         }
 
         if (!string.IsNullOrWhiteSpace(model.Airline))
         {
             var airline = model.Airline.Trim();
+            Console.WriteLine($"[DEBUG] Filtering by Airline: '{airline}'");
+            var beforeCount = query.Count();
             query = query.Where(f => (f.Airline?.Name ?? string.Empty).Contains(airline, StringComparison.OrdinalIgnoreCase));
+            var afterCount = query.Count();
+            Console.WriteLine($"[DEBUG] Airline filter reduced from {beforeCount} to {afterCount} flights");
         }
 
         if (!string.IsNullOrWhiteSpace(model.Destination))
