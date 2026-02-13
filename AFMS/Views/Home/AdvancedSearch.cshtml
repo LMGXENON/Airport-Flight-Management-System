@@ -1,3 +1,5 @@
+@model AFMS.Models.AdvancedSearchViewModel
+
 @{
     ViewData["Title"] = "Advanced Search";
 }
@@ -8,123 +10,238 @@
 
 <!-- Page Header -->
 <div class="page-header">
-                <h1 class="page-title">Advanced Flight Search</h1>
-                <p class="page-subtitle">Search and filter flight records</p>
-            </div>
-
-            <!-- Search Form -->
-            <div class="search-form-container">
-                <form class="search-form">
-                    <!-- Row 1: Flight Number, Airline, Origin Airport -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="flightNumber" class="form-label">Flight Number</label>
-                            <input type="text" id="flightNumber" class="form-input" placeholder="e.g., UA 1234" />
-                        </div>
-                        <div class="form-group">
-                            <label for="airline" class="form-label">Airline</label>
-                            <select id="airline" class="form-input">
-                                <option value="">All airlines</option>
-                                <option value="united">United Airlines</option>
-                                <option value="american">American Airlines</option>
-                                <option value="delta">Delta Airlines</option>
-                                <option value="southwest">Southwest</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="originAirport" class="form-label">Origin Airport</label>
-                            <input type="text" id="originAirport" class="form-input" list="airportOptions" placeholder="e.g., JFK" />
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Destination Airport, Date From, Date To -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="destinationAirport" class="form-label">Destination Airport</label>
-                            <input type="text" id="destinationAirport" class="form-input" list="airportOptions" placeholder="e.g., LAX" />
-                        </div>
-                        <div class="form-group">
-                            <label for="dateFrom" class="form-label">Date From</label>
-                            <input type="date" id="dateFrom" class="form-input" placeholder="dd/mm/yyyy" />
-                        </div>
-                        <div class="form-group">
-                            <label for="dateTo" class="form-label">Date To</label>
-                            <input type="date" id="dateTo" class="form-input" placeholder="dd/mm/yyyy" />
-                        </div>
-                    </div>
-
-                    <!-- Temporary Fallback Airport Options (replace with API later) -->
-                    <datalist id="airportOptions">
-                        <option value="JFK">John F. Kennedy (JFK)</option>
-                        <option value="LAX">Los Angeles (LAX)</option>
-                        <option value="ORD">Chicago O'Hare (ORD)</option>
-                        <option value="DFW">Dallas/Fort Worth (DFW)</option>
-                        <option value="DEN">Denver (DEN)</option>
-                        <option value="ATL">Atlanta (ATL)</option>
-                        <option value="SFO">San Francisco (SFO)</option>
-                        <option value="SEA">Seattle (SEA)</option>
-                    </datalist>
-
-                    <!-- Flight Status (single select) -->
-                    <div class="form-group-full">
-                        <label class="form-label">
-                            <span class="filter-icon">🔽</span> Flight Status
-                        </label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusAny" name="flightStatus" class="checkbox-input" checked />
-                                <span class="checkbox-text">Any</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusOnTime" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">On Time</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusBoarding" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Boarding</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusDelayed" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Delayed</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusDeparted" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Departed</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusCancelled" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Cancelled</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="btn-icon">🔍</span>
-                            Search Flights
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
-                            Clear Filters
-                        </button>
-                    </div>
-                </form>
-    </div>
+    <h1 class="page-title">Advanced Flight Search</h1>
+    <p class="page-subtitle">Search and filter live flight records</p>
 </div>
+
+<!-- Search Form -->
+<div class="search-form-container">
+    <form class="search-form" method="get" asp-action="AdvancedSearch" asp-controller="Home">
+        <input type="hidden" name="search" value="1" />
+        <!-- Row 1: Flight, Airline, Destination -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="flight" class="form-label">Flight</label>
+                <input type="text" id="flight" name="flight" class="form-input" placeholder="e.g., VY 5227" value="@Model.Flight" />
+            </div>
+            <div class="form-group">
+                <label for="airline" class="form-label">Airline</label>
+                <input type="text" id="airline" name="airline" class="form-input" placeholder="e.g., British" value="@Model.Airline" />
+            </div>
+            <div class="form-group">
+                <label for="destination" class="form-label">Flight Destination</label>
+                <input type="text" id="destination" name="destination" class="form-input" list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Destination" />
+            </div>
+        </div>
+
+        <!-- Row 2: Departure Date, Arrival Date, Terminal -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="departureDate" class="form-label">Departure Date</label>
+                <input type="date" id="departureDate" name="departureDate" class="form-input" value="@Model.DepartureDate?.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="form-group">
+                <label for="arrivalDate" class="form-label">Arrival Date</label>
+                <input type="date" id="arrivalDate" name="arrivalDate" class="form-input" value="@Model.ArrivalDate?.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="form-group">
+                <label for="terminal" class="form-label">Terminal</label>
+                <input type="text" id="terminal" name="terminal" class="form-input" placeholder="e.g., 5" value="@Model.Terminal" />
+            </div>
+        </div>
+
+        <!-- Row 3: Status Buttons -->
+        <div class="form-row">
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label">Flight Status</label>
+                <input type="hidden" id="statusInput" name="status" value="@Model.Status" />
+                <div class="status-buttons">
+                    <button type="button" class="status-btn" data-status="Expected">Scheduled</button>
+                    <button type="button" class="status-btn" data-status="Boarding">Boarding</button>
+                    <button type="button" class="status-btn" data-status="Departed">Departed</button>
+                    <button type="button" class="status-btn" data-status="Arrived">Arrived</button>
+                    <button type="button" class="status-btn" data-status="Delayed">Delayed</button>
+                    <button type="button" class="status-btn" data-status="Canceled">Cancelled</button>
+                </div>
+            </div>
+        </div>
+
+        <datalist id="airportOptions">
+            <option value="EGLL">London Heathrow (EGLL)</option>
+            <option value="KJFK">John F. Kennedy (KJFK)</option>
+            <option value="KLAX">Los Angeles (KLAX)</option>
+            <option value="OMDB">Dubai (OMDB)</option>
+            <option value="EDDF">Frankfurt (EDDF)</option>
+            <option value="RJTT">Tokyo Haneda (RJTT)</option>
+        </datalist>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <span class="btn-icon">🔍</span>
+                Search Flights
+            </button>
+            <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
+                Clear Filters
+            </button>
+        </div>
+    </form>
+
+    <p class="api-hint">Tip: every filter is optional. You can search with just one field (for example only Flight or only Airline).</p>
+</div>
+
+@if (Model.HasSearched)
+{
+    <div class="flights-section advanced-results">
+        <div class="flights-header">
+            <h2 class="section-title">Search Results (@Model.Results.Count)</h2>
+            <div class="result-meta">API airport: @Model.UsedAirportCode</div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Notice))
+        {
+            <div class="search-notice">@Model.Notice</div>
+        }
+
+        @if (!Model.Results.Any())
+        {
+            <div class="empty-state">
+                <p style="font-size: 18px; margin-bottom: 8px;">No flights matched your filters</p>
+                <p>Try a different airport code, broader dates, or fewer filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table class="flights-table">
+                    <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Airline</th>
+                        <th>Type</th>
+                        <th>Route</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Gate</th>
+                        <th>Terminal</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var flight in Model.Results)
+                    {
+                        var rawStatus = (flight.Status ?? "").ToLower();
+                        var isDep = flight.Direction == "Departure";
+
+                        var statusClass = rawStatus switch
+                        {
+                            "expected" => isDep ? "status-scheduled" : "status-expected",
+                            "enroute" => "status-enroute",
+                            "checkin" => "status-checkin",
+                            "boarding" => "status-boarding",
+                            "gateclosed" => "status-gateclosed",
+                            "departed" => "status-departed",
+                            "delayed" => "status-delayed",
+                            "approaching" => "status-approaching",
+                            "arrived" => "status-landed",
+                            "canceled" => "status-cancelled",
+                            "canceleduncertain" => "status-cancelled",
+                            "diverted" => "status-diverted",
+                            _ => "status-scheduled"
+                        };
+
+                        var statusLabel = rawStatus switch
+                        {
+                            "expected" => isDep ? "Scheduled" : "Expected",
+                            "enroute" => "En Route",
+                            "checkin" => "Check-In Open",
+                            "boarding" => "Boarding",
+                            "gateclosed" => "Gate Closed",
+                            "departed" => "Departed",
+                            "delayed" => "Delayed",
+                            "approaching" => "Final Approach",
+                            "arrived" => isDep ? "Departed" : "Landed",
+                            "canceled" => "Cancelled",
+                            "canceleduncertain" => "Cancelled",
+                            "diverted" => "Diverted",
+                            _ => flight.Status ?? "Scheduled"
+                        };
+
+                        var depIata = flight.Departure?.Airport?.Iata ?? flight.Departure?.Airport?.Icao ?? "-";
+                        var arrIata = flight.Arrival?.Airport?.Iata ?? flight.Arrival?.Airport?.Icao ?? "-";
+
+                        var departureTime = "-";
+                        if (DateTime.TryParse(flight.Departure?.ScheduledTime?.Local, out var depParsed))
+                            departureTime = depParsed.ToString("dd MMM HH:mm");
+
+                        var arrivalTime = "-";
+                        if (DateTime.TryParse(flight.Arrival?.ScheduledTime?.Local, out var arrParsed))
+                            arrivalTime = arrParsed.ToString("dd MMM HH:mm");
+
+                        var lhrLeg = isDep ? flight.Departure : flight.Arrival;
+                        var gate = !string.IsNullOrWhiteSpace(lhrLeg?.Gate) ? lhrLeg.Gate : "-";
+                        var terminal = !string.IsNullOrWhiteSpace(lhrLeg?.Terminal) ? lhrLeg.Terminal : "-";
+
+                        var typeLabel = isDep ? "DEP" : "ARR";
+                        var typeClass = isDep ? "type-dep" : "type-arr";
+
+                        <tr>
+                            <td class="flight-number">@flight.Number</td>
+                            <td>@(flight.Airline?.Name ?? "-")</td>
+                            <td><span class="type-badge @typeClass">@typeLabel</span></td>
+                            <td>@depIata → @arrIata</td>
+                            <td class="mono">@departureTime</td>
+                            <td class="mono">@arrivalTime</td>
+                            <td>@gate</td>
+                            <td>@terminal</td>
+                            <td><span class="status-badge @statusClass">@statusLabel</span></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}
 
 @section Scripts {
     <script>
-        // Temporary fallback behavior (remove when API is wired)
         const clearBtn = document.getElementById('clearFiltersBtn');
         const form = document.querySelector('.search-form');
+        const statusInput = document.getElementById('statusInput');
+        const statusButtons = document.querySelectorAll('.status-btn');
+
+        // Handle status button clicks
+        statusButtons.forEach(btn => {
+            const btnStatus = btn.dataset.status;
+            
+            // Set initial active state
+            if (statusInput && statusInput.value === btnStatus) {
+                btn.classList.add('active');
+            }
+            
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // If clicking the already active button, deselect it
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    statusInput.value = '';
+                } else {
+                    // Remove active from all buttons
+                    statusButtons.forEach(b => b.classList.remove('active'));
+                    // Add active to clicked button
+                    btn.classList.add('active');
+                    statusInput.value = btnStatus;
+                }
+            });
+        });
 
         if (clearBtn && form) {
             clearBtn.addEventListener('click', () => {
+                statusButtons.forEach(b => b.classList.remove('active'));
                 form.reset();
-                const anyStatus = document.getElementById('statusAny');
-                if (anyStatus) {
-                    anyStatus.checked = true;
-                }
+                window.location.href = '@Url.Action("AdvancedSearch", "Home")';
             });
         }
     </script>
