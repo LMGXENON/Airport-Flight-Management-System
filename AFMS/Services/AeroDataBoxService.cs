@@ -92,6 +92,13 @@ public class AeroDataBoxService
                 flights.AddRange(data.Arrivals);
             }
 
+            // Sort by scheduled time to interleave departures and arrivals chronologically
+            flights = flights.OrderBy(f => {
+                var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
+                if (DateTime.TryParse(leg?.ScheduledTime?.Utc, out var dt)) return dt;
+                return DateTime.MaxValue;
+            }).ToList();
+
             _logger.LogInformation($"Total flights fetched: {flights.Count}");
             return flights; // Return actual data, even if empty
         }

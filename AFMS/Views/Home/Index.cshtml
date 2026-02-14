@@ -16,7 +16,6 @@
 <!-- Stats Grid - Main -->
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon">✈</div>
         <div class="stat-content">
             <div class="stat-label">Total Flights</div>
             <div class="stat-value">@Model.Count</div>
@@ -25,7 +24,6 @@
     </div>
 
     <div class="stat-card">
-        <div class="stat-icon">🛫</div>
         <div class="stat-content">
             <div class="stat-label">Departures</div>
             <div class="stat-value">@totalDepartures</div>
@@ -34,7 +32,6 @@
     </div>
 
     <div class="stat-card">
-        <div class="stat-icon">🛬</div>
         <div class="stat-content">
             <div class="stat-label">Arrivals</div>
             <div class="stat-value">@totalArrivals</div>
@@ -43,7 +40,6 @@
     </div>
 
     <div class="stat-card">
-        <div class="stat-icon">🏢</div>
         <div class="stat-content">
             <div class="stat-label">Airlines</div>
             <div class="stat-value">@Model.Select(f => f.Airline?.Name).Where(n => n != null).Distinct().Count()</div>
@@ -58,65 +54,70 @@
         <h2 class="section-title">Live Flights - London Heathrow (LHR)</h2>
         <div class="direction-filters">
             <button class="filter-btn active" data-direction="all">All</button>
-            <button class="filter-btn" data-direction="Departure">🛫 Departures</button>
-            <button class="filter-btn" data-direction="Arrival">🛬 Arrivals</button>
+            <button class="filter-btn" data-direction="Departure">Departures</button>
+            <button class="filter-btn" data-direction="Arrival">Arrivals</button>
         </div>
     </div>
     <div class="table-wrapper">
         <table class="flights-table" id="flightsTable">
             <thead>
                 <tr>
-                    <th>Flight</th>
-                    <th>Airline</th>
-                    <th>Type</th>
-                    <th>Route</th>
-                    <th>Departure</th>
-                    <th>Arrival</th>
-                    <th>Gate</th>
-                    <th>Terminal</th>
-                    <th>Status</th>
+                    <th>TIME</th>
+                    <th>FLIGHT</th>
+                    <th class="from-col">FROM</th>
+                    <th class="to-col">TO</th>
+                    <th>AIRLINE</th>
+                    <th>AIRCRAFT</th>
+                    <th>STATUS</th>
                 </tr>
             </thead>
             <tbody>
+                @{
+                    string lastDate = "";
+                }
                 @foreach (var flight in Model)
                 {
-                    var rawStatus = (flight.Status ?? "").ToLower();
                     var isDep = flight.Direction == "Departure";
+                    // Use movement-level status: departure.status for departures, arrival.status for arrivals
+                    var movementStatus = isDep ? flight.Departure?.Status : flight.Arrival?.Status;
+                    var rawStatus = (movementStatus ?? flight.Status ?? "Unknown").ToLower();
 
-                    // Status class
+                    // Simplified status mapping for user-friendly display
                     var statusClass = rawStatus switch
                     {
-                        "expected"          => isDep ? "status-scheduled" : "status-expected",
-                        "enroute"           => "status-enroute",
-                        "checkin"           => "status-checkin",
+                        "expected"          => "status-ontime",
+                        "enroute"           => "status-departed",
+                        "checkin"           => "status-ontime",
                         "boarding"          => "status-boarding",
-                        "gateclosed"        => "status-gateclosed",
+                        "gateclosed"        => "status-departed",
                         "departed"          => "status-departed",
                         "delayed"           => "status-delayed",
-                        "approaching"       => "status-approaching",
+                        "approaching"       => "status-departed",
                         "arrived"           => "status-landed",
                         "canceled"          => "status-cancelled",
                         "canceleduncertain" => "status-cancelled",
-                        "diverted"          => "status-diverted",
-                        _                   => "status-scheduled"
+                        "diverted"          => "status-cancelled",
+                        "unknown"           => "status-ontime",
+                        _                   => "status-ontime"
                     };
 
-                    // Status label
+                    // Simplified status labels
                     var statusLabel = rawStatus switch
                     {
-                        "expected"          => isDep ? "Scheduled" : "Expected",
-                        "enroute"           => "En Route",
-                        "checkin"           => "Check-In Open",
+                        "expected"          => "On Time",
+                        "enroute"           => "Departed",
+                        "checkin"           => "On Time",
                         "boarding"          => "Boarding",
-                        "gateclosed"        => "Gate Closed",
+                        "gateclosed"        => "Departed",
                         "departed"          => "Departed",
                         "delayed"           => "Delayed",
-                        "approaching"       => "Final Approach",
-                        "arrived"           => isDep ? "Departed" : "Landed",
+                        "approaching"       => "Departed",
+                        "arrived"           => "Landed",
                         "canceled"          => "Cancelled",
                         "canceleduncertain" => "Cancelled",
-                        "diverted"          => "Diverted",
-                        _                   => flight.Status ?? "Scheduled"
+                        "diverted"          => "Cancelled",
+                        "unknown"           => "On Time",
+                        _                   => "On Time"
                     };
 
                     // Airport codes — fill in LHR for the home leg
@@ -125,15 +126,15 @@
                     var arrIata = flight.Arrival?.Airport?.Iata
                         ?? (!isDep ? "LHR" : (flight.Arrival?.Airport?.Name ?? "-"));
 
-                    // Departure date/time
+                    // Departure date/time with day name
                     var departureTime = "-";
                     if (DateTime.TryParse(flight.Departure?.ScheduledTime?.Local, out var depParsed))
-                        departureTime = depParsed.ToString("dd MMM HH:mm");
+                        departureTime = depParsed.ToString("ddd dd MMM HH:mm");
 
-                    // Arrival date/time
+                    // Arrival date/time with day name
                     var arrivalTime = "-";
                     if (DateTime.TryParse(flight.Arrival?.ScheduledTime?.Local, out var arrParsed))
-                        arrivalTime = arrParsed.ToString("dd MMM HH:mm");
+                        arrivalTime = arrParsed.ToString("ddd dd MMM HH:mm");
 
                     // Gate / Terminal from the LHR leg
                     var gate = "-";
@@ -145,19 +146,96 @@
                         terminal = !string.IsNullOrEmpty(lhrLeg.Terminal) ? lhrLeg.Terminal : "-";
                     }
 
-                    var typeLabel = isDep ? "DEP" : "ARR";
-                    var typeClass = isDep ? "type-dep" : "type-arr";
+                    // Get city names and format location string
+                    var depCity = flight.Departure?.Airport?.MunicipalityName ?? flight.Departure?.Airport?.ShortName ?? depIata;
+                    var arrCity = flight.Arrival?.Airport?.MunicipalityName ?? flight.Arrival?.Airport?.ShortName ?? arrIata;
+                    var fromLocation = $"{depCity} ({depIata})";
+                    var toLocation = $"{arrCity} ({arrIata})";
+                    
+                    // Get aircraft info
+                    var aircraftModel = flight.Aircraft?.Model ?? "";
+                    var aircraftReg = flight.Aircraft?.Reg ?? "";
+                    var aircraftInfo = !string.IsNullOrEmpty(aircraftModel) 
+                        ? (!string.IsNullOrEmpty(aircraftReg) ? $"{aircraftModel} ({aircraftReg})" : aircraftModel)
+                        : "-";
+                    
+                    // Get UTC times for progress calculation
+                    var depUtc = flight.Departure?.ScheduledTime?.Utc ?? "";
+                    var arrUtc = flight.Arrival?.ScheduledTime?.Utc ?? "";
+                    var runwayDepUtc = flight.Departure?.RunwayTime?.Utc ?? "";
+                    var runwayArrUtc = flight.Arrival?.RunwayTime?.Utc ?? "";
 
-                    <tr data-direction="@flight.Direction">
+                    // Build detailed status with time information
+                    var detailedStatus = statusLabel;
+                    if (!string.IsNullOrEmpty(runwayArrUtc) && !isDep)
+                    {
+                        if (DateTime.TryParse(runwayArrUtc, out var actArrTime))
+                        {
+                            detailedStatus = $"Landed {actArrTime.ToLocalTime().ToString("HH:mm")}";
+                            statusLabel = "Landed";
+                            statusClass = "status-landed";
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(runwayDepUtc) && isDep)
+                    {
+                        if (DateTime.TryParse(runwayDepUtc, out var actDepTime))
+                        {
+                            detailedStatus = $"Departed {actDepTime.ToLocalTime().ToString("HH:mm")}";
+                            statusLabel = "Departed";
+                            statusClass = "status-departed";
+                        }
+                    }
+                    else if (rawStatus == "delayed")
+                    {
+                        detailedStatus = "Delayed";
+                    }
+                    else if (rawStatus == "boarding")
+                    {
+                        detailedStatus = "Boarding";
+                    }
+                    else if (rawStatus == "canceled")
+                    {
+                        detailedStatus = "Canceled";
+                    }
+                    
+                    // Get display time (arrival time for arrivals, departure time for departures)
+                    var displayTime = isDep ? depParsed.ToString("HH:mm") : arrParsed.ToString("HH:mm");
+                    var displayDate = isDep ? depParsed : arrParsed;
+                    var dateHeader = displayDate.ToString("dddd, MMM dd");
+                    
+                    // Show date header if date changed
+                    if (dateHeader != lastDate)
+                    {
+                        lastDate = dateHeader;
+                        <tr class="date-header-row">
+                            <td colspan="7" class="date-header">@dateHeader</td>
+                        </tr>
+                    }
+
+                    <tr data-direction="@flight.Direction" 
+                        class="flight-row" 
+                        data-flight-number="@flight.Number"
+                        data-airline="@(flight.Airline?.Name ?? "-")"
+                        data-dep-iata="@depIata"
+                        data-arr-iata="@arrIata"
+                        data-dep-city="@depCity"
+                        data-arr-city="@arrCity"
+                        data-dep-time="@departureTime"
+                        data-arr-time="@arrivalTime"
+                        data-dep-utc="@depUtc"
+                        data-arr-utc="@arrUtc"
+                        data-runway-dep-utc="@runwayDepUtc"
+                        data-runway-arr-utc="@runwayArrUtc"
+                        data-gate="@gate"
+                        data-terminal="@terminal"
+                        data-status-class="@statusClass">
+                        <td class="time-col">@displayTime</td>
                         <td class="flight-number">@flight.Number</td>
+                        <td class="from-col">@fromLocation</td>
+                        <td class="to-col">@toLocation</td>
                         <td>@(flight.Airline?.Name ?? "-")</td>
-                        <td><span class="type-badge @typeClass">@typeLabel</span></td>
-                        <td>@depIata → @arrIata</td>
-                        <td class="mono">@departureTime</td>
-                        <td class="mono">@arrivalTime</td>
-                        <td>@gate</td>
-                        <td>@terminal</td>
-                        <td><span class="status-badge @statusClass">@statusLabel</span></td>
+                        <td class="aircraft-col">@aircraftInfo</td>
+                        <td class="status-col"><span class="status-badge @statusClass">@detailedStatus</span></td>
                     </tr>
                 }
             </tbody>
@@ -176,6 +254,86 @@
     <div class="pagination" id="pagination"></div>
 </div>
 
+<!-- Flight Details Modal -->
+<div class="modal-overlay" id="flightModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeFlightModal()">&times;</button>
+        <div class="modal-header">
+            <div class="modal-airline" id="modalAirline"></div>
+            <div class="modal-flight-number" id="modalFlightNumber"></div>
+            <div class="modal-route" id="modalRoute"></div>
+        </div>
+        <div class="modal-status-banner" id="modalStatusBanner">
+            <span id="modalStatus"></span>
+        </div>
+        <div class="modal-body">
+            <!-- Flight Progress Tracker -->
+            <div class="flight-progress-section">
+                <div class="progress-header">
+                    <span class="progress-label" id="progressLabel">Flight Progress</span>
+                </div>
+                <div class="progress-route">
+                    <div class="progress-airport-info" id="progressDepCode"></div>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="progressBarFill"></div>
+                            <div class="progress-indicator" id="progressPlane"></div>
+                        </div>
+                    </div>
+                    <div class="progress-airport-info" id="progressArrCode"></div>
+                </div>
+                <div class="progress-time-info" id="progressTimeInfo"></div>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-airport-block">
+                    <div class="airport-code" id="modalDepCode"></div>
+                    <div class="airport-info">
+                        <div class="airport-label" id="modalDepCity"></div>
+                        <div class="flight-time-group">
+                            <div class="time-label" id="depTimeLabel">Scheduled departure</div>
+                            <div class="time-display">
+                                <span class="time-main" id="modalDepTime"></span>
+                                <span class="time-secondary" id="modalDepTimeOriginal"></span>
+                            </div>
+                        </div>
+                        <div class="airport-details">
+                            <span class="detail-label">Terminal</span>
+                            <span class="detail-value" id="modalDepTerminal"></span>
+                            <span class="detail-label">Gate</span>
+                            <span class="detail-value" id="modalDepGate"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flight-duration">
+                    <div class="duration-text" id="flightDuration"></div>
+                </div>
+                
+                <div class="modal-airport-block">
+                    <div class="airport-code" id="modalArrCode"></div>
+                    <div class="airport-info">
+                        <div class="airport-label" id="modalArrCity"></div>
+                        <div class="flight-time-group">
+                            <div class="time-label" id="arrTimeLabel">Scheduled arrival</div>
+                            <div class="time-display">
+                                <span class="time-main" id="modalArrTime"></span>
+                                <span class="time-secondary" id="modalArrTimeOriginal"></span>
+                            </div>
+                        </div>
+                        <div class="airport-details">
+                            <span class="detail-label">Terminal</span>
+                            <span class="detail-value" id="modalArrTerminal"></span>
+                            <span class="detail-label">Gate</span>
+                            <span class="detail-value" id="modalArrGate"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
 (function () {
@@ -184,11 +342,13 @@
     let currentDir = 'all';
 
     const allRows = Array.from(document.querySelectorAll('#flightsTable tbody tr'));
+    const flightRows = allRows.filter(r => r.classList.contains('flight-row'));
+    const dateHeaderRows = allRows.filter(r => r.classList.contains('date-header-row'));
     const buttons = document.querySelectorAll('.filter-btn');
     const pagination = document.getElementById('pagination');
 
     function getFilteredRows() {
-        return allRows.filter(r =>
+        return flightRows.filter(r =>
             currentDir === 'all' || r.getAttribute('data-direction') === currentDir
         );
     }
@@ -199,12 +359,31 @@
         if (currentPage > totalPages) currentPage = totalPages;
 
         // Hide all rows first
-        allRows.forEach(r => r.style.display = 'none');
+        flightRows.forEach(r => r.style.display = 'none');
+        dateHeaderRows.forEach(r => r.style.display = 'none');
 
-        // Show only current page rows
+        // Show only current page flight rows
         const start = (currentPage - 1) * PAGE_SIZE;
         const end = start + PAGE_SIZE;
-        filtered.slice(start, end).forEach(r => r.style.display = '');
+        const visibleFlights = filtered.slice(start, end);
+        visibleFlights.forEach(r => r.style.display = '');
+        
+        // Show date headers that have visible flights after them
+        dateHeaderRows.forEach(header => {
+            let nextRow = header.nextElementSibling;
+            while (nextRow) {
+                if (nextRow.classList.contains('flight-row')) {
+                    if (nextRow.style.display !== 'none') {
+                        header.style.display = '';
+                    }
+                    break;
+                }
+                if (nextRow.classList.contains('date-header-row')) {
+                    break;
+                }
+                nextRow = nextRow.nextElementSibling;
+            }
+        });
 
         // Build pagination
         let html = '';
@@ -258,5 +437,156 @@
 
     render();
 })();
+
+// Flight Details Modal Functions
+function closeFlightModal() {
+    document.getElementById('flightModal').classList.remove('active');
+}
+
+function openFlightModal(row) {
+    const modal = document.getElementById('flightModal');
+    
+    const flightNumber = row.getAttribute('data-flight-number');
+    const airline = row.getAttribute('data-airline');
+    const direction = row.getAttribute('data-direction');
+    const depIata = row.getAttribute('data-dep-iata');
+    const arrIata = row.getAttribute('data-arr-iata');
+    const depCity = row.getAttribute('data-dep-city');
+    const arrCity = row.getAttribute('data-arr-city');
+    const depTime = row.getAttribute('data-dep-time');
+    const arrTime = row.getAttribute('data-arr-time');
+    const depUtc = row.getAttribute('data-dep-utc');
+    const arrUtc = row.getAttribute('data-arr-utc');
+    const runwayDepUtc = row.getAttribute('data-runway-dep-utc');
+    const runwayArrUtc = row.getAttribute('data-runway-arr-utc');
+    const gate = row.getAttribute('data-gate');
+    const terminal = row.getAttribute('data-terminal');
+    const statusClass = row.getAttribute('data-status-class');
+    
+    const isDep = direction === 'Departure';
+    
+    document.getElementById('modalAirline').textContent = airline;
+    document.getElementById('modalFlightNumber').textContent = flightNumber;
+    document.getElementById('modalRoute').textContent = `${depIata} to ${arrIata}`;
+    
+    const statusBanner = document.getElementById('modalStatusBanner');
+    statusBanner.className = 'modal-status-banner ' + statusClass;
+    document.getElementById('modalStatus').textContent = isDep ? 'DEPARTURE' : 'ARRIVAL';
+    
+    document.getElementById('modalDepCode').textContent = depIata;
+    document.getElementById('modalArrCode').textContent = arrIata;
+    document.getElementById('modalDepCity').textContent = depCity;
+    document.getElementById('modalArrCity').textContent = arrCity;
+    
+    const depLabel = depCity && depCity !== depIata ? `${depIata} ${depCity}` : depIata;
+    const arrLabel = arrCity && arrCity !== arrIata ? `${arrIata} ${arrCity}` : arrIata;
+    document.getElementById('progressDepCode').textContent = depLabel;
+    document.getElementById('progressArrCode').textContent = arrLabel;
+    
+    document.getElementById('modalDepTerminal').textContent = isDep ? terminal : '-';
+    document.getElementById('modalDepGate').textContent = isDep ? gate : '-';
+    document.getElementById('modalArrTerminal').textContent = !isDep ? terminal : '-';
+    document.getElementById('modalArrGate').textContent = !isDep ? gate : '-';
+    
+    document.getElementById('modalDepTime').textContent = depTime.split(' ').pop();
+    document.getElementById('modalArrTime').textContent = arrTime.split(' ').pop();
+    
+    const depTimeOriginal = document.getElementById('modalDepTimeOriginal');
+    const arrTimeOriginal = document.getElementById('modalArrTimeOriginal');
+    
+    if (runwayDepUtc) {
+        depTimeOriginal.textContent = new Date(runwayDepUtc).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        depTimeOriginal.style.display = 'inline';
+        document.getElementById('depTimeLabel').textContent = 'Actual departure';
+    } else {
+        depTimeOriginal.style.display = 'none';
+        document.getElementById('depTimeLabel').textContent = 'Scheduled departure';
+    }
+    
+    if (runwayArrUtc) {
+        arrTimeOriginal.textContent = new Date(runwayArrUtc).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        arrTimeOriginal.style.display = 'inline';
+        document.getElementById('arrTimeLabel').textContent = 'Actual arrival';
+    } else {
+        arrTimeOriginal.style.display = 'none';
+        document.getElementById('arrTimeLabel').textContent = 'Scheduled arrival';
+    }
+    
+    calculateFlightProgress(depUtc, arrUtc, runwayDepUtc, runwayArrUtc);
+    
+    modal.classList.add('active');
+}
+
+function calculateFlightProgress(depUtc, arrUtc, runwayDepUtc, runwayArrUtc) {
+    if (!depUtc || !arrUtc) {
+        document.getElementById('progressLabel').textContent = 'No data';
+        document.getElementById('progressBarFill').style.width = '0%';
+        document.getElementById('progressPlane').style.left = '0';
+        document.getElementById('progressTimeInfo').textContent = '';
+        return;
+    }
+    
+    const depTime = new Date(depUtc);
+    const arrTime = new Date(arrUtc);
+    const now = new Date();
+    
+    // Flight duration
+    const totalMins = (arrTime - depTime) / 60000;
+    const hrs = Math.floor(totalMins / 60);
+    const mins = Math.round(totalMins % 60);
+    document.getElementById('flightDuration').textContent = `${hrs}h ${mins}m`;
+    
+    let progress = 0;
+    let label = 'Scheduled';
+    let info = '';
+    
+    // Check if departed (has runway time)
+    const hasDeparted = runwayDepUtc && runwayDepUtc !== '';
+    const hasArrived = runwayArrUtc && runwayArrUtc !== '';
+    
+    if (hasArrived) {
+        progress = 100;
+        label = 'Arrived';
+        info = 'Flight completed';
+    } else if (hasDeparted) {
+        const actualDep = new Date(runwayDepUtc);
+        const elapsed = (now - actualDep) / 60000;
+        const flightDuration = (arrTime - actualDep) / 60000;
+        progress = Math.min(95, Math.max(5, (elapsed / flightDuration) * 100));
+        label = 'In Flight';
+        const remaining = Math.max(0, flightDuration - elapsed);
+        const remHrs = Math.floor(remaining / 60);
+        const remMins = Math.round(remaining % 60);
+        info = remHrs > 0 ? `${remHrs}h ${remMins}m remaining` : `${remMins} min remaining`;
+    } else {
+        progress = 0;
+        label = 'Scheduled';
+        const timeUntil = (depTime - now) / 60000;
+        if (timeUntil > 0 && timeUntil < 120) {
+            info = timeUntil < 60 ? `Departs in ${Math.round(timeUntil)} min` : `Departs in ${Math.floor(timeUntil / 60)}h ${Math.round(timeUntil % 60)}m`;
+        } else {
+            info = `Departs ${depTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+    }
+    
+    document.getElementById('progressLabel').textContent = label;
+    document.getElementById('progressBarFill').style.width = progress + '%';
+    document.getElementById('progressPlane').style.left = progress + '%';
+    document.getElementById('progressTimeInfo').textContent = info;
+}
+
+// Add click listeners to flight rows
+document.querySelectorAll('.flight-row').forEach(row => {
+    row.addEventListener('click', function() {
+        openFlightModal(this);
+    });
+});
+
+// Close modal on overlay click
+document.getElementById('flightModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeFlightModal();
+    }
+});
 </script>
 }

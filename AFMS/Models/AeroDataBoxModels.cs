@@ -29,6 +29,7 @@ public class FlightMovement
     public string? CheckInDesk { get; set; }
     public string? BaggageBelt { get; set; }
     public string? Runway { get; set; }
+    public string? Status { get; set; }
     public List<string>? Quality { get; set; }
 }
 
