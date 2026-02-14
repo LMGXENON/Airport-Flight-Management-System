@@ -537,6 +537,46 @@ body {
     background-color: rgba(65, 105, 225, 0.05);
 }
 
+/* Date header row */
+.date-header-row {
+    background-color: rgba(65, 105, 225, 0.08) !important;
+}
+
+.date-header-row:hover {
+    background-color: rgba(65, 105, 225, 0.08) !important;
+}
+
+.date-header {
+    padding: 12px 16px !important;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Table column styling */
+.time-col {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    min-width: 60px;
+}
+
+.from-col,
+.to-col {
+    min-width: 140px;
+}
+
+.aircraft-col {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.status-col {
+    min-width: 120px;
+}
+
 /* Flight Details Modal */
 .modal-overlay {
     position: fixed;
