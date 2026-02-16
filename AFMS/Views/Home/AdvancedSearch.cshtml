@@ -166,8 +166,36 @@
                             _ => flight.Status ?? "Scheduled"
                         };
 
-                        var depIata = flight.Departure?.Airport?.Iata ?? flight.Departure?.Airport?.Icao ?? "-";
-                        var arrIata = flight.Arrival?.Airport?.Iata ?? flight.Arrival?.Airport?.Icao ?? "-";
+                        // Helper function to convert ICAO to IATA codes for display
+                        string ConvertToIata(string code)
+                        {
+                            if (string.IsNullOrWhiteSpace(code)) return "";
+                            return code.ToUpper() switch
+                            {
+                                "EGLL" => "LHR",
+                                "KJFK" => "JFK",
+                                "KLAX" => "LAX",
+                                "OMDB" => "DXB",
+                                "EDDF" => "FRA",
+                                "RJTT" => "HND",
+                                _ => code
+                            };
+                        }
+
+                        var depIata = flight.Departure?.Airport?.Iata ?? ConvertToIata(flight.Departure?.Airport?.Icao ?? "");
+                        var arrIata = flight.Arrival?.Airport?.Iata ?? ConvertToIata(flight.Arrival?.Airport?.Icao ?? "");
+
+                        // For departures from searched airport, if departure is missing, use searched airport
+                        if (string.IsNullOrWhiteSpace(depIata) && isDep)
+                            depIata = ConvertToIata(Model.UsedAirportCode ?? "-");
+                        else if (string.IsNullOrWhiteSpace(depIata))
+                            depIata = "-";
+
+                        // For arrivals to searched airport, if arrival is missing, use searched airport
+                        if (string.IsNullOrWhiteSpace(arrIata) && !isDep)
+                            arrIata = ConvertToIata(Model.UsedAirportCode ?? "-");
+                        else if (string.IsNullOrWhiteSpace(arrIata))
+                            arrIata = "-";
 
                         var departureTime = "-";
                         if (DateTime.TryParse(flight.Departure?.ScheduledTime?.Local, out var depParsed))
