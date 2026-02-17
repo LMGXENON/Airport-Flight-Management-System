@@ -26,7 +26,14 @@ public class HomeController : Controller
         var londonTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTimeZone);
         
         var flights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
-        return View(flights);
+        
+        // Sort flights by scheduled departure time
+        var sortedFlights = flights
+            .OrderBy(f => ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
+            .ThenBy(f => f.Number)
+            .ToList();
+        
+        return View(sortedFlights);
     }
 
     public IActionResult Privacy()
