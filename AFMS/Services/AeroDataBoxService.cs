@@ -38,58 +38,35 @@ public class AeroDataBoxService
             {
                 (dateFrom, dateTo) = (dateTo, dateFrom);
             }
-
-            var formattedFrom = dateFrom.ToString("yyyy-MM-dd'T'HH:mm");
-            var formattedTo = dateTo.ToString("yyyy-MM-dd'T'HH:mm");
-
-            var requestUrl = $"https://{apiHost}/flights/airports/icao/{airportCode}/{formattedFrom}/{formattedTo}?withLeg=true&direction=Both&withCancelled={withCancelled.ToString().ToLowerInvariant()}&withCodeshared=true&withCargo=false&withPrivate=false&withLocation=false";
-            _logger.LogInformation($"API Request URL: {requestUrl}");
-
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(requestUrl),
-                Headers =
-                {
-                    { "x-rapidapi-key", apiKey },
-                    { "x-rapidapi-host", apiHost },
-                },
-            };
-
-            using var response = await _httpClient.SendAsync(request);
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning($"AeroDataBox API returned status code: {response.StatusCode}, Body: {errorContent}");
-                return new List<AeroDataBoxFlight>(); // Return empty list, not mock data
-            }
-
-            var body = await response.Content.ReadAsStringAsync();
-            _logger.LogInformation($"API Response: {body.Substring(0, Math.Min(500, body.Length))}...");
-            
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
-            };
-            
-            var data = JsonSerializer.Deserialize<AeroDataBoxResponse>(body, options);
-
             var flights = new List<AeroDataBoxFlight>();
-            
-            if (data?.Departures != null)
+
+            var maxWindow = TimeSpan.FromHours(12);
+            var currentFrom = dateFrom;
+
+            while (currentFrom <= dateTo)
             {
-                _logger.LogInformation($"Fetched {data.Departures.Count} departures from API");
-                foreach (var f in data.Departures) f.Direction = "Departure";
-                flights.AddRange(data.Departures);
-            }
-            
-            if (data?.Arrivals != null)
-            {
-                _logger.LogInformation($"Fetched {data.Arrivals.Count} arrivals from API");
-                foreach (var f in data.Arrivals) f.Direction = "Arrival";
-                flights.AddRange(data.Arrivals);
+                var currentTo = currentFrom.Add(maxWindow);
+                if (currentTo > dateTo)
+                {
+                    currentTo = dateTo;
+                }
+
+                var windowFlights = await FetchAirportFlightsWindowAsync(
+                    airportCode,
+                    currentFrom,
+                    currentTo,
+                    withCancelled,
+                    apiKey,
+                    apiHost);
+
+                flights.AddRange(windowFlights);
+
+                if (currentTo >= dateTo)
+                {
+                    break;
+                }
+
+                currentFrom = currentTo.AddMinutes(1);
             }
 
             // Sort by scheduled time to interleave departures and arrivals chronologically
@@ -107,6 +84,69 @@ public class AeroDataBoxService
             _logger.LogError(ex, "Error fetching flights from AeroDataBox API");
             return new List<AeroDataBoxFlight>(); // Return empty list on error
         }
+    }
+
+    private async Task<List<AeroDataBoxFlight>> FetchAirportFlightsWindowAsync(
+        string airportCode,
+        DateTime dateFrom,
+        DateTime dateTo,
+        bool withCancelled,
+        string apiKey,
+        string apiHost)
+    {
+        var formattedFrom = dateFrom.ToString("yyyy-MM-dd'T'HH:mm");
+        var formattedTo = dateTo.ToString("yyyy-MM-dd'T'HH:mm");
+
+        var requestUrl = $"https://{apiHost}/flights/airports/icao/{airportCode}/{formattedFrom}/{formattedTo}?withLeg=true&direction=Both&withCancelled={withCancelled.ToString().ToLowerInvariant()}&withCodeshared=true&withCargo=false&withPrivate=false&withLocation=false";
+        _logger.LogInformation($"API Request URL: {requestUrl}");
+
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(requestUrl),
+            Headers =
+            {
+                { "x-rapidapi-key", apiKey },
+                { "x-rapidapi-host", apiHost },
+            },
+        };
+
+        using var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning($"AeroDataBox API returned status code: {response.StatusCode}, Body: {errorContent}");
+            return new List<AeroDataBoxFlight>();
+        }
+
+        var body = await response.Content.ReadAsStringAsync();
+        _logger.LogInformation($"API Response: {body.Substring(0, Math.Min(500, body.Length))}...");
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+        };
+
+        var data = JsonSerializer.Deserialize<AeroDataBoxResponse>(body, options);
+        var flights = new List<AeroDataBoxFlight>();
+
+        if (data?.Departures != null)
+        {
+            _logger.LogInformation($"Fetched {data.Departures.Count} departures from API");
+            foreach (var f in data.Departures) f.Direction = "Departure";
+            flights.AddRange(data.Departures);
+        }
+
+        if (data?.Arrivals != null)
+        {
+            _logger.LogInformation($"Fetched {data.Arrivals.Count} arrivals from API");
+            foreach (var f in data.Arrivals) f.Direction = "Arrival";
+            flights.AddRange(data.Arrivals);
+        }
+
+        return flights;
     }
 
     private List<AeroDataBoxFlight> GetMockFlights()

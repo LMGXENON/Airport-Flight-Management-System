@@ -92,14 +92,9 @@ public class HomeController : Controller
         }
         else
         {
-            // When no dates specified, search current day only to avoid multi-day API issues
-            // Start from beginning of today or 6 hours ago, whichever is later
-            var todayStart = londonNow.Date;
-            var sixHoursAgo = londonNow.AddHours(-6);
-            from = sixHoursAgo > todayStart ? sixHoursAgo : todayStart;
-            
-            // End at end of today (23:59:59)
-            to = londonNow.Date.AddDays(1).AddSeconds(-1);
+            // Keep default window aligned with dashboard and API constraints (single 12-hour window)
+            from = londonNow;
+            to = londonNow.AddHours(12);
         }
 
         if (to < from)
@@ -139,7 +134,13 @@ public class HomeController : Controller
         {
             var flightValue = model.Flight.Trim();
             Console.WriteLine($"[DEBUG] Filtering by Flight: '{flightValue}'");
-            query = query.Where(f => (f.Number ?? string.Empty).Contains(flightValue, StringComparison.OrdinalIgnoreCase));
+            var normalizedFlightValue = NormalizeFlightNumber(flightValue);
+            query = query.Where(f =>
+            {
+                var rawNumber = f.Number ?? string.Empty;
+                return rawNumber.Contains(flightValue, StringComparison.OrdinalIgnoreCase)
+                       || NormalizeFlightNumber(rawNumber).Contains(normalizedFlightValue, StringComparison.OrdinalIgnoreCase);
+            });
         }
 
         if (!string.IsNullOrWhiteSpace(model.Airline))
@@ -217,6 +218,18 @@ public class HomeController : Controller
         return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var parsed)
             ? parsed
             : null;
+    }
+
+    private static string NormalizeFlightNumber(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return new string(value
+            .Where(char.IsLetterOrDigit)
+            .ToArray());
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
