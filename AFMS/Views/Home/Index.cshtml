@@ -368,6 +368,9 @@
         const visibleFlights = filtered.slice(start, end);
         visibleFlights.forEach(r => r.style.display = '');
         
+        // Re-attach click handlers after changing display
+        attachFlightRowHandlers();
+        
         // Show date headers that have visible flights after them
         dateHeaderRows.forEach(header => {
             let nextRow = header.nextElementSibling;
@@ -436,11 +439,22 @@
     });
 
     render();
+    
+    // Attach click handlers after initial render
+    attachFlightRowHandlers();
 })();
 
 // Flight Details Modal Functions
 function closeFlightModal() {
     document.getElementById('flightModal').classList.remove('active');
+}
+
+function attachFlightRowHandlers() {
+    document.querySelectorAll('.flight-row').forEach(row => {
+        row.onclick = function() {
+            openFlightModal(this);
+        };
+    });
 }
 
 function openFlightModal(row) {
@@ -574,13 +588,6 @@ function calculateFlightProgress(depUtc, arrUtc, runwayDepUtc, runwayArrUtc) {
     document.getElementById('progressPlane').style.left = progress + '%';
     document.getElementById('progressTimeInfo').textContent = info;
 }
-
-// Add click listeners to flight rows
-document.querySelectorAll('.flight-row').forEach(row => {
-    row.addEventListener('click', function() {
-        openFlightModal(this);
-    });
-});
 
 // Close modal on overlay click
 document.getElementById('flightModal').addEventListener('click', function(e) {

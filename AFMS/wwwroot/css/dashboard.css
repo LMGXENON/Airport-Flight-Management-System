@@ -165,7 +165,7 @@ body {
     font-size: 11px;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    
 }
 
 .user-name {
@@ -187,7 +187,7 @@ body {
 .top-bar {
     background-color: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    padding: 16px 32px;
+    padding: 12px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -217,7 +217,7 @@ body {
     font-size: 11px;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    
 }
 
 .time-value {
@@ -247,24 +247,24 @@ body {
 
 /* Dashboard Container */
 .dashboard-container {
-    padding: 32px;
+    padding: 24px;
     flex: 1;
 }
 
 /* Page Header */
 .page-header {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .page-title {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 26px;
+    font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .page-subtitle {
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text-secondary);
 }
 
@@ -272,46 +272,46 @@ body {
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-    margin-bottom: 32px;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .stat-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 24px;
+    border-radius: 8px;
+    padding: 16px;
     position: relative;
 }
 
 .stat-icon {
-    font-size: 32px;
-    margin-bottom: 16px;
+    font-size: 24px;
+    margin-bottom: 12px;
     opacity: 0.7;
 }
 
 .stat-content {
-    margin-bottom: 12px;
-}
-
-.stat-label {
-    font-size: 14px;
-    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
 .stat-value {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     color: var(--text-primary);
 }
 
 .stat-badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
 }
 
 .stat-badge.positive {
@@ -328,8 +328,8 @@ body {
 .flights-section {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 24px;
+    border-radius: 8px;
+    padding: 20px;
 }
 
 .flights-header {
@@ -338,7 +338,7 @@ body {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .flights-header .section-title {
@@ -346,10 +346,10 @@ body {
 }
 
 .section-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 /* Direction Filter Buttons */
@@ -359,12 +359,12 @@ body {
 }
 
 .filter-btn {
-    padding: 8px 20px;
-    border-radius: 8px;
+    padding: 6px 14px;
+    border-radius: 6px;
     border: 1px solid var(--border-color);
     background-color: transparent;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -403,7 +403,7 @@ body {
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    
 }
 
 .flights-table tbody tr {
@@ -431,10 +431,10 @@ body {
 
 .status-badge {
     display: inline-block;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
 }
 
 /* On Time — green */
@@ -552,7 +552,7 @@ body {
     font-weight: 600;
     color: var(--accent-blue);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    
 }
 
 /* Table column styling */
@@ -597,9 +597,9 @@ body {
 
 .modal-content {
     background-color: var(--bg-card);
-    border-radius: 16px;
+    border-radius: 12px;
     width: 90%;
-    max-width: 800px;
+    max-width: 700px;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -630,7 +630,7 @@ body {
 }
 
 .modal-header {
-    padding: 32px 32px 16px;
+    padding: 24px 24px 12px;
 }
 
 .modal-airline {
@@ -640,8 +640,8 @@ body {
 }
 
 .modal-flight-number {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 8px;
 }
@@ -652,11 +652,11 @@ body {
 }
 
 .modal-status-banner {
-    padding: 16px 32px;
+    padding: 12px 24px;
     text-align: center;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 14px;
-    letter-spacing: 0.5px;
+    
 }
 
 .modal-status-banner.status-ontime {
@@ -690,7 +690,7 @@ body {
 }
 
 .modal-body {
-    padding: 32px;
+    padding: 24px;
 }
 
 .modal-section {
@@ -708,8 +708,8 @@ body {
 }
 
 .airport-code {
-    font-size: 48px;
-    font-weight: 700;
+    font-size: 36px;
+    font-weight: 600;
     color: var(--text-primary);
     line-height: 1;
 }
@@ -741,8 +741,8 @@ body {
 }
 
 .time-main {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     color: #10b981;
 }
 
@@ -892,7 +892,7 @@ body {
 .details-card {
     background: var(--bg-card);
     border-radius: 12px;
-    padding: 32px;
+    padding: 24px;
     margin-bottom: 24px;
 }
 
@@ -1066,9 +1066,9 @@ body {
 
 .modal-content {
     background-color: var(--bg-card);
-    border-radius: 16px;
+    border-radius: 12px;
     width: 90%;
-    max-width: 800px;
+    max-width: 700px;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -1099,7 +1099,7 @@ body {
 }
 
 .modal-header {
-    padding: 32px 32px 16px;
+    padding: 24px 24px 12px;
 }
 
 .modal-airline {
@@ -1109,8 +1109,8 @@ body {
 }
 
 .modal-flight-number {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 8px;
 }
@@ -1121,11 +1121,11 @@ body {
 }
 
 .modal-status-banner {
-    padding: 16px 32px;
+    padding: 12px 24px;
     text-align: center;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 14px;
-    letter-spacing: 0.5px;
+    
 }
 
 .modal-status-banner.status-ontime {
@@ -1159,7 +1159,7 @@ body {
 }
 
 .modal-body {
-    padding: 32px;
+    padding: 24px;
 }
 
 .modal-section {
@@ -1177,8 +1177,8 @@ body {
 }
 
 .airport-code {
-    font-size: 48px;
-    font-weight: 700;
+    font-size: 36px;
+    font-weight: 600;
     color: var(--text-primary);
     line-height: 1;
 }
@@ -1210,8 +1210,8 @@ body {
 }
 
 .time-main {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     color: #10b981;
 }
 

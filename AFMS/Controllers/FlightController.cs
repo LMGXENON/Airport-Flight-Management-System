@@ -17,7 +17,10 @@ namespace AFMS.Controllers
         // GET: Flight/Index - List all flights
         public async Task<IActionResult> Index()
         {
-            var flights = await _context.Flights.ToListAsync();
+            var flights = await _context.Flights
+                .OrderBy(f => f.DepartureTime)
+                .ThenBy(f => f.FlightNumber)
+                .ToListAsync();
             return View(flights);
         }
 
