@@ -586,7 +586,7 @@ function calculateFlightProgress(depUtc, arrUtc, runwayDepUtc, runwayArrUtc, rev
     if (!depUtc || !arrUtc) {
         document.getElementById('progressLabel').textContent = 'No data';
         document.getElementById('progressBarFill').style.width = '0%';
-        document.getElementById('progressPlane').style.left = '0';
+        document.getElementById('progressPlane').style.left = '0%';
         document.getElementById('progressTimeInfo').textContent = '';
         return;
     }
