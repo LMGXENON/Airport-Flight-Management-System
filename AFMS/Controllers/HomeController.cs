@@ -27,9 +27,12 @@ public class HomeController : Controller
         
         var flights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
         
-        // Sort flights by scheduled departure time
+        // Sort flights by the LHR leg time (departure time for departures, arrival time for arrivals)
         var sortedFlights = flights
-            .OrderBy(f => ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
+            .OrderBy(f => {
+                var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
+                return ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
+            })
             .ThenBy(f => f.Number)
             .ToList();
         
