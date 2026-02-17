@@ -7,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Add memory cache to avoid API rate limits
+builder.Services.AddMemoryCache();
+
 // Add HttpClient for API calls
 builder.Services.AddHttpClient<AeroDataBoxService>();
 
