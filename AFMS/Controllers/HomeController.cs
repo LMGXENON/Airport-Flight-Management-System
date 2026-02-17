@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using AFMS.Models;
 using AFMS.Services;
 using System.Globalization;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AFMS.Controllers;
 
@@ -10,11 +11,13 @@ public class HomeController : Controller
 {
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly IConfiguration _configuration;
+    private readonly IMemoryCache _cache;
 
-    public HomeController(AeroDataBoxService aeroDataBoxService, IConfiguration configuration)
+    public HomeController(AeroDataBoxService aeroDataBoxService, IConfiguration configuration, IMemoryCache cache)
     {
         _aeroDataBoxService = aeroDataBoxService;
         _configuration = configuration;
+        _cache = cache;
     }
 
     public async Task<IActionResult> Index()
@@ -25,11 +28,22 @@ public class HomeController : Controller
         var londonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
         var londonTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTimeZone);
         
-        var flights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
+        // Use cache to avoid hitting API rate limits (BASIC plan has strict limits)
+        var cacheKey = $"flights_{airportCode}_{londonTime:yyyyMMddHH}";
         
-        // Sort flights by scheduled departure time
-        var sortedFlights = flights
-            .OrderBy(f => ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
+        var flights = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+        {
+            // Cache for 2 minutes to reduce API calls
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+            return await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
+        });
+        
+        // Sort flights by the LHR leg time (departure time for departures, arrival time for arrivals)
+        var sortedFlights = (flights ?? new List<AeroDataBoxFlight>())
+            .OrderBy(f => {
+                var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
+                return ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
+            })
             .ThenBy(f => f.Number)
             .ToList();
         
