@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/flight-progress.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true"/>
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -74,7 +75,57 @@
         </div>
     </div>
 
+    <!-- AI Chat Widget -->
+    <div class="ai-chat-container">
+        <div class="ai-chat-window" id="aiChatWindow">
+            <div class="ai-chat-header">
+                <div class="ai-chat-header-content">
+                    <div class="ai-chat-avatar">
+                        <img src="~/images/AFMS logo.png" alt="AI" />
+                    </div>
+                    <div class="ai-chat-title">
+                        <h3>Flight Assistant</h3>
+                    </div>
+                </div>
+                <button class="ai-chat-close" id="aiChatClose">×</button>
+            </div>
+            
+            <div class="ai-chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="ai-icon">
+                        <img src="~/images/AFMS logo.png" alt="AI" style="width: 60px; height: 60px; object-fit: contain;" />
+                    </div>
+                    <h4>AI Flight Assistant</h4>
+                    <p>Ask me about flights, schedules, and airport information.</p>
+                </div>
+            </div>
+            
+            <div class="ai-chat-input">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input-field" 
+                        placeholder="Ask about flights..."
+                        rows="1"
+                    ></textarea>
+                </div>
+                <button class="chat-send-btn" id="chatSendBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <button class="ai-chat-toggle" id="aiChatToggle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </button>
+    </div>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/ai-chat.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
