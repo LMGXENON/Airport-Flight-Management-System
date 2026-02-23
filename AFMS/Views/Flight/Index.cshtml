@@ -4,15 +4,22 @@
     ViewData["Title"] = "All Flights";
 }
 
+<link rel="stylesheet" href="~/css/flight-tracking.css" />
+
 <!-- Page Header -->
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h1 class="page-title">All Flights</h1>
         <p class="page-subtitle">View and manage all flights in the system</p>
     </div>
-    <a href="@Url.Action("Add", "Flight")" class="btn-primary" style="padding: 12px 24px; background: var(--accent-blue); color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
-        + Add New Flight
-    </a>
+    <div style="display: flex; gap: 12px;">
+        <button id="refreshFlights" class="btn-secondary" style="padding: 12px 24px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+            🔄 Refresh
+        </button>
+        <a href="@Url.Action("Add", "Flight")" class="btn-primary" style="padding: 12px 24px; background: var(--accent-blue); color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
+            + Add New Flight
+        </a>
+    </div>
 </div>
 
 @if (TempData["SuccessMessage"] != null)
@@ -83,3 +90,7 @@
         }
     </div>
 </div>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/flight-tracking.js"></script>
+}

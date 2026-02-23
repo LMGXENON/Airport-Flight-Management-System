@@ -1,0 +1,239 @@
+/* Real-time Flight Tracking Styles */
+
+/* Connection Status Indicator */
+.signalr-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.signalr-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+    animation: pulse-gray 2s infinite;
+}
+
+.signalr-status.connected .status-dot {
+    background: #10b981;
+    animation: pulse-green 2s infinite;
+}
+
+.signalr-status.disconnected .status-dot {
+    background: #f59e0b;
+    animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes pulse-orange {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+    }
+}
+
+@keyframes pulse-gray {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Flight Update Animation */
+.flight-updated {
+    animation: highlightUpdate 2s ease;
+}
+
+@keyframes highlightUpdate {
+    0% {
+        background-color: transparent;
+    }
+    10% {
+        background-color: rgba(59, 130, 246, 0.15);
+        transform: scale(1.01);
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+/* New Flight Animation */
+.flight-new {
+    animation: slideInFade 0.5s ease;
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+}
+
+@keyframes slideInFade {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Notification Toast */
+.flight-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.3s ease;
+    border-left: 4px solid #3b82f6;
+}
+
+.flight-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.flight-notification-success {
+    border-left-color: #10b981;
+    color: #065f46;
+    background: #d1fae5;
+}
+
+.flight-notification-info {
+    border-left-color: #3b82f6;
+    color: #1e40af;
+    background: #dbeafe;
+}
+
+.flight-notification-warning {
+    border-left-color: #f59e0b;
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.flight-notification-error {
+    border-left-color: #ef4444;
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+/* Enhanced Status Badges with Pulse */
+.status-badge {
+    position: relative;
+    display: inline-block;
+}
+
+.status-badge.status-boarding::before,
+.status-badge.status-delayed::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -12px;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: statusPulse 2s infinite;
+}
+
+.status-badge.status-boarding::before {
+    background: #3b82f6;
+}
+
+.status-badge.status-delayed::before {
+    background: #f59e0b;
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(-50%) scale(1.2);
+    }
+}
+
+/* Table Row Hover Enhancement */
+.flights-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.flights-table tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+    transform: translateX(2px);
+}
+
+/* Loading Skeleton (for future use) */
+.flight-skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(226, 232, 240, 0.5) 25%,
+        rgba(226, 232, 240, 0.8) 50%,
+        rgba(226, 232, 240, 0.5) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    height: 20px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .signalr-status {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .flight-notification {
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        font-size: 13px;
+    }
+}

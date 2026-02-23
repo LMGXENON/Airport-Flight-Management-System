@@ -1,4 +1,6 @@
+using AFMS.BackgroundServices;
 using AFMS.Data;
+using AFMS.Hubs;
 using AFMS.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add SignalR for real-time updates
+builder.Services.AddSignalR();
 
 // Add memory cache to avoid API rate limits
 builder.Services.AddMemoryCache();
@@ -16,6 +21,12 @@ builder.Services.AddHttpClient<AeroDataBoxService>();
 // Add database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add flight sync service
+builder.Services.AddScoped<FlightSyncService>();
+
+// Add background service for periodic flight updates
+builder.Services.AddHostedService<FlightUpdateBackgroundService>();
 
 var app = builder.Build();
 
@@ -40,6 +51,9 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+// Map SignalR hub
+app.MapHub<FlightHub>("/flightHub");
 
 app.MapControllerRoute(
         name: "default",
