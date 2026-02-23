@@ -97,7 +97,7 @@ public class AeroDataBoxService
         var formattedFrom = dateFrom.ToString("yyyy-MM-dd'T'HH:mm");
         var formattedTo = dateTo.ToString("yyyy-MM-dd'T'HH:mm");
 
-        var requestUrl = $"https://{apiHost}/flights/airports/icao/{airportCode}/{formattedFrom}/{formattedTo}?withLeg=true&direction=Both&withCancelled={withCancelled.ToString().ToLowerInvariant()}&withCodeshared=true&withCargo=false&withPrivate=false&withLocation=false";
+        var requestUrl = $"https://{apiHost}/flights/airports/icao/{airportCode}/{formattedFrom}/{formattedTo}?withLeg=true&direction=Both&withCancelled={withCancelled.ToString().ToLowerInvariant()}&withCodeshared=false&withCargo=false&withPrivate=false&withLocation=false";
         _logger.LogInformation($"API Request URL: {requestUrl}");
 
         var request = new HttpRequestMessage
