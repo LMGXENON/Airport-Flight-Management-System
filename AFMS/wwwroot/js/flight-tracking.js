@@ -15,9 +15,6 @@
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
-    // Connection status indicator
-    createConnectionIndicator();
-
     // Handle flight updates
     connection.on("FlightUpdated", function(flights) {
         console.log("Received flight updates:", flights);
@@ -47,14 +44,11 @@
         try {
             await connection.start();
             console.log("SignalR Connected");
-            updateConnectionStatus(true);
             
             // Subscribe to flight updates
             await connection.invoke("SubscribeToFlightUpdates");
         } catch (err) {
             console.error("SignalR Connection Error:", err);
-            updateConnectionStatus(false);
-            
             // Retry after 5 seconds
             setTimeout(startConnection, 5000);
         }
@@ -63,18 +57,15 @@
     // Handle reconnection
     connection.onreconnecting(() => {
         console.log("SignalR Reconnecting...");
-        updateConnectionStatus(false);
     });
 
     connection.onreconnected(() => {
         console.log("SignalR Reconnected");
-        updateConnectionStatus(true);
         connection.invoke("SubscribeToFlightUpdates");
     });
 
     connection.onclose(() => {
         console.log("SignalR Disconnected");
-        updateConnectionStatus(false);
         setTimeout(startConnection, 5000);
     });
 
@@ -169,35 +160,6 @@
         };
 
         return statusMap[statusLower] || 'status-scheduled';
-    }
-
-    function createConnectionIndicator() {
-        const indicator = document.createElement('div');
-        indicator.id = 'signalr-status';
-        indicator.className = 'signalr-status';
-        indicator.innerHTML = `
-            <div class="status-dot"></div>
-            <span class="status-text">Connecting...</span>
-        `;
-        document.body.appendChild(indicator);
-    }
-
-    function updateConnectionStatus(connected) {
-        const indicator = document.getElementById('signalr-status');
-        if (indicator) {
-            const dot = indicator.querySelector('.status-dot');
-            const text = indicator.querySelector('.status-text');
-            
-            if (connected) {
-                indicator.classList.add('connected');
-                indicator.classList.remove('disconnected');
-                text.textContent = 'Live Updates Active';
-            } else {
-                indicator.classList.add('disconnected');
-                indicator.classList.remove('connected');
-                text.textContent = 'Reconnecting...';
-            }
-        }
     }
 
     function showNotification(message, type = 'info') {
