@@ -1,23 +1,28 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using AFMS.Models;
 using AFMS.Services;
-using System.Globalization;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace AFMS.Controllers;
 
 public class HomeController : Controller
 {
     private readonly AeroDataBoxService _aeroDataBoxService;
+    private readonly FlightSearchService _flightSearchService;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
 
-    public HomeController(AeroDataBoxService aeroDataBoxService, IConfiguration configuration, IMemoryCache cache)
+    public HomeController(
+        AeroDataBoxService aeroDataBoxService,
+        FlightSearchService flightSearchService,
+        IConfiguration configuration,
+        IMemoryCache cache)
     {
-        _aeroDataBoxService = aeroDataBoxService;
-        _configuration = configuration;
-        _cache = cache;
+        _aeroDataBoxService  = aeroDataBoxService;
+        _flightSearchService = flightSearchService;
+        _configuration       = configuration;
+        _cache               = cache;
     }
 
     public async Task<IActionResult> Index()
@@ -42,7 +47,7 @@ public class HomeController : Controller
         var sortedFlights = (flights ?? new List<AeroDataBoxFlight>())
             .OrderBy(f => {
                 var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
-                return ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
+                return AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
             })
             .ThenBy(f => f.Number)
             .ToList();
@@ -55,6 +60,7 @@ public class HomeController : Controller
         return View();
     }
 
+    /// <summary>Full-page Advanced Search — renders the shell with any pre-filled results.</summary>
     public async Task<IActionResult> AdvancedSearch(
         string? search,
         string? flight,
@@ -63,187 +69,84 @@ public class HomeController : Controller
         DateTime? departureDate,
         DateTime? arrivalDate,
         string? terminal,
-        string? status)
+        string? direction,
+        [FromQuery(Name = "statuses")] List<string>? statuses,
+        string? timeRangeStart,
+        string? timeRangeEnd,
+        string? sortBy,
+        string? sortOrder,
+        int page = 1)
     {
-        var model = new AdvancedSearchViewModel
-        {
-            Flight = flight,
-            Airline = airline,
-            Destination = destination,
-            DepartureDate = departureDate,
-            ArrivalDate = arrivalDate,
-            Terminal = terminal,
-            Status = status,
-            HasSearched = !string.IsNullOrWhiteSpace(search)
-        };
+        var model = BuildSearchModel(
+            search, flight, airline, destination,
+            departureDate, arrivalDate, terminal, direction,
+            statuses, timeRangeStart, timeRangeEnd,
+            sortBy, sortOrder, page);
 
         if (!model.HasSearched)
-        {
             return View(model);
-        }
 
-        var defaultAirport = (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant();
-        var airportCode = defaultAirport;
-
-        var londonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
-        var londonNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTimeZone);
-
-        DateTime from;
-        DateTime to;
-
-        if (model.DepartureDate.HasValue || model.ArrivalDate.HasValue)
-        {
-            var minDate = new[] { model.DepartureDate, model.ArrivalDate }
-                .Where(d => d.HasValue)
-                .Min()!.Value.Date;
-
-            var maxDate = new[] { model.DepartureDate, model.ArrivalDate }
-                .Where(d => d.HasValue)
-                .Max()!.Value.Date;
-
-            from = minDate;
-            to = maxDate.AddDays(1).AddMinutes(-1);
-        }
-        else
-        {
-            // Keep default window aligned with dashboard and API constraints (single 12-hour window)
-            from = londonNow;
-            to = londonNow.AddHours(12);
-        }
-
-        if (to < from)
-        {
-            to = from.AddHours(24);
-        }
-
-        // Note: Removed 48-hour limit since we're now staying within single day by default
-
-        var flights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, from, to, withCancelled: true);
-        
-        Console.WriteLine($"[DEBUG] Total flights from API: {flights.Count}");
-        Console.WriteLine($"[DEBUG] Search filters - Flight: '{model.Flight}', Airline: '{model.Airline}', Destination: '{model.Destination}', Terminal: '{model.Terminal}'");
-        Console.WriteLine($"[DEBUG] Date range: {from} to {to}");
-        
-        foreach (var f in flights.Take(3))
-        {
-            Console.WriteLine($"[DEBUG] Sample flight: {f.Number}, Airline: {f.Airline?.Name}, Direction: {f.Direction}");
-        }
-        
-        model.Results = ApplyFilters(flights, model)
-            .OrderBy(f => ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
-            .ThenBy(f => f.Number)
-            .ToList();
-
-        Console.WriteLine($"[DEBUG] Filtered results: {model.Results.Count}");
-        
-        model.UsedAirportCode = airportCode;
+        await _flightSearchService.ExecuteSearchAsync(model);
         return View(model);
     }
 
-    private static IEnumerable<AeroDataBoxFlight> ApplyFilters(IEnumerable<AeroDataBoxFlight> flights, AdvancedSearchViewModel model)
+    /// <summary>AJAX endpoint — returns only the results partial view.</summary>
+    [HttpGet]
+    public async Task<IActionResult> AdvancedSearchResults(
+        string? flight,
+        string? airline,
+        string? destination,
+        DateTime? departureDate,
+        DateTime? arrivalDate,
+        string? terminal,
+        string? direction,
+        [FromQuery(Name = "statuses")] List<string>? statuses,
+        string? timeRangeStart,
+        string? timeRangeEnd,
+        string? sortBy,
+        string? sortOrder,
+        int page = 1)
     {
-        var query = flights;
+        var model = BuildSearchModel(
+            "1", flight, airline, destination,
+            departureDate, arrivalDate, terminal, direction,
+            statuses, timeRangeStart, timeRangeEnd,
+            sortBy, sortOrder, page);
 
-        if (!string.IsNullOrWhiteSpace(model.Flight))
-        {
-            var flightValue = model.Flight.Trim();
-            Console.WriteLine($"[DEBUG] Filtering by Flight: '{flightValue}'");
-            var normalizedFlightValue = NormalizeFlightNumber(flightValue);
-            query = query.Where(f =>
-            {
-                var rawNumber = f.Number ?? string.Empty;
-                return rawNumber.Contains(flightValue, StringComparison.OrdinalIgnoreCase)
-                       || NormalizeFlightNumber(rawNumber).Contains(normalizedFlightValue, StringComparison.OrdinalIgnoreCase);
-            });
-        }
-
-        if (!string.IsNullOrWhiteSpace(model.Airline))
-        {
-            var airline = model.Airline.Trim();
-            Console.WriteLine($"[DEBUG] Filtering by Airline: '{airline}'");
-            var beforeCount = query.Count();
-            query = query.Where(f => (f.Airline?.Name ?? string.Empty).Contains(airline, StringComparison.OrdinalIgnoreCase));
-            var afterCount = query.Count();
-            Console.WriteLine($"[DEBUG] Airline filter reduced from {beforeCount} to {afterCount} flights");
-        }
-
-        if (!string.IsNullOrWhiteSpace(model.Destination))
-        {
-            var destination = model.Destination.Trim();
-            query = query.Where(f => AirportMatches(f.Arrival?.Airport, destination));
-        }
-
-        if (!string.IsNullOrWhiteSpace(model.Terminal))
-        {
-            var terminal = model.Terminal.Trim();
-            query = query.Where(f =>
-                (f.Departure?.Terminal ?? string.Empty).Contains(terminal, StringComparison.OrdinalIgnoreCase)
-                || (f.Arrival?.Terminal ?? string.Empty).Contains(terminal, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (model.DepartureDate.HasValue)
-        {
-            var depDate = model.DepartureDate.Value.Date;
-            query = query.Where(f =>
-            {
-                var value = ParseLocalDate(f.Departure?.ScheduledTime?.Local);
-                return value.HasValue && value.Value.Date == depDate;
-            });
-        }
-
-        if (model.ArrivalDate.HasValue)
-        {
-            var arrDate = model.ArrivalDate.Value.Date;
-            query = query.Where(f =>
-            {
-                var value = ParseLocalDate(f.Arrival?.ScheduledTime?.Local);
-                return value.HasValue && value.Value.Date == arrDate;
-            });
-        }
-
-        if (!string.IsNullOrWhiteSpace(model.Status))
-        {
-            var status = model.Status.Trim().ToLower();
-            query = query.Where(f => (f.Status ?? string.Empty).Equals(status, StringComparison.OrdinalIgnoreCase));
-        }
-
-        return query;
+        await _flightSearchService.ExecuteSearchAsync(model);
+        return PartialView("_AdvancedSearchResults", model);
     }
 
-    private static bool AirportMatches(Airport? airport, string codeOrName)
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    private static AdvancedSearchViewModel BuildSearchModel(
+        string? search,
+        string? flight, string? airline, string? destination,
+        DateTime? departureDate, DateTime? arrivalDate,
+        string? terminal, string? direction,
+        List<string>? statuses,
+        string? timeRangeStart, string? timeRangeEnd,
+        string? sortBy, string? sortOrder, int page)
     {
-        if (airport == null)
+        return new AdvancedSearchViewModel
         {
-            return false;
-        }
-
-        return (airport.Iata ?? string.Empty).Equals(codeOrName, StringComparison.OrdinalIgnoreCase)
-               || (airport.Icao ?? string.Empty).Equals(codeOrName, StringComparison.OrdinalIgnoreCase)
-               || (airport.Name ?? string.Empty).Contains(codeOrName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static DateTime? ParseLocalDate(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var parsed)
-            ? parsed
-            : null;
-    }
-
-    private static string NormalizeFlightNumber(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
-
-        return new string(value
-            .Where(char.IsLetterOrDigit)
-            .ToArray());
+            Flight          = flight,
+            Airline         = airline,
+            Destination     = destination,
+            DepartureDate   = departureDate,
+            ArrivalDate     = arrivalDate,
+            Terminal        = terminal,
+            Direction       = direction,
+            Statuses        = statuses ?? new List<string>(),
+            TimeRangeStart  = timeRangeStart,
+            TimeRangeEnd    = timeRangeEnd,
+            SortBy          = sortBy,
+            SortOrder       = sortOrder,
+            Page            = page < 1 ? 1 : page,
+            HasSearched     = !string.IsNullOrWhiteSpace(search)
+        };
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

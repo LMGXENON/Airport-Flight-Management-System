@@ -5,8 +5,11 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/advanced-search.css" />
+    <link rel="stylesheet" href="~/css/advanced-search.css" asp-append-version="true" />
 }
+
+
+
 
 <!-- Page Header -->
 <div class="page-header">
@@ -361,6 +364,7 @@
 
                 <div class="flight-duration">
                     <div class="duration-text" id="flightDuration"></div>
+                    <div class="duration-text" id="flightDistance"></div>
                 </div>
 
                 <div class="modal-airport-block">
@@ -426,8 +430,29 @@
         }
 
         // Flight Details Modal Functions
+        let progressRefreshTimer = null;
+        let activeFlightProgressData = null;
+
         function closeFlightModal() {
+            stopFlightProgressRefresh();
             document.getElementById('flightModal').classList.remove('active');
+        }
+
+        function stopFlightProgressRefresh() {
+            if (progressRefreshTimer) {
+                clearInterval(progressRefreshTimer);
+                progressRefreshTimer = null;
+            }
+        }
+
+        function startFlightProgressRefresh() {
+            stopFlightProgressRefresh();
+            progressRefreshTimer = setInterval(() => {
+                if (!activeFlightProgressData) {
+                    return;
+                }
+                calculateFlightProgress(activeFlightProgressData);
+            }, 30000);
         }
 
         function attachFlightRowHandlers() {
@@ -514,17 +539,44 @@
                 document.getElementById('arrTimeLabel').textContent = 'Scheduled arrival';
             }
 
-            calculateFlightProgress(depUtc, arrUtc, runwayDepUtc, runwayArrUtc, revisedDepUtc, revisedArrUtc, predictedDepUtc, predictedArrUtc, rawStatus);
+            activeFlightProgressData = {
+                depUtc,
+                arrUtc,
+                runwayDepUtc,
+                runwayArrUtc,
+                revisedDepUtc,
+                revisedArrUtc,
+                predictedDepUtc,
+                predictedArrUtc,
+                rawStatus
+            };
+
+            calculateFlightProgress(activeFlightProgressData);
+            startFlightProgressRefresh();
 
             modal.classList.add('active');
         }
 
-        function calculateFlightProgress(depUtc, arrUtc, runwayDepUtc, runwayArrUtc, revisedDepUtc, revisedArrUtc, predictedDepUtc, predictedArrUtc, rawStatus) {
+        function calculateFlightProgress(flightData) {
+            const {
+                depUtc,
+                arrUtc,
+                runwayDepUtc,
+                runwayArrUtc,
+                revisedDepUtc,
+                revisedArrUtc,
+                predictedDepUtc,
+                predictedArrUtc,
+                rawStatus
+            } = flightData;
+
             if (!depUtc || !arrUtc) {
                 document.getElementById('progressLabel').textContent = 'No data';
                 document.getElementById('progressBarFill').style.width = '0%';
                 document.getElementById('progressPlane').style.left = '0%';
                 document.getElementById('progressTimeInfo').textContent = '';
+                document.getElementById('flightDuration').textContent = '-';
+                document.getElementById('flightDistance').textContent = '-';
                 return;
             }
 
@@ -532,8 +584,7 @@
             const arrTime = new Date(arrUtc);
             const now = new Date();
 
-            // Flight duration
-            const totalMins = (arrTime - depTime) / 60000;
+            const totalMins = Math.max(0, (arrTime - depTime) / 60000);
             const hrs = Math.floor(totalMins / 60);
             const mins = Math.round(totalMins % 60);
             document.getElementById('flightDuration').textContent = `${hrs}h ${mins}m`;
@@ -578,14 +629,14 @@
                 const flightDuration = (estimatedArr - actualDep) / 60000;
 
                 if (elapsed > 0 && flightDuration > 0) {
-                    progress = Math.min(95, Math.max(5, (elapsed / flightDuration) * 100));
+                    progress = Math.min(100, Math.max(0, (elapsed / flightDuration) * 100));
                     label = rawStatus === 'approaching' ? 'Approaching' : 'In Flight';
                     const remaining = Math.max(0, flightDuration - elapsed);
                     const remHrs = Math.floor(remaining / 60);
                     const remMins = Math.round(remaining % 60);
                     info = remHrs > 0 ? `${remHrs}h ${remMins}m remaining` : `${remMins} min remaining`;
                 } else {
-                    progress = 5;
+                    progress = 0;
                     label = 'Departed';
                     info = 'Flight in progress';
                 }
@@ -609,6 +660,11 @@
                     info = `Departs ${effectiveDep.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
                 }
             }
+
+            const averageCruiseKmPerHour = 850;
+            const estimatedTotalDistanceKm = Math.max(0, (totalMins / 60) * averageCruiseKmPerHour);
+            const estimatedTravelledKm = (progress / 100) * estimatedTotalDistanceKm;
+            document.getElementById('flightDistance').textContent = `~${Math.round(estimatedTravelledKm)} / ${Math.round(estimatedTotalDistanceKm)} km`;
 
             document.getElementById('progressLabel').textContent = label;
             document.getElementById('progressBarFill').style.width = progress + '%';

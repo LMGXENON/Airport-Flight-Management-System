@@ -1,0 +1,204 @@
+@model AFMS.Models.AdvancedSearchViewModel
+
+<div class="flights-section advanced-results">
+    <div class="flights-header">
+        <h2 class="section-title">
+            Search Results
+            <span class="result-count">(@Model.TotalCount)</span>
+        </h2>
+        <div class="result-meta">Airport: @Model.UsedAirportCode</div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Notice))
+    {
+        <div class="search-notice">@Model.Notice</div>
+    }
+
+    @if (!Model.Results.Any())
+    {
+        <div class="empty-state">
+            <p style="font-size: 18px; margin-bottom: 8px;">No flights matched your filters</p>
+            <p>Try a different airport code, broader dates, or fewer filters.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper">
+            <table class="flights-table">
+                <thead>
+                <tr>
+                    <th class="sortable-th" data-col="flight">
+                        Flight
+                        @if (Model.SortBy == "flight")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th class="sortable-th" data-col="airline">
+                        Airline
+                        @if (Model.SortBy == "airline")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th>Type</th>
+                    <th>Route</th>
+                    <th class="sortable-th" data-col="departure">
+                        Departure
+                        @if (Model.SortBy == "departure" || string.IsNullOrEmpty(Model.SortBy))
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th class="sortable-th" data-col="arrival">
+                        Arrival
+                        @if (Model.SortBy == "arrival")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th>Terminal</th>
+                    <th class="sortable-th" data-col="status">
+                        Status
+                        @if (Model.SortBy == "status")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var flight in Model.Results)
+                {
+                    var isDep          = flight.Direction == "Departure";
+                    var movementStatus = isDep ? flight.Departure?.Status : flight.Arrival?.Status;
+                    var rawStatus      = (movementStatus ?? flight.Status ?? "Unknown").ToLower();
+
+                    var statusClass = AFMS.Models.AdvancedSearchViewModel.GetStatusClass(rawStatus);
+                    var statusLabel = AFMS.Models.AdvancedSearchViewModel.GetStatusLabel(rawStatus);
+
+                    var depIata = flight.Departure?.Airport?.Iata
+                        ?? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(flight.Departure?.Airport?.Icao ?? "");
+                    var arrIata = flight.Arrival?.Airport?.Iata
+                        ?? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(flight.Arrival?.Airport?.Icao ?? "");
+
+                    if (string.IsNullOrWhiteSpace(depIata))
+                        depIata = isDep ? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
+                    if (string.IsNullOrWhiteSpace(arrIata))
+                        arrIata = !isDep ? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
+
+                    var depCity = flight.Departure?.Airport?.MunicipalityName ?? flight.Departure?.Airport?.ShortName ?? depIata;
+                    var arrCity = flight.Arrival?.Airport?.MunicipalityName   ?? flight.Arrival?.Airport?.ShortName   ?? arrIata;
+
+                    var departureTime = "-";
+                    if (DateTime.TryParse(flight.Departure?.ScheduledTime?.Local, out var depParsed))
+                        departureTime = depParsed.ToString("ddd dd MMM HH:mm");
+
+                    var arrivalTime = "-";
+                    if (DateTime.TryParse(flight.Arrival?.ScheduledTime?.Local, out var arrParsed))
+                        arrivalTime = arrParsed.ToString("ddd dd MMM HH:mm");
+
+                    var lhrLeg  = isDep ? flight.Departure : flight.Arrival;
+                    var gate     = !string.IsNullOrWhiteSpace(lhrLeg?.Gate)     ? lhrLeg!.Gate     : "-";
+                    var terminal = !string.IsNullOrWhiteSpace(lhrLeg?.Terminal) ? lhrLeg!.Terminal : "-";
+
+                    var depUtc          = flight.Departure?.ScheduledTime?.Utc ?? "";
+                    var arrUtc          = flight.Arrival?.ScheduledTime?.Utc   ?? "";
+                    var runwayDepUtc    = flight.Departure?.RunwayTime?.Utc     ?? "";
+                    var runwayArrUtc    = flight.Arrival?.RunwayTime?.Utc       ?? "";
+                    var revisedDepUtc   = flight.Departure?.RevisedTime?.Utc    ?? "";
+                    var revisedArrUtc   = flight.Arrival?.RevisedTime?.Utc      ?? "";
+                    var predictedDepUtc = flight.Departure?.PredictedTime?.Utc  ?? "";
+                    var predictedArrUtc = flight.Arrival?.PredictedTime?.Utc    ?? "";
+
+                    var detailedStatus       = statusLabel;
+                    var hasActuallyDeparted  = !string.IsNullOrEmpty(runwayDepUtc) || rawStatus is "enroute" or "approaching" or "departed" or "gateclosed";
+                    var hasActuallyArrived   = !string.IsNullOrEmpty(runwayArrUtc) || rawStatus == "arrived";
+
+                    if (hasActuallyArrived)
+                    {
+                        if (DateTime.TryParse(runwayArrUtc, out var actArrTime))
+                            detailedStatus = $"Landed {actArrTime.ToLocalTime():HH:mm}";
+                        else detailedStatus = "Landed";
+                        statusLabel = "Landed"; statusClass = "status-landed";
+                    }
+                    else if (hasActuallyDeparted && isDep)
+                    {
+                        if (DateTime.TryParse(runwayDepUtc, out var actDepTime))
+                            detailedStatus = $"Departed {actDepTime.ToLocalTime():HH:mm}";
+                        else detailedStatus = "Departed";
+                        statusLabel = "Departed"; statusClass = "status-departed";
+                    }
+                    else if (hasActuallyDeparted && !isDep)
+                    {
+                        detailedStatus = rawStatus == "approaching" ? "Approaching" : "In Flight";
+                        statusLabel = detailedStatus; statusClass = "status-departed";
+                    }
+                    else if (rawStatus == "delayed")  { detailedStatus = "Delayed"; }
+                    else if (rawStatus == "boarding") { detailedStatus = "Boarding"; }
+                    else if (rawStatus == "canceled") { detailedStatus = "Canceled"; }
+
+                    var typeLabel = isDep ? "DEP" : "ARR";
+                    var typeClass = isDep ? "type-dep" : "type-arr";
+                    var displayDepTime = departureTime.Split(' ').Last();
+                    var displayArrTime = arrivalTime.Split(' ').Last();
+
+                    <tr class="flight-row"
+                        data-direction="@flight.Direction"
+                        data-flight-number="@flight.Number"
+                        data-airline="@(flight.Airline?.Name ?? "-")"
+                        data-dep-iata="@depIata"
+                        data-arr-iata="@arrIata"
+                        data-dep-city="@depCity"
+                        data-arr-city="@arrCity"
+                        data-dep-time="@departureTime"
+                        data-arr-time="@arrivalTime"
+                        data-dep-utc="@depUtc"
+                        data-arr-utc="@arrUtc"
+                        data-runway-dep-utc="@runwayDepUtc"
+                        data-runway-arr-utc="@runwayArrUtc"
+                        data-revised-dep-utc="@revisedDepUtc"
+                        data-revised-arr-utc="@revisedArrUtc"
+                        data-predicted-dep-utc="@predictedDepUtc"
+                        data-predicted-arr-utc="@predictedArrUtc"
+                        data-raw-status="@rawStatus"
+                        data-gate="@gate"
+                        data-terminal="@terminal"
+                        data-status-class="@statusClass"
+                        data-status-label="@detailedStatus">
+                        <td class="flight-number">@flight.Number</td>
+                        <td>@(flight.Airline?.Name ?? "-")</td>
+                        <td><span class="type-badge @typeClass">@typeLabel</span></td>
+                        <td>@depIata → @arrIata</td>
+                        <td class="mono">@displayDepTime</td>
+                        <td class="mono">@displayArrTime</td>
+                        <td>@terminal</td>
+                        <td><span class="status-badge @statusClass">@detailedStatus</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.HasMoreResults)
+        {
+            <div id="load-more-section" class="load-more-section">
+                <button class="btn btn-secondary" id="loadMoreBtn"
+                        data-page="@(Model.Page + 1)"
+                        data-total="@Model.TotalCount"
+                        data-showing="@(Model.Page * Model.PageSize)">
+                    Load More
+                    <span class="load-more-meta">
+                        (showing @(Model.Page * Model.PageSize) of @Model.TotalCount)
+                    </span>
+                </button>
+            </div>
+        }
+        else if (Model.TotalCount > Model.PageSize)
+        {
+            <div class="load-more-section">
+                <p class="all-loaded-label">All @Model.TotalCount results shown</p>
+            </div>
+        }
+    }
+</div>

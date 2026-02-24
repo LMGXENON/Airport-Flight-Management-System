@@ -25,6 +25,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add flight sync service
 builder.Services.AddScoped<FlightSyncService>();
 
+// Add advanced-search service
+builder.Services.AddScoped<FlightSearchService>();
+
 // Add background service for periodic flight updates
 builder.Services.AddHostedService<FlightUpdateBackgroundService>();
 
