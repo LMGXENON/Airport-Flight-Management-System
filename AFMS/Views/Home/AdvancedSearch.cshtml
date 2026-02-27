@@ -57,14 +57,14 @@
         <div class="form-row">
             <div class="form-group" style="grid-column: 1 / -1;">
                 <label class="form-label">Flight Status</label>
-                <input type="hidden" id="statusInput" name="status" value="@Model.Status" />
-                <div class="status-buttons">
-                    <button type="button" class="status-btn" data-status="Expected">Scheduled</button>
-                    <button type="button" class="status-btn" data-status="Boarding">Boarding</button>
-                    <button type="button" class="status-btn" data-status="Departed">Departed</button>
-                    <button type="button" class="status-btn" data-status="Arrived">Arrived</button>
-                    <button type="button" class="status-btn" data-status="Delayed">Delayed</button>
-                    <button type="button" class="status-btn" data-status="Canceled">Cancelled</button>
+                <div class="status-buttons" id="statusButtonGroup">
+                    @{ var activeStatuses = Model.Statuses.Any() ? Model.Statuses : (Model.Status != null ? new List<string>{ Model.Status } : new List<string>()); }
+                    <button type="button" class="status-btn @(activeStatuses.Contains("Expected") ? "active" : "")" data-status="Expected">Scheduled</button>
+                    <button type="button" class="status-btn @(activeStatuses.Contains("Boarding") ? "active" : "")" data-status="Boarding">Boarding</button>
+                    <button type="button" class="status-btn @(activeStatuses.Contains("Departed") ? "active" : "")" data-status="Departed">Departed</button>
+                    <button type="button" class="status-btn @(activeStatuses.Contains("Arrived") ? "active" : "")" data-status="Arrived">Arrived</button>
+                    <button type="button" class="status-btn @(activeStatuses.Contains("Delayed") ? "active" : "")" data-status="Delayed">Delayed</button>
+                    <button type="button" class="status-btn @(activeStatuses.Contains("Canceled") ? "active" : "")" data-status="Canceled">Cancelled</button>
                 </div>
             </div>
         </div>
@@ -395,30 +395,32 @@
     <script>
         const clearBtn = document.getElementById('clearFiltersBtn');
         const form = document.querySelector('.search-form');
-        const statusInput = document.getElementById('statusInput');
         const statusButtons = document.querySelectorAll('.status-btn');
 
-        // Handle status button clicks
-        statusButtons.forEach(btn => {
-            const btnStatus = btn.dataset.status;
-
-            // Set initial active state
-            if (statusInput && statusInput.value === btnStatus) {
-                btn.classList.add('active');
-            }
-
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-
+        // Inject hidden statuses inputs before form submission
+        function syncStatusInputs() {
+            form.querySelectorAll('input[name="statuses"]').forEach(el => el.remove());
+            statusButtons.forEach(btn => {
                 if (btn.classList.contains('active')) {
-                    btn.classList.remove('active');
-                    statusInput.value = '';
-                } else {
-                    statusButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    statusInput.value = btnStatus;
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'statuses';
+                    hidden.value = btn.dataset.status;
+                    form.appendChild(hidden);
                 }
             });
+        }
+
+        // Handle status button clicks — multi-select toggle
+        statusButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                btn.classList.toggle('active');
+            });
+        });
+
+        form.addEventListener('submit', () => {
+            syncStatusInputs();
         });
 
         if (clearBtn && form) {
