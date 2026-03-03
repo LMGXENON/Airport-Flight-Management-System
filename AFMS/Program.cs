@@ -6,6 +6,19 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load .env file
+var envFile = Path.Combine(builder.Environment.ContentRootPath, "..", ".env");
+if (File.Exists(envFile))
+{
+    foreach (var line in File.ReadAllLines(envFile))
+    {
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+        var parts = line.Split('=', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length == 2)
+            Environment.SetEnvironmentVariable(parts[0], parts[1]);
+    }
+}
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
