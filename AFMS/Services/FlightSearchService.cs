@@ -85,9 +85,22 @@ public class FlightSearchService
                 || Normalize(f.Number).Contains(normalized, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Airline
+        // Airline — matches full name, any word within it, or IATA/ICAO code prefix
         if (!string.IsNullOrWhiteSpace(model.Airline))
-            query = query.Where(f => (f.Airline?.Name ?? "").Contains(model.Airline.Trim(), StringComparison.OrdinalIgnoreCase));
+        {
+            var term = model.Airline.Trim();
+            query = query.Where(f =>
+            {
+                var name = f.Airline?.Name ?? "";
+                var iata = f.Airline?.Iata ?? "";
+                var icao = f.Airline?.Icao ?? "";
+                return name.Contains(term, StringComparison.OrdinalIgnoreCase)
+                    || iata.Equals(term, StringComparison.OrdinalIgnoreCase)
+                    || icao.Equals(term, StringComparison.OrdinalIgnoreCase)
+                    || term.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                           .All(word => name.Contains(word, StringComparison.OrdinalIgnoreCase));
+            });
+        }
 
         // Destination airport
         if (!string.IsNullOrWhiteSpace(model.Destination))
