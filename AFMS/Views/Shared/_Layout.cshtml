@@ -40,9 +40,6 @@
                 <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")">
                     <span class="nav-label">Advanced Search</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-label">Data Import</span>
-                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -126,6 +123,7 @@
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/ai-chat.js" asp-append-version="true"></script>
+    <script src="~/js/flight-details-modal.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

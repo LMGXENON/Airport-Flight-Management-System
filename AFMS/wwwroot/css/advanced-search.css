@@ -253,4 +253,152 @@
         width: 100%;
         justify-content: center;
     }
+
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* -----------------------------------------------------------------------
+   Direction Toggle
+----------------------------------------------------------------------- */
+.direction-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.direction-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.direction-btn:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    background-color: rgba(65, 105, 225, 0.1);
+}
+
+.direction-btn.active {
+    border-color: var(--accent-blue);
+    background-color: var(--accent-blue);
+    color: #fff;
+}
+
+.direction-btn:active {
+    transform: scale(0.97);
+}
+
+/* -----------------------------------------------------------------------
+   Form label hint
+----------------------------------------------------------------------- */
+.form-label-hint {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-left: 4px;
+}
+
+/* -----------------------------------------------------------------------
+   Time Range input – browser chrome
+----------------------------------------------------------------------- */
+.form-input[type="time"] {
+    cursor: pointer;
+}
+
+.form-input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* -----------------------------------------------------------------------
+   Loading Spinner
+----------------------------------------------------------------------- */
+.search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* -----------------------------------------------------------------------
+   Results transition
+----------------------------------------------------------------------- */
+#results-container {
+    transition: opacity 0.2s ease;
+}
+
+/* -----------------------------------------------------------------------
+   Sortable table headers
+----------------------------------------------------------------------- */
+.sortable-th {
+    user-select: none;
+    white-space: nowrap;
+}
+
+.sortable-th:hover {
+    color: var(--accent-blue);
+}
+
+.sort-icon {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 11px;
+    color: var(--accent-blue);
+}
+
+/* -----------------------------------------------------------------------
+   Load More section
+----------------------------------------------------------------------- */
+.load-more-section {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0 8px;
+}
+
+.load-more-meta {
+    font-size: 12px;
+    font-weight: 400;
+    margin-left: 8px;
+    color: var(--text-secondary);
+}
+
+.all-loaded-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* -----------------------------------------------------------------------
+   Result count badge
+----------------------------------------------------------------------- */
+.result-count {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-left: 6px;
 }
