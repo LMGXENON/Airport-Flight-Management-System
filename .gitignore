@@ -19,4 +19,4 @@
 *.vspscc
 *.vssscc
 *.terraform
-*.hcl
+*.hcl.DS_store
