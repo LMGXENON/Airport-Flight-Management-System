@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   afms:
     build:
-      context: ./AFMS
+      context: .
       dockerfile: Dockerfile
     container_name: afms-app
     ports:
@@ -22,7 +20,7 @@ services:
       AeroDataBox__ApiHost: "${AERODATABOX_API_HOST}"
       AeroDataBox__DefaultAirport: "${DEFAULT_AIRPORT:-EGLL}"
 
-      
+
       # DeepSeek API Configuration
       DeepSeek__ApiKey: "${DEEPSEEK_API_KEY}"
       DeepSeek__ApiEndpoint: "${DEEPSEEK_API_ENDPOINT}"
