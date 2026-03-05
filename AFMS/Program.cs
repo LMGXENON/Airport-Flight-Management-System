@@ -31,10 +31,9 @@ builder.Services.AddMemoryCache();
 // Add HttpClient for API calls
 builder.Services.AddHttpClient<AeroDataBoxService>();
 
-// TODO: Add database context back when RDS is configured
 // Add database context
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add flight sync service
 builder.Services.AddScoped<FlightSyncService>();
@@ -47,36 +46,13 @@ builder.Services.AddHostedService<FlightUpdateBackgroundService>();
 
 var app = builder.Build();
 
-// TODO: Database initialization will be added back when RDS is set up
-// Ensure database is created and apply migrations with retry logic
-// var retryCount = 0;
-// const int maxRetries = 30;
-// const int delayMs = 1000;
-//
-// while (retryCount < maxRetries)
-// {
-//     try
-//     {
-//         using (var scope = app.Services.CreateScope())
-//         {
-//             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//             dbContext.Database.EnsureCreated();
-//             Console.WriteLine("Database initialized successfully.");
-//             break;
-//         }
-//     }
-//     catch (Exception ex)
-//     {
-//         retryCount++;
-//         if (retryCount >= maxRetries)
-//         {
-//             Console.WriteLine($"Failed to initialize database after {maxRetries} attempts.");
-//             throw;
-//         }
-//         Console.WriteLine($"Database connection attempt {retryCount}/{maxRetries} failed. Retrying in {delayMs}ms...");
-//         Thread.Sleep(delayMs);
-//     }
-// }
+// Ensure database is created and apply migrations
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.EnsureCreated();
+    Console.WriteLine("Database initialized successfully.");
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
