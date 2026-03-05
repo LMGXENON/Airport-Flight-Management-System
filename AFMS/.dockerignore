@@ -1,0 +1,59 @@
+# Version Control
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vs
+.vscode
+*.sln.DotSettings
+*.user
+*.suo
+*.sln
+
+# Build outputs
+bin
+obj
+dist
+build
+
+# Tests
+*.Tests
+TestResults
+
+# Package managers
+packages
+node_modules
+.npm
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Docker
+Dockerfile
+docker-compose*.yaml
+.dockerignore
+
+# Development
+appsettings.Development.json
+launchSettings.json
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation
+docs
+README.md
+
+# Logs
+logs
+*.log
+
+# Terraform (if Docker builds separate from IaC)
+Terraform

@@ -33,7 +33,7 @@ builder.Services.AddHttpClient<AeroDataBoxService>();
 
 // Add database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add flight sync service
 builder.Services.AddScoped<FlightSyncService>();
