@@ -51,6 +51,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.EnsureCreated();
+    Console.WriteLine("Database initialized successfully.");
 }
 
 // Configure the HTTP request pipeline.
