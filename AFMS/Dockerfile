@@ -12,13 +12,13 @@ RUN dotnet restore "AFMS.csproj"
 # Copy remaining source code
 COPY . .
 
-# Build the application in Release mode without debug symbols
-RUN dotnet build "AFMS.csproj" -c Release -o /app/build --no-restore
+# Build the application in Release mode
+RUN dotnet build "AFMS.csproj" -c Release -o /app/build
 
 # Publish stage
 FROM build AS publish
 
-RUN dotnet publish "AFMS.csproj" -c Release -o /app/publish --no-build --no-self-contained
+RUN dotnet publish "AFMS.csproj" -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
