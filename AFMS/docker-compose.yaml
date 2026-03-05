@@ -21,6 +21,12 @@ services:
       AeroDataBox__ApiKey: "${AERODATABOX_API_KEY}"
       AeroDataBox__ApiHost: "${AERODATABOX_API_HOST}"
       AeroDataBox__DefaultAirport: "${DEFAULT_AIRPORT:-EGLL}"
+
+      
+      # DeepSeek API Configuration
+      DeepSeek__ApiKey: "${DEEPSEEK_API_KEY}"
+      DeepSeek__ApiEndpoint: "${DEEPSEEK_API_ENDPOINT}"
+      DeepSeek__Model: "deepseek-chat"
     
     depends_on:
       - afms-db
