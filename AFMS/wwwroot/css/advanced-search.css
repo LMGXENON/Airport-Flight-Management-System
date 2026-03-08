@@ -101,6 +101,36 @@
     color: var(--text-primary);
 }
 
+/* Custom styled select */
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1;
+}
+
+.form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding-right: 36px;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background-color: rgba(65, 105, 225, 0.05);
+}
+
 /* Date Input Styling */
 .form-input[type="date"] {
     cursor: pointer;
