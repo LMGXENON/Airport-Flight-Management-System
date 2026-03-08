@@ -31,7 +31,7 @@
             </div>
             <div class="form-group">
                 <label for="airline" class="form-label">Airline</label>
-                <div class="choice-field choice-field--lookup">
+                <div class="choice-field">
                     <input type="text" id="airline" name="airline" class="form-input"
                            list="airlineOptions" placeholder="e.g., British Airways" value="@Model.Airline" autocomplete="off" />
                 </div>
@@ -65,7 +65,7 @@
             </div>
             <div class="form-group">
                 <label for="destination" class="form-label">Destination</label>
-                <div class="choice-field choice-field--lookup">
+                <div class="choice-field">
                     <input type="text" id="destination" name="destination" class="form-input"
                            list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Destination" autocomplete="off" />
                 </div>
@@ -143,13 +143,17 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="departureDate" class="form-label">Departure Date</label>
-                <input type="date" id="departureDate" name="departureDate" class="form-input"
-                       value="@Model.DepartureDate?.ToString("yyyy-MM-dd")" />
+                <div class="choice-field choice-field--date">
+                    <input type="date" id="departureDate" name="departureDate" class="form-input"
+                           value="@Model.DepartureDate?.ToString("yyyy-MM-dd")" />
+                </div>
             </div>
             <div class="form-group">
                 <label for="arrivalDate" class="form-label">Arrival Date</label>
-                <input type="date" id="arrivalDate" name="arrivalDate" class="form-input"
-                       value="@Model.ArrivalDate?.ToString("yyyy-MM-dd")" />
+                <div class="choice-field choice-field--date">
+                    <input type="date" id="arrivalDate" name="arrivalDate" class="form-input"
+                           value="@Model.ArrivalDate?.ToString("yyyy-MM-dd")" />
+                </div>
             </div>
             <div class="form-group">
                 <label for="terminal" class="form-label">Terminal</label>
@@ -181,13 +185,17 @@
             </div>
             <div class="form-group">
                 <label for="timeRangeStart" class="form-label">From Time</label>
-                <input type="time" id="timeRangeStart" name="timeRangeStart" class="form-input"
-                       value="@Model.TimeRangeStart" />
+                <div class="choice-field choice-field--time">
+                    <input type="time" id="timeRangeStart" name="timeRangeStart" class="form-input"
+                           value="@Model.TimeRangeStart" />
+                </div>
             </div>
             <div class="form-group">
                 <label for="timeRangeEnd" class="form-label">To Time</label>
-                <input type="time" id="timeRangeEnd" name="timeRangeEnd" class="form-input"
-                       value="@Model.TimeRangeEnd" />
+                <div class="choice-field choice-field--time">
+                    <input type="time" id="timeRangeEnd" name="timeRangeEnd" class="form-input"
+                           value="@Model.TimeRangeEnd" />
+                </div>
             </div>
         </div>
 
