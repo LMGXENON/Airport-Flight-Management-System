@@ -1,6 +1,5 @@
 using AFMS.Data;
 using AFMS.Models;
-using AFMS.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +8,10 @@ namespace AFMS.Controllers
     public class FlightController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly FlightSyncService _flightSyncService;
 
-        public FlightController(ApplicationDbContext context, FlightSyncService flightSyncService)
+        public FlightController(ApplicationDbContext context)
         {
             _context = context;
-            _flightSyncService = flightSyncService;
         }
 
         // GET: Flight/Index - List all flights
@@ -155,21 +152,6 @@ namespace AFMS.Controllers
         private bool FlightExists(int id)
         {
             return _context.Flights.Any(e => e.Id == id);
-        }
-
-        // POST: Flight/RefreshFlights - Manual flight sync
-        [HttpPost]
-        public async Task<IActionResult> RefreshFlights()
-        {
-            try
-            {
-                await _flightSyncService.SyncFlightsAsync();
-                return Json(new { success = true, message = "Flights refreshed successfully" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
         }
     }
 }

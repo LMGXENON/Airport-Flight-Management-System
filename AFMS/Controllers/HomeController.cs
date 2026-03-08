@@ -57,11 +57,6 @@ public class HomeController : Controller
         return View(sortedFlights);
     }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
     public async Task<IActionResult> AdvancedSearch(
         string? search,
         string? flight,
