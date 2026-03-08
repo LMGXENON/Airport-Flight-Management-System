@@ -150,12 +150,12 @@
             <div class="form-group">
                 <label for="terminal" class="form-label">Terminal</label>
                 <div class="select-wrapper">
-                    <select id="terminal" name="terminal" class="form-input form-select">
+                    <select asp-for="Terminal" id="terminal" class="form-input form-select">
                         <option value="">All Terminals</option>
-                        <option value="2" @(Model.Terminal == "2" ? "selected" : "")>Terminal 2</option>
-                        <option value="3" @(Model.Terminal == "3" ? "selected" : "")>Terminal 3</option>
-                        <option value="4" @(Model.Terminal == "4" ? "selected" : "")>Terminal 4</option>
-                        <option value="5" @(Model.Terminal == "5" ? "selected" : "")>Terminal 5</option>
+                        <option value="2">Terminal 2</option>
+                        <option value="3">Terminal 3</option>
+                        <option value="4">Terminal 4</option>
+                        <option value="5">Terminal 5</option>
                     </select>
                 </div>
             </div>
