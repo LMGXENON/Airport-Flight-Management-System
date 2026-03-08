@@ -12,10 +12,6 @@ public class AdvancedSearchViewModel
     public DateTime? ArrivalDate { get; set; }
     public string? Terminal { get; set; }
 
-    /// <summary>Legacy single-status filter (kept for backward compatibility).</summary>
-    public string? Status { get; set; }
-
-    /// <summary>Multi-select status filter. Takes precedence over Status if non-empty.</summary>
     public List<string> Statuses { get; set; } = new();
 
     /// <summary>"Departure", "Arrival", or null for both.</summary>

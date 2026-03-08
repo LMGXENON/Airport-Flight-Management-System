@@ -137,10 +137,8 @@ public class FlightSearchService
             });
         }
 
-        // Multi-select status (Statuses list takes priority; falls back to single Status)
+        // Multi-select status filter
         var activeStatuses = model.Statuses.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-        if (!activeStatuses.Any() && !string.IsNullOrWhiteSpace(model.Status))
-            activeStatuses.Add(model.Status.Trim());
 
         if (activeStatuses.Any())
         {
