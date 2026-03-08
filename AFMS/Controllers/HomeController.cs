@@ -10,6 +10,11 @@ namespace AFMS.Controllers;
 
 public class HomeController : Controller
 {
+    private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Expected", "Boarding", "Departed", "Arrived", "Delayed", "Canceled"
+    };
+
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly FlightSearchService _flightSearchService;
     private readonly IConfiguration _configuration;
@@ -126,75 +131,37 @@ public class HomeController : Controller
                 return StatusCode(500, new { error = "DeepSeek API key not configured" });
 
             var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            var systemPrompt = $@"You are a flight search assistant for an airport flight management system based at London Heathrow (LHR).
-Extract flight search parameters from the user's natural language query and return ONLY a valid JSON object — no markdown, no explanation, no extra text.
+                        var systemPrompt = $@"You fill Advanced Search filters for a London Heathrow flight search page.
+You are NOT a general chatbot.
 
-Available JSON fields:
-  flight         – flight number string (e.g. ""BA123"")
-  airline        – full official airline name (e.g. ""British Airways""). ALWAYS use the full name, never abbreviate.
-  destination    – IATA airport code of the non-LHR endpoint (e.g. ""DOH"", ""JFK"", ""DXB""). Leave empty if no specific airport.
-  departureDate  – date string YYYY-MM-DD
-  arrivalDate    – date string YYYY-MM-DD
-  terminal       – terminal string (e.g. ""5"")
-  direction      – ""Departure"" | ""Arrival"" | """" (empty = both)
-  timeRangeStart – HH:mm
-  timeRangeEnd   – HH:mm
-  statuses       – array from [""Expected"",""Boarding"",""Departed"",""Arrived"",""Delayed"",""Canceled""]
+If the message is not clearly about searching or filtering flights, return:
+{{
+    ""isSearchRequest"": false,
+    ""message"": ""I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status."" 
+}}
 
-AIRLINE NAME MAPPING (always use the full name on the right):
-  BA / British / British Air → British Airways
-  AA / American → American Airlines
-  UA / United → United Airlines
-  DL / Delta → Delta Air Lines
-  AF / Air France → Air France
-  LH / Lufthansa → Lufthansa
-  EK / Emirates → Emirates
-  QR / Qatar → Qatar Airways
-  EY / Etihad → Etihad Airways
-  VS / Virgin / Virgin Atlantic → Virgin Atlantic
-  AC / Air Canada → Air Canada
-  SQ / Singapore / Singapore Air → Singapore Airlines
-  CX / Cathay / Cathay Pacific → Cathay Pacific
-  KL / KLM → KLM
-  IB / Iberia → Iberia
-  AZ / Alitalia / ITA → ITA Airways
-  TK / Turkish / Turkish Air → Turkish Airlines
-  LX / Swiss → Swiss International Air Lines
-  OS / Austrian → Austrian Airlines
-  SK / SAS / Scandinavian → Scandinavian Airlines
-  AY / Finnair → Finnair
-  RY / Ryanair → Ryanair
-  FR / Ryanair → Ryanair
-  U2 / EZY / Easyjet → easyJet
-  W6 / Wizz / Wizzair → Wizz Air
-  BE / Flybe → Flybe
-  ZI / Aigle / Aigle Azur → Aigle Azur
-  AV / Avianca → Avianca
-  CM / Copa → Copa Airlines
-  LA / LATAM → LATAM Airlines
-  G3 / Gol → GOL Linhas Aéreas
-  NH / ANA → All Nippon Airways
-  JL / JAL / Japan Air → Japan Airlines
-  OZ / Asiana → Asiana Airlines
-  KE / Korean Air → Korean Air
-  CA / Air China → Air China
-  MU / China Eastern → China Eastern Airlines
-  CZ / China Southern → China Southern Airlines
-  AI / Air India → Air India
-  MS / EgyptAir → EgyptAir
-  ET / Ethiopian → Ethiopian Airlines
-  KQ / Kenya → Kenya Airways
-  SA / SAA / South African → South African Airways
-  QF / Qantas → Qantas
-  NZ / Air New Zealand → Air New Zealand
-  MH / Malaysia / Malaysia Air → Malaysia Airlines
-  GA / Garuda → Garuda Indonesia
+If the message is about searching flights, return ONLY a valid JSON object with:
+    isSearchRequest – true
+    message         – optional short clarification, otherwise empty
+    flight          – flight number string (e.g. ""BA123"")
+    airline         – airline text from the user; if they only give a partial airline fragment, keep the best airline fragment instead of forcing a made-up full name
+    destination     – IATA airport code of the non-LHR endpoint when clear (e.g. ""DOH"", ""JFK"", ""DXB"")
+    departureDate   – date string YYYY-MM-DD
+    arrivalDate     – date string YYYY-MM-DD
+    terminal        – terminal string (e.g. ""5"")
+    direction       – ""Departure"" | ""Arrival"" | """" (empty = both)
+    timeRangeStart  – HH:mm
+    timeRangeEnd    – HH:mm
+    statuses        – array from [""Expected"",""Boarding"",""Departed"",""Arrived"",""Delayed"",""Canceled""]
 
-OTHER RULES:
-- Direction: ""from heathrow"", ""departing"", ""leaving"", ""going to [airport]"" → ""Departure"". ""to heathrow"", ""arriving"", ""coming to heathrow"", ""landing"" → ""Arrival"".
-- City/country to IATA: Qatar/Doha→DOH, New York→JFK, Dubai→DXB, Paris→CDG, Frankfurt→FRA, Tokyo→HND, Amsterdam→AMS, Madrid→MAD, Singapore→SIN, Los Angeles→LAX, Sydney→SYD, Toronto→YYZ, Chicago→ORD, Miami→MIA, Barcelona→BCN, Rome→FCO, Lisbon→LIS, Istanbul→IST, Athens→ATH, Cairo→CAI, Bangkok→BKK, Hong Kong→HKG, Seoul→ICN, Shanghai→PVG, Beijing→PEK, Kuala Lumpur→KUL, Mumbai→BOM, Delhi→DEL, Nairobi→NBO, Cape Town→CPT, Johannesburg→JNB, Sao Paulo→GRU, Buenos Aires→EZE, Mexico City→MEX, Vancouver→YVR, Montreal→YUL, Boston→BOS, Washington→IAD, San Francisco→SFO, Seattle→SEA, Dallas→DFW, Houston→IAH, Atlanta→ATL, Denver→DEN, Orlando→MCO, Las Vegas→LAS, Manchester→MAN, Edinburgh→EDI, Glasgow→GLA, Birmingham→BHX, Bristol→BRS, Dublin→DUB.
+Rules:
+- Only return JSON. No markdown. No explanation.
+- Use destination codes when clear; otherwise leave destination empty.
 - If the user says ""today"", use {today} as the date.
-- Return ONLY the JSON object, nothing else.";
+- If the user says ""tomorrow"", use the next calendar day from today.
+- Direction hints: ""from heathrow"", ""departing"", ""leaving"" => Departure. ""to heathrow"", ""arriving"", ""landing"" => Arrival.
+- City/country to IATA when obvious: Doha/Qatar→DOH, New York→JFK, Dubai→DXB, Paris→CDG, Frankfurt→FRA, Tokyo→HND, Amsterdam→AMS, Madrid→MAD, Singapore→SIN, Los Angeles→LAX, Sydney→SYD, Toronto→YYZ, Chicago→ORD, Miami→MIA, Barcelona→BCN, Rome→FCO, Lisbon→LIS, Istanbul→IST, Athens→ATH, Cairo→CAI, Bangkok→BKK, Hong Kong→HKG, Seoul→ICN, Shanghai→PVG, Beijing→PEK, Kuala Lumpur→KUL, Mumbai→BOM, Delhi→DEL, Nairobi→NBO, Cape Town→CPT, Johannesburg→JNB, Sao Paulo→GRU, Buenos Aires→EZE, Mexico City→MEX, Vancouver→YVR, Montreal→YUL, Boston→BOS, Washington→IAD, San Francisco→SFO, Seattle→SEA, Dallas→DFW, Houston→IAH, Atlanta→ATL, Denver→DEN, Orlando→MCO, Las Vegas→LAS, Manchester→MAN, Edinburgh→EDI, Glasgow→GLA, Birmingham→BHX, Bristol→BRS, Dublin→DUB.
+- If nothing usable can be extracted for a search, return isSearchRequest false with the short search-only message.";
 
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
@@ -228,8 +195,9 @@ OTHER RULES:
             
             content = System.Text.RegularExpressions.Regex.Replace(content, @"```(?:json)?|```", "").Trim();
 
-            var parsedParams = JsonDocument.Parse(content).RootElement;
-            return Ok(parsedParams);
+            var parsedParams = JsonSerializer.Deserialize<AiSearchFiltersResponse>(content, opts) ?? new AiSearchFiltersResponse();
+            var normalizedParams = NormalizeAiSearchFilters(parsedParams);
+            return Ok(normalizedParams);
         }
         catch (Exception ex)
         {
@@ -265,6 +233,105 @@ OTHER RULES:
         };
     }
 
+    private static AiSearchFiltersResponse NormalizeAiSearchFilters(AiSearchFiltersResponse response)
+    {
+        response.Flight = Clean(response.Flight)?.ToUpperInvariant();
+        response.Airline = Clean(response.Airline);
+        response.Destination = NormalizeDestination(response.Destination);
+        response.DepartureDate = NormalizeDate(response.DepartureDate);
+        response.ArrivalDate = NormalizeDate(response.ArrivalDate);
+        response.Terminal = NormalizeTerminal(response.Terminal);
+        response.Direction = NormalizeDirection(response.Direction);
+        response.TimeRangeStart = NormalizeTime(response.TimeRangeStart);
+        response.TimeRangeEnd = NormalizeTime(response.TimeRangeEnd);
+        response.Statuses = (response.Statuses ?? new List<string>())
+            .Where(s => !string.IsNullOrWhiteSpace(s) && AllowedStatuses.Contains(s))
+            .Select(s => AllowedStatuses.First(x => x.Equals(s, StringComparison.OrdinalIgnoreCase)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        response.Message = Clean(response.Message);
+
+        if (!response.IsSearchRequest && !HasAnySearchFilters(response))
+        {
+            response.Message ??= "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
+            return response;
+        }
+
+        response.IsSearchRequest = HasAnySearchFilters(response);
+
+        if (!response.IsSearchRequest)
+        {
+            response.Message = "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
+        }
+
+        return response;
+    }
+
+    private static bool HasAnySearchFilters(AiSearchFiltersResponse response) =>
+        !string.IsNullOrWhiteSpace(response.Flight)
+        || !string.IsNullOrWhiteSpace(response.Airline)
+        || !string.IsNullOrWhiteSpace(response.Destination)
+        || !string.IsNullOrWhiteSpace(response.DepartureDate)
+        || !string.IsNullOrWhiteSpace(response.ArrivalDate)
+        || !string.IsNullOrWhiteSpace(response.Terminal)
+        || !string.IsNullOrWhiteSpace(response.Direction)
+        || !string.IsNullOrWhiteSpace(response.TimeRangeStart)
+        || !string.IsNullOrWhiteSpace(response.TimeRangeEnd)
+        || (response.Statuses?.Count > 0);
+
+    private static string? Clean(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? NormalizeDestination(string? value)
+    {
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned)) return null;
+
+        cleaned = cleaned.ToUpperInvariant();
+        return cleaned.Length == 4
+            ? AdvancedSearchViewModel.ConvertToIata(cleaned)
+            : cleaned;
+    }
+
+    private static string? NormalizeDate(string? value)
+    {
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned)) return null;
+
+        return DateTime.TryParse(cleaned, out var parsed)
+            ? parsed.ToString("yyyy-MM-dd")
+            : cleaned;
+    }
+
+    private static string? NormalizeTerminal(string? value)
+    {
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned)) return null;
+
+        var digits = new string(cleaned.Where(char.IsDigit).ToArray());
+        return string.IsNullOrWhiteSpace(digits) ? cleaned : digits;
+    }
+
+    private static string? NormalizeDirection(string? value)
+    {
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned)) return string.Empty;
+
+        return cleaned.Equals("departure", StringComparison.OrdinalIgnoreCase) ? "Departure"
+            : cleaned.Equals("arrival", StringComparison.OrdinalIgnoreCase) ? "Arrival"
+            : string.Empty;
+    }
+
+    private static string? NormalizeTime(string? value)
+    {
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned)) return null;
+
+        return TimeSpan.TryParse(cleaned, out var parsed)
+            ? $"{parsed.Hours:00}:{parsed.Minutes:00}"
+            : cleaned;
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
@@ -290,4 +357,20 @@ public class DeepSeekChoice
 public class DeepSeekMessage
 {
     public string? Content { get; set; }
+}
+
+public class AiSearchFiltersResponse
+{
+    public bool IsSearchRequest { get; set; } = true;
+    public string? Message { get; set; }
+    public string? Flight { get; set; }
+    public string? Airline { get; set; }
+    public string? Destination { get; set; }
+    public string? DepartureDate { get; set; }
+    public string? ArrivalDate { get; set; }
+    public string? Terminal { get; set; }
+    public string? Direction { get; set; }
+    public List<string> Statuses { get; set; } = new();
+    public string? TimeRangeStart { get; set; }
+    public string? TimeRangeEnd { get; set; }
 }
