@@ -31,24 +31,110 @@
             </div>
             <div class="form-group">
                 <label for="airline" class="form-label">Airline</label>
-                <input type="text" id="airline" name="airline" class="form-input"
-                       placeholder="e.g., British Airways" value="@Model.Airline" autocomplete="off" />
+                <div class="choice-field">
+                    <input type="text" id="airline" name="airline" class="form-input"
+                           list="airlineOptions" placeholder="e.g., British Airways" value="@Model.Airline" autocomplete="off" />
+                </div>
+                <datalist id="airlineOptions">
+                    <option value="British Airways"></option>
+                    <option value="Virgin Atlantic"></option>
+                    <option value="easyJet"></option>
+                    <option value="Ryanair"></option>
+                    <option value="Emirates"></option>
+                    <option value="Qatar Airways"></option>
+                    <option value="Lufthansa"></option>
+                    <option value="Air France"></option>
+                    <option value="KLM"></option>
+                    <option value="United Airlines"></option>
+                    <option value="American Airlines"></option>
+                    <option value="Delta Air Lines"></option>
+                    <option value="Singapore Airlines"></option>
+                    <option value="Cathay Pacific"></option>
+                    <option value="Turkish Airlines"></option>
+                    <option value="Etihad Airways"></option>
+                    <option value="Swiss International Air Lines"></option>
+                    <option value="Iberia"></option>
+                    <option value="Finnair"></option>
+                    <option value="SAS Scandinavian Airlines"></option>
+                    <option value="Air Canada"></option>
+                    <option value="Japan Airlines"></option>
+                    <option value="ANA All Nippon Airways"></option>
+                    <option value="Qantas"></option>
+                    <option value="South African Airways"></option>
+                </datalist>
             </div>
             <div class="form-group">
                 <label for="destination" class="form-label">Destination</label>
-                <input type="text" id="destination" name="destination" class="form-input"
-                       list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Destination" autocomplete="off" />
+                <div class="choice-field">
+                    <input type="text" id="destination" name="destination" class="form-input"
+                           list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Destination" autocomplete="off" />
+                </div>
                 <datalist id="airportOptions">
-                    <option value="LHR">London Heathrow (LHR)</option>
-                    <option value="JFK">John F. Kennedy (JFK)</option>
-                    <option value="LAX">Los Angeles (LAX)</option>
-                    <option value="DXB">Dubai (DXB)</option>
-                    <option value="FRA">Frankfurt (FRA)</option>
-                    <option value="HND">Tokyo Haneda (HND)</option>
-                    <option value="CDG">Paris Charles de Gaulle (CDG)</option>
+                    <option value="ABV">Abuja (ABV)</option>
+                    <option value="ACC">Accra (ACC)</option>
                     <option value="AMS">Amsterdam Schiphol (AMS)</option>
-                    <option value="SIN">Singapore Changi (SIN)</option>
+                    <option value="ATH">Athens Eleftherios Venizelos (ATH)</option>
+                    <option value="ATL">Atlanta Hartsfield-Jackson (ATL)</option>
+                    <option value="AUH">Abu Dhabi (AUH)</option>
+                    <option value="AYT">Antalya (AYT)</option>
+                    <option value="BCN">Barcelona El Prat (BCN)</option>
+                    <option value="BEY">Beirut Rafic Hariri (BEY)</option>
+                    <option value="BGW">Baghdad (BGW)</option>
+                    <option value="BKK">Bangkok Suvarnabhumi (BKK)</option>
+                    <option value="BLR">Bangalore (BLR)</option>
+                    <option value="BOM">Mumbai (BOM)</option>
+                    <option value="BOS">Boston Logan (BOS)</option>
+                    <option value="BRU">Brussels (BRU)</option>
+                    <option value="CAI">Cairo (CAI)</option>
+                    <option value="ORD">Chicago O'Hare (ORD)</option>
+                    <option value="CPT">Cape Town (CPT)</option>
+                    <option value="CDG">Paris Charles de Gaulle (CDG)</option>
+                    <option value="DEL">Delhi Indira Gandhi (DEL)</option>
+                    <option value="DFW">Dallas/Fort Worth (DFW)</option>
+                    <option value="DOH">Doha Hamad (DOH)</option>
+                    <option value="DUB">Dublin (DUB)</option>
+                    <option value="DXB">Dubai (DXB)</option>
+                    <option value="EDI">Edinburgh (EDI)</option>
+                    <option value="FCO">Rome Fiumicino (FCO)</option>
+                    <option value="FRA">Frankfurt (FRA)</option>
+                    <option value="GRU">São Paulo Guarulhos (GRU)</option>
+                    <option value="GVA">Geneva (GVA)</option>
+                    <option value="HKG">Hong Kong (HKG)</option>
+                    <option value="HND">Tokyo Haneda (HND)</option>
+                    <option value="IAD">Washington Dulles (IAD)</option>
+                    <option value="ICN">Seoul Incheon (ICN)</option>
+                    <option value="IST">Istanbul (IST)</option>
+                    <option value="JFK">New York JFK (JFK)</option>
+                    <option value="JNB">Johannesburg (JNB)</option>
+                    <option value="KHI">Karachi (KHI)</option>
+                    <option value="KUL">Kuala Lumpur (KUL)</option>
+                    <option value="LAD">Luanda (LAD)</option>
+                    <option value="LAX">Los Angeles (LAX)</option>
+                    <option value="LGW">London Gatwick (LGW)</option>
+                    <option value="LHR">London Heathrow (LHR)</option>
+                    <option value="LIS">Lisbon (LIS)</option>
+                    <option value="LOS">Lagos (LOS)</option>
                     <option value="MAD">Madrid Barajas (MAD)</option>
+                    <option value="MAN">Manchester (MAN)</option>
+                    <option value="MEX">Mexico City (MEX)</option>
+                    <option value="MIA">Miami (MIA)</option>
+                    <option value="MUC">Munich (MUC)</option>
+                    <option value="NBO">Nairobi (NBO)</option>
+                    <option value="NRT">Tokyo Narita (NRT)</option>
+                    <option value="ORD">Chicago O'Hare (ORD)</option>
+                    <option value="PEK">Beijing Capital (PEK)</option>
+                    <option value="PHL">Philadelphia (PHL)</option>
+                    <option value="PKX">Beijing Daxing (PKX)</option>
+                    <option value="PVG">Shanghai Pudong (PVG)</option>
+                    <option value="SFO">San Francisco (SFO)</option>
+                    <option value="SIN">Singapore Changi (SIN)</option>
+                    <option value="SYD">Sydney (SYD)</option>
+                    <option value="TLV">Tel Aviv Ben Gurion (TLV)</option>
+                    <option value="TOR">Toronto Pearson (YYZ)</option>
+                    <option value="VIE">Vienna (VIE)</option>
+                    <option value="YUL">Montreal Trudeau (YUL)</option>
+                    <option value="YYZ">Toronto Pearson (YYZ)</option>
+                    <option value="ZRH">Zurich (ZRH)</option>
                 </datalist>
             </div>
         </div>
@@ -57,18 +143,29 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="departureDate" class="form-label">Departure Date</label>
-                <input type="date" id="departureDate" name="departureDate" class="form-input"
-                       value="@Model.DepartureDate?.ToString("yyyy-MM-dd")" />
+                <div class="choice-field choice-field--date">
+                    <input type="date" id="departureDate" name="departureDate" class="form-input"
+                           value="@Model.DepartureDate?.ToString("yyyy-MM-dd")" />
+                </div>
             </div>
             <div class="form-group">
                 <label for="arrivalDate" class="form-label">Arrival Date</label>
-                <input type="date" id="arrivalDate" name="arrivalDate" class="form-input"
-                       value="@Model.ArrivalDate?.ToString("yyyy-MM-dd")" />
+                <div class="choice-field choice-field--date">
+                    <input type="date" id="arrivalDate" name="arrivalDate" class="form-input"
+                           value="@Model.ArrivalDate?.ToString("yyyy-MM-dd")" />
+                </div>
             </div>
             <div class="form-group">
                 <label for="terminal" class="form-label">Terminal</label>
-                <input type="text" id="terminal" name="terminal" class="form-input"
-                       placeholder="e.g., 5" value="@Model.Terminal" />
+                <div class="choice-field choice-field--select select-wrapper">
+                    <select asp-for="Terminal" id="terminal" class="form-input form-select">
+                        <option value="">All Terminals</option>
+                        <option value="2">Terminal 2</option>
+                        <option value="3">Terminal 3</option>
+                        <option value="4">Terminal 4</option>
+                        <option value="5">Terminal 5</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -88,13 +185,17 @@
             </div>
             <div class="form-group">
                 <label for="timeRangeStart" class="form-label">From Time</label>
-                <input type="time" id="timeRangeStart" name="timeRangeStart" class="form-input"
-                       value="@Model.TimeRangeStart" />
+                <div class="choice-field choice-field--time">
+                    <input type="time" id="timeRangeStart" name="timeRangeStart" class="form-input"
+                           value="@Model.TimeRangeStart" />
+                </div>
             </div>
             <div class="form-group">
                 <label for="timeRangeEnd" class="form-label">To Time</label>
-                <input type="time" id="timeRangeEnd" name="timeRangeEnd" class="form-input"
-                       value="@Model.TimeRangeEnd" />
+                <div class="choice-field choice-field--time">
+                    <input type="time" id="timeRangeEnd" name="timeRangeEnd" class="form-input"
+                           value="@Model.TimeRangeEnd" />
+                </div>
             </div>
         </div>
 

@@ -1,21 +1,22 @@
 /* Advanced Search Specific Styles */
 
 .search-form-container {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(33, 40, 82, 0.96), rgba(28, 34, 73, 0.96));
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 16px;
     padding: 32px;
     max-width: 100%;
+    box-shadow: 0 12px 28px rgba(4, 10, 30, 0.18);
 }
 
 .search-form {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 18px;
 }
 
 .api-hint {
-    margin-top: 16px;
+    margin-top: 14px;
     color: var(--text-secondary);
     font-size: 13px;
 }
@@ -43,13 +44,17 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    background: rgba(10, 14, 36, 0.16);
 }
 
 /* Form Groups */
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .form-group-full {
@@ -59,8 +64,8 @@
 }
 
 .form-label {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--text-primary);
     display: flex;
     align-items: center;
@@ -75,24 +80,29 @@
 /* Form Inputs */
 .form-input {
     width: 100%;
-    padding: 12px 16px;
+    padding: 13px 15px;
     background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
     color: var(--text-primary);
     font-size: 14px;
     font-family: inherit;
-    transition: all 0.2s;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-input::placeholder {
     color: var(--text-secondary);
 }
 
+.form-input:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
 .form-input:focus {
     outline: none;
-    border-color: var(--accent-blue);
+    border-color: rgba(65, 105, 225, 0.65);
     background-color: rgba(65, 105, 225, 0.05);
+    box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.12);
 }
 
 /* Select Dropdown */
@@ -101,13 +111,90 @@
     color: var(--text-primary);
 }
 
+.choice-field {
+    position: relative;
+}
+
+.choice-field::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    pointer-events: none;
+    transition: box-shadow 0.2s ease;
+}
+
+.choice-field:focus-within::after {
+    box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.08);
+}
+
+.choice-field--select::before,
+.choice-field--date::before,
+.choice-field--time::before {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    z-index: 1;
+    pointer-events: none;
+    color: rgba(225, 231, 255, 0.62);
+    font-size: 13px;
+}
+
+.choice-field--select::before {
+    content: '▾';
+}
+
+.choice-field--date::before {
+    content: '📅';
+    font-size: 12px;
+}
+
+.choice-field--time::before {
+    content: '◷';
+}
+
+.choice-field .form-input,
+.form-select {
+    padding-right: 42px;
+}
+
+/* Custom styled select */
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    display: none;
+}
+
+.form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    background-image: none;
+    color-scheme: dark;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: rgba(65, 105, 225, 0.65);
+    background-color: rgba(65, 105, 225, 0.05);
+}
+
 /* Date Input Styling */
 .form-input[type="date"] {
     cursor: pointer;
+    padding-right: 42px;
+    color-scheme: dark;
 }
 
 .form-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+    filter: invert(1) brightness(1.08);
+    opacity: 0.9;
+    padding: 6px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
     cursor: pointer;
 }
 
@@ -191,18 +278,18 @@
 /* Status Buttons */
 .status-buttons {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .status-btn {
     padding: 10px 18px;
-    border-radius: 8px;
+    border-radius: 999px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    border: 2px solid var(--border-color);
-    background-color: transparent;
+    border: 1px solid rgba(128, 146, 255, 0.16);
+    background: rgba(8, 13, 33, 0.28);
     color: var(--text-secondary);
     transition: all 0.2s;
     font-family: inherit;
@@ -218,6 +305,7 @@
     border-color: var(--accent-blue);
     background-color: var(--accent-blue);
     color: #fff;
+    box-shadow: 0 8px 16px rgba(65, 105, 225, 0.2);
 }
 
 .status-btn:active {
@@ -266,15 +354,20 @@
 .direction-toggle {
     display: flex;
     gap: 8px;
+    padding: 5px;
+    width: fit-content;
+    border-radius: 12px;
+    border: 1px solid rgba(128, 146, 255, 0.12);
+    background: rgba(8, 13, 33, 0.28);
 }
 
 .direction-btn {
-    padding: 10px 18px;
-    border-radius: 8px;
+    padding: 10px 16px;
+    border-radius: 9px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    border: 2px solid var(--border-color);
+    border: 1px solid transparent;
     background-color: transparent;
     color: var(--text-secondary);
     transition: all 0.2s;
@@ -288,9 +381,10 @@
 }
 
 .direction-btn.active {
-    border-color: var(--accent-blue);
+    border-color: rgba(114, 141, 255, 0.28);
     background-color: var(--accent-blue);
     color: #fff;
+    box-shadow: 0 8px 16px rgba(65, 105, 225, 0.18);
 }
 
 .direction-btn:active {
@@ -312,10 +406,16 @@
 ----------------------------------------------------------------------- */
 .form-input[type="time"] {
     cursor: pointer;
+    padding-right: 42px;
+    color-scheme: dark;
 }
 
 .form-input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+    filter: invert(1) brightness(1.08);
+    opacity: 0.9;
+    padding: 6px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
     cursor: pointer;
 }
 

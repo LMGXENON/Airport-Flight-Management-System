@@ -15,7 +15,7 @@
         const welcomePara = chatWindow.querySelector('.welcome-message p');
         if (welcomePara) {
             welcomePara.textContent = isAdvancedSearch
-                ? 'Describe the flight you\'re looking for and I\'ll search for it. e.g. "Flights from Heathrow to Dubai tomorrow"'
+                ? 'Describe the flight you want to find and I\'ll apply search filters. I only handle flight search requests.'
                 : 'The AI assistant is only available on the Advanced Search page.';
         }
 
@@ -122,6 +122,15 @@
             return `${summary}<br><small style="opacity:.65">Filters applied — results loading below.</small>`;
         }
 
+        function hasSearchFilters(params) {
+            return Boolean(
+                params.flight || params.airline || params.destination ||
+                params.departureDate || params.arrivalDate || params.terminal ||
+                params.direction || params.timeRangeStart || params.timeRangeEnd ||
+                (Array.isArray(params.statuses) && params.statuses.length)
+            );
+        }
+
         async function callDeepSeek(userMessage) {
             const res = await fetch('/Home/ProcessAIQuery', {
                 method: 'POST',
@@ -147,6 +156,11 @@
             try {
                 const params = await callDeepSeek(text);
                 thinkingEl.remove();
+
+                if (params.isSearchRequest === false || !hasSearchFilters(params)) {
+                    appendMessage('assistant', escapeHtml(params.message || 'I can only help with flight searches. Try asking by airline, destination, flight number, date, time, terminal or status.'));
+                    return;
+                }
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 const clearBtn = document.getElementById('clearFiltersBtn');

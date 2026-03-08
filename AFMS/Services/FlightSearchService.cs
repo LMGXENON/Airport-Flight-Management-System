@@ -8,6 +8,11 @@ namespace AFMS.Services;
 /// </summary>
 public class FlightSearchService
 {
+    private static readonly HashSet<string> AirlineNoiseWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "air", "airline", "airlines", "airway", "airways", "international", "intl", "lines"
+    };
+
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly IConfiguration _configuration;
 
@@ -89,17 +94,7 @@ public class FlightSearchService
         if (!string.IsNullOrWhiteSpace(model.Airline))
         {
             var term = model.Airline.Trim();
-            query = query.Where(f =>
-            {
-                var name = f.Airline?.Name ?? "";
-                var iata = f.Airline?.Iata ?? "";
-                var icao = f.Airline?.Icao ?? "";
-                return name.Contains(term, StringComparison.OrdinalIgnoreCase)
-                    || iata.Equals(term, StringComparison.OrdinalIgnoreCase)
-                    || icao.Equals(term, StringComparison.OrdinalIgnoreCase)
-                    || term.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                           .All(word => name.Contains(word, StringComparison.OrdinalIgnoreCase));
-            });
+            query = query.Where(f => AirlineMatches(f.Airline, term));
         }
 
         // Destination airport
@@ -198,9 +193,112 @@ public class FlightSearchService
     private static bool AirportMatches(Airport? airport, string codeOrName)
     {
         if (airport == null) return false;
-        return (airport.Iata ?? "").Equals(codeOrName, StringComparison.OrdinalIgnoreCase)
-            || (airport.Icao ?? "").Equals(codeOrName, StringComparison.OrdinalIgnoreCase)
-            || (airport.Name ?? "").Contains(codeOrName, StringComparison.OrdinalIgnoreCase);
+
+        var term = codeOrName.Trim();
+        if ((airport.Iata ?? "").Equals(term, StringComparison.OrdinalIgnoreCase)
+            || (airport.Icao ?? "").Equals(term, StringComparison.OrdinalIgnoreCase)
+            || (airport.Name ?? "").Contains(term, StringComparison.OrdinalIgnoreCase)
+            || (airport.ShortName ?? "").Contains(term, StringComparison.OrdinalIgnoreCase)
+            || (airport.MunicipalityName ?? "").Contains(term, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var normalizedTerm = Normalize(term);
+        var normalizedName = Normalize(airport.Name);
+        var normalizedShortName = Normalize(airport.ShortName);
+        var normalizedMunicipality = Normalize(airport.MunicipalityName);
+
+        return normalizedName.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase)
+            || normalizedShortName.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase)
+            || normalizedMunicipality.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool AirlineMatches(Airline? airline, string term)
+    {
+        if (airline == null) return false;
+
+        var name = airline.Name ?? string.Empty;
+        var iata = airline.Iata ?? string.Empty;
+        var icao = airline.Icao ?? string.Empty;
+
+        if (name.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || iata.Equals(term, StringComparison.OrdinalIgnoreCase)
+            || icao.Equals(term, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var normalizedTerm = Normalize(term);
+        var normalizedName = Normalize(name);
+
+        if (normalizedName.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase)
+            || iata.Equals(normalizedTerm, StringComparison.OrdinalIgnoreCase)
+            || icao.Equals(normalizedTerm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var queryTokens = GetMeaningfulTokens(term);
+        var nameTokens = GetMeaningfulTokens(name);
+
+        if (queryTokens.Count > 0 && nameTokens.Count > 0 && queryTokens.All(queryToken =>
+                nameTokens.Any(nameToken => TokensMatch(queryToken, nameToken))))
+        {
+            return true;
+        }
+
+        var airlineInitialism = string.Concat(nameTokens.Where(t => t.Length > 0).Select(t => char.ToUpperInvariant(t[0])));
+        return airlineInitialism.Equals(normalizedTerm, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static List<string> GetMeaningfulTokens(string? value) =>
+        (value ?? string.Empty)
+            .Split(new[] { ' ', '-', '/', '&', '.' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(Normalize)
+            .Where(token => !string.IsNullOrWhiteSpace(token) && !AirlineNoiseWords.Contains(token))
+            .ToList();
+
+    private static bool TokensMatch(string queryToken, string nameToken)
+    {
+        if (queryToken.Equals(nameToken, StringComparison.OrdinalIgnoreCase)
+            || nameToken.StartsWith(queryToken, StringComparison.OrdinalIgnoreCase)
+            || queryToken.StartsWith(nameToken, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return queryToken.Length >= 4
+            && nameToken.Length >= 4
+            && LevenshteinDistance(queryToken, nameToken) <= 1;
+    }
+
+    private static int LevenshteinDistance(string a, string b)
+    {
+        if (a.Length == 0) return b.Length;
+        if (b.Length == 0) return a.Length;
+
+        var costs = new int[b.Length + 1];
+        for (var j = 0; j <= b.Length; j++)
+            costs[j] = j;
+
+        for (var i = 1; i <= a.Length; i++)
+        {
+            var previousDiagonal = costs[0];
+            costs[0] = i;
+
+            for (var j = 1; j <= b.Length; j++)
+            {
+                var temp = costs[j];
+                var substitutionCost = a[i - 1] == b[j - 1] ? 0 : 1;
+                costs[j] = Math.Min(
+                    Math.Min(costs[j] + 1, costs[j - 1] + 1),
+                    previousDiagonal + substitutionCost);
+                previousDiagonal = temp;
+            }
+        }
+
+        return costs[b.Length];
     }
 
     private static string Normalize(string? value) =>
