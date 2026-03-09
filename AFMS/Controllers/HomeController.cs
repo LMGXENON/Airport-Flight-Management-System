@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,9 @@ namespace AFMS.Controllers;
 
 public class HomeController : Controller
 {
+    private const string SearchOnlyMessage = "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
+    private const string DeepSeekPromptTemplateCacheKey = "deepseek_prompt_template";
+    private static readonly object AiThrottleLock = new();
     private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
     {
         "Expected", "Boarding", "Departed", "Arrived", "Delayed", "Canceled"
@@ -19,17 +23,26 @@ public class HomeController : Controller
     private readonly FlightSearchService _flightSearchService;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IWebHostEnvironment _environment;
+    private readonly ILogger<HomeController> _logger;
 
     public HomeController(
         AeroDataBoxService aeroDataBoxService,
         FlightSearchService flightSearchService,
         IConfiguration configuration,
-        IMemoryCache cache)
+        IMemoryCache cache,
+        IHttpClientFactory httpClientFactory,
+        IWebHostEnvironment environment,
+        ILogger<HomeController> logger)
     {
         _aeroDataBoxService  = aeroDataBoxService;
         _flightSearchService = flightSearchService;
         _configuration       = configuration;
         _cache               = cache;
+        _httpClientFactory   = httpClientFactory;
+        _environment         = environment;
+        _logger              = logger;
     }
 
     public async Task<IActionResult> Index()
@@ -132,51 +145,32 @@ public class HomeController : Controller
         if (string.IsNullOrWhiteSpace(request?.Query))
             return BadRequest(new { error = "Query is required" });
 
+        var clientKey = GetAiClientKey();
+        if (!TryBeginAiRequest(clientKey, out var retryAfterSeconds))
+        {
+            Response.Headers["Retry-After"] = retryAfterSeconds.ToString();
+            _logger.LogWarning("AI query throttled for client {ClientKey}. Retry after {RetryAfterSeconds}s.", clientKey, retryAfterSeconds);
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { error = "Too many AI requests. Please wait a few seconds and try again." });
+        }
+
         try
         {
-            var apiKey = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+            var apiKey = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY")
+                ?? _configuration["DeepSeek:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                _logger.LogError("DeepSeek API key is not configured.");
                 return StatusCode(500, new { error = "DeepSeek API key not configured" });
+            }
 
-            var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
-                        var systemPrompt = $@"You fill Advanced Search filters for a London Heathrow flight search page.
-You are NOT a general chatbot.
-
-If the message is not clearly about searching or filtering flights, return:
-{{
-    ""isSearchRequest"": false,
-    ""message"": ""I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status."" 
-}}
-
-If the message is about searching flights, return ONLY a valid JSON object with:
-    isSearchRequest – true
-    message         – optional short clarification, otherwise empty
-    flight          – flight number string (e.g. ""BA123"")
-    airline         – airline text from the user; if they only give a partial airline fragment, keep the best airline fragment instead of forcing a made-up full name
-    destination     – IATA airport code of the non-LHR endpoint when clear (e.g. ""DOH"", ""JFK"", ""DXB"")
-    departureDate   – date string YYYY-MM-DD
-    arrivalDate     – date string YYYY-MM-DD
-    terminal        – terminal string (e.g. ""5"")
-    direction       – ""Departure"" | ""Arrival"" | """" (empty = both)
-    timeRangeStart  – HH:mm
-    timeRangeEnd    – HH:mm
-    statuses        – array from [""Expected"",""Boarding"",""Departed"",""Arrived"",""Delayed"",""Canceled""]
-
-Rules:
-- Only return JSON. No markdown. No explanation.
-- Use destination codes when clear; otherwise leave destination empty.
-- If the user says ""today"", use {today} as the date.
-- If the user says ""tomorrow"", use the next calendar day from today.
-- Direction hints: ""from heathrow"", ""departing"", ""leaving"" => Departure. ""to heathrow"", ""arriving"", ""landing"" => Arrival.
-- City/country to IATA when obvious: Doha/Qatar→DOH, New York→JFK, Dubai→DXB, Paris→CDG, Frankfurt→FRA, Tokyo→HND, Amsterdam→AMS, Madrid→MAD, Singapore→SIN, Los Angeles→LAX, Sydney→SYD, Toronto→YYZ, Chicago→ORD, Miami→MIA, Barcelona→BCN, Rome→FCO, Lisbon→LIS, Istanbul→IST, Athens→ATH, Cairo→CAI, Bangkok→BKK, Hong Kong→HKG, Seoul→ICN, Shanghai→PVG, Beijing→PEK, Kuala Lumpur→KUL, Mumbai→BOM, Delhi→DEL, Nairobi→NBO, Cape Town→CPT, Johannesburg→JNB, Sao Paulo→GRU, Buenos Aires→EZE, Mexico City→MEX, Vancouver→YVR, Montreal→YUL, Boston→BOS, Washington→IAD, San Francisco→SFO, Seattle→SEA, Dallas→DFW, Houston→IAH, Atlanta→ATL, Denver→DEN, Orlando→MCO, Las Vegas→LAS, Manchester→MAN, Edinburgh→EDI, Glasgow→GLA, Birmingham→BHX, Bristol→BRS, Dublin→DUB.
-- If nothing usable can be extracted for a search, return isSearchRequest false with the short search-only message.";
-
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+            var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
+            var systemPrompt = BuildDeepSeekSystemPrompt();
+            var deepSeekClient = _httpClientFactory.CreateClient("DeepSeek");
+            deepSeekClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             var requestBody = new
             {
-                model = "deepseek-chat",
+                model,
                 messages = new[]
                 {
                     new { role = "system", content = systemPrompt },
@@ -186,30 +180,77 @@ Rules:
                 max_tokens = 300
             };
 
-            var response = await client.PostAsJsonAsync(
-                "https://api.deepseek.com/v1/chat/completions",
-                requestBody);
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds()));
+
+            var response = await deepSeekClient.PostAsJsonAsync("chat/completions", requestBody, timeoutCts.Token);
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return BadRequest(new { error = $"DeepSeek API error: {response.StatusCode}", details = errorContent });
+                _logger.LogWarning(
+                    "DeepSeek returned {StatusCode} for client {ClientKey}. Details: {Details}",
+                    (int)response.StatusCode,
+                    clientKey,
+                    Truncate(errorContent, 300));
+
+                return StatusCode((int)response.StatusCode, new
+                {
+                    error = $"DeepSeek API error: {response.StatusCode}",
+                    details = Truncate(errorContent, 300)
+                });
             }
 
             var jsonContent = await response.Content.ReadAsStringAsync();
             var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var jsonResponse = JsonSerializer.Deserialize<DeepSeekResponse>(jsonContent, opts);
+
+            DeepSeekResponse? jsonResponse;
+            try
+            {
+                jsonResponse = JsonSerializer.Deserialize<DeepSeekResponse>(jsonContent, opts);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "DeepSeek returned invalid outer JSON for client {ClientKey}.", clientKey);
+                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI service returned an invalid response." });
+            }
+
             var content = jsonResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? "{}";
             
             content = System.Text.RegularExpressions.Regex.Replace(content, @"```(?:json)?|```", "").Trim();
 
-            var parsedParams = JsonSerializer.Deserialize<AiSearchFiltersResponse>(content, opts) ?? new AiSearchFiltersResponse();
+            AiSearchFiltersResponse parsedParams;
+            try
+            {
+                parsedParams = JsonSerializer.Deserialize<AiSearchFiltersResponse>(content, opts) ?? new AiSearchFiltersResponse();
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "DeepSeek returned invalid search JSON for client {ClientKey}. Payload: {Payload}", clientKey, Truncate(content, 300));
+                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not turn that request into search filters. Please try again." });
+            }
+
             var normalizedParams = NormalizeAiSearchFilters(parsedParams);
+            _logger.LogInformation(
+                "AI query processed for client {ClientKey}. SearchRequest={IsSearchRequest}, FilterCount={FilterCount}",
+                clientKey,
+                normalizedParams.IsSearchRequest,
+                CountSearchFilters(normalizedParams));
+
             return Ok(normalizedParams);
+        }
+        catch (OperationCanceledException ex) when (!HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex, "DeepSeek request timed out for client {ClientKey}.", clientKey);
+            return StatusCode(StatusCodes.Status504GatewayTimeout, new { error = "DeepSeek request timed out" });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            _logger.LogError(ex, "Failed to process AI query for client {ClientKey}.", clientKey);
+            return StatusCode(500, new { error = "Failed to process AI request" });
+        }
+        finally
+        {
+            EndAiRequest(clientKey);
         }
     }
 
@@ -316,7 +357,7 @@ Rules:
 
         if (!response.IsSearchRequest && !HasAnySearchFilters(response))
         {
-            response.Message ??= "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
+            response.Message ??= SearchOnlyMessage;
             return response;
         }
 
@@ -324,10 +365,121 @@ Rules:
 
         if (!response.IsSearchRequest)
         {
-            response.Message = "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
+            response.Message = SearchOnlyMessage;
         }
 
         return response;
+    }
+
+    private bool TryBeginAiRequest(string clientKey, out int retryAfterSeconds)
+    {
+        var inFlightKey = $"ai-chat:inflight:{clientKey}";
+        var rateLimitKey = $"ai-chat:rate:{clientKey}";
+        var maxRequestsPerMinute = Math.Max(1, _configuration.GetValue<int?>("DeepSeek:MaxRequestsPerMinute") ?? 5);
+        var now = DateTime.UtcNow;
+
+        lock (AiThrottleLock)
+        {
+            if (_cache.TryGetValue(inFlightKey, out _))
+            {
+                retryAfterSeconds = 2;
+                return false;
+            }
+
+            var rateState = _cache.Get<AiRateLimitState>(rateLimitKey);
+            if (rateState is null || now >= rateState.WindowEndsUtc)
+            {
+                rateState = new AiRateLimitState
+                {
+                    WindowEndsUtc = now.AddMinutes(1),
+                    RequestCount = 0
+                };
+            }
+
+            if (rateState.RequestCount >= maxRequestsPerMinute)
+            {
+                retryAfterSeconds = Math.Max(1, (int)Math.Ceiling((rateState.WindowEndsUtc - now).TotalSeconds));
+                _cache.Set(rateLimitKey, rateState, rateState.WindowEndsUtc);
+                return false;
+            }
+
+            rateState.RequestCount++;
+            _cache.Set(rateLimitKey, rateState, rateState.WindowEndsUtc);
+            _cache.Set(inFlightKey, true, TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds() + 1));
+
+            retryAfterSeconds = 0;
+            return true;
+        }
+    }
+
+    private void EndAiRequest(string clientKey)
+    {
+        lock (AiThrottleLock)
+        {
+            _cache.Remove($"ai-chat:inflight:{clientKey}");
+        }
+    }
+
+    private string GetAiClientKey()
+    {
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        return string.IsNullOrWhiteSpace(ipAddress) ? "unknown-client" : ipAddress;
+    }
+
+    private string BuildDeepSeekSystemPrompt()
+    {
+        var promptTemplate = GetDeepSeekPromptTemplate();
+        return promptTemplate
+            .Replace("{today}", DateTime.UtcNow.ToString("yyyy-MM-dd"), StringComparison.Ordinal)
+            .Replace("{allowedStatuses}", string.Join(",", AllowedStatuses.Select(status => $"\"{status}\"")), StringComparison.Ordinal)
+            .Replace("{searchOnlyMessage}", SearchOnlyMessage, StringComparison.Ordinal);
+    }
+
+    private string GetDeepSeekPromptTemplate()
+    {
+        return _cache.GetOrCreate(DeepSeekPromptTemplateCacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+
+            var configuredPath = _configuration["DeepSeek:PromptFile"] ?? "Prompts/DeepSeekFlightSearchPrompt.txt";
+            var promptPath = Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(_environment.ContentRootPath, configuredPath);
+
+            if (System.IO.File.Exists(promptPath))
+                return System.IO.File.ReadAllText(promptPath);
+
+            _logger.LogWarning("DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
+            return "You fill Advanced Search filters for a London Heathrow flight search page. You are NOT a general chatbot. If the message is not clearly about searching or filtering flights, return JSON with isSearchRequest false and message {searchOnlyMessage}. If the message is about searching flights, return only valid JSON using the known search fields and statuses [{allowedStatuses}]. If the user says today, use {today}.";
+        }) ?? string.Empty;
+    }
+
+    private int GetDeepSeekTimeoutSeconds() =>
+        Math.Max(5, _configuration.GetValue<int?>("DeepSeek:TimeoutSeconds") ?? 15);
+
+    private static int CountSearchFilters(AiSearchFiltersResponse response)
+    {
+        var count = 0;
+
+        if (!string.IsNullOrWhiteSpace(response.Flight)) count++;
+        if (!string.IsNullOrWhiteSpace(response.Airline)) count++;
+        if (!string.IsNullOrWhiteSpace(response.Destination)) count++;
+        if (!string.IsNullOrWhiteSpace(response.DepartureDate)) count++;
+        if (!string.IsNullOrWhiteSpace(response.ArrivalDate)) count++;
+        if (!string.IsNullOrWhiteSpace(response.Terminal)) count++;
+        if (!string.IsNullOrWhiteSpace(response.Direction)) count++;
+        if (!string.IsNullOrWhiteSpace(response.TimeRangeStart) || !string.IsNullOrWhiteSpace(response.TimeRangeEnd)) count++;
+        if (response.Statuses?.Count > 0) count++;
+
+        return count;
+    }
+
+    private static string Truncate(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length <= maxLength)
+            return value ?? string.Empty;
+
+        return value[..maxLength] + "...";
     }
 
     private static bool HasAnySearchFilters(AiSearchFiltersResponse response) =>
@@ -420,6 +572,12 @@ public class DeepSeekChoice
 public class DeepSeekMessage
 {
     public string? Content { get; set; }
+}
+
+public class AiRateLimitState
+{
+    public DateTime WindowEndsUtc { get; set; }
+    public int RequestCount { get; set; }
 }
 
 public class AiSearchFiltersResponse
