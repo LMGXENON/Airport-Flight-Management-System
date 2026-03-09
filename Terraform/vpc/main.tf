@@ -56,3 +56,10 @@ resource "aws_eip" "ngw-eip" {
   count  = 2
   domain = "vpc"
 }
+resource "aws_nat_gateway" "ngw" {
+  count         = 2
+  allocation_id = aws_eip.ngw-eip[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+  depends_on    = [aws_internet_gateway.igw]
+
+}
