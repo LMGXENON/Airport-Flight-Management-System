@@ -2,6 +2,14 @@
 
 @{
     ViewData["Title"] = "Advanced Search";
+    var selectedDirectionSummary = string.IsNullOrWhiteSpace(Model.Direction)
+        ? "Showing all directions"
+        : Model.Direction == "Departure"
+            ? "Showing departures only"
+            : "Showing arrivals only";
+    var selectedStatusesSummary = Model.Statuses.Any()
+        ? $"Status filters: {string.Join(", ", Model.Statuses)}"
+        : "No status filters selected";
 }
 
 @section Styles {
@@ -176,12 +184,18 @@
                 <div class="direction-toggle">
                     <input type="hidden" id="directionInput" name="direction" value="@Model.Direction" />
                     <button type="button" class="direction-btn @(string.IsNullOrEmpty(Model.Direction) ? "active" : "")"
-                            data-direction="">All</button>
+                            data-direction=""
+                            aria-pressed="@(string.IsNullOrEmpty(Model.Direction) ? "true" : "false")">All</button>
                     <button type="button" class="direction-btn @(Model.Direction == "Departure" ? "active" : "")"
-                            data-direction="Departure">Departures</button>
+                            data-direction="Departure"
+                            aria-pressed="@(Model.Direction == "Departure" ? "true" : "false")">Departures</button>
                     <button type="button" class="direction-btn @(Model.Direction == "Arrival" ? "active" : "")"
-                            data-direction="Arrival">Arrivals</button>
+                            data-direction="Arrival"
+                            aria-pressed="@(Model.Direction == "Arrival" ? "true" : "false")">Arrivals</button>
                 </div>
+                <div class="selection-summary @(string.IsNullOrWhiteSpace(Model.Direction) ? "" : "selection-summary--filtered")"
+                     id="directionSelectionSummary"
+                     aria-live="polite">@selectedDirectionSummary</div>
             </div>
             <div class="form-group">
                 <label for="timeRangeStart" class="form-label">From Time</label>
@@ -222,7 +236,8 @@
                             var isActive = Model.Statuses.Contains(val, StringComparer.OrdinalIgnoreCase);
                             <button type="button"
                                     class="status-btn @(isActive ? "active" : "")"
-                                    data-status="@val">@lbl</button>
+                                    data-status="@val"
+                                    aria-pressed="@(isActive ? "true" : "false")">@lbl</button>
                         }
                     }
                 </div>
@@ -230,6 +245,9 @@
                 {
                     <input type="hidden" name="statuses" value="@s" class="status-hidden-input" />
                 }
+                <div class="selection-summary @(Model.Statuses.Any() ? "selection-summary--filtered" : "")"
+                     id="statusSelectionSummary"
+                     aria-live="polite">@selectedStatusesSummary</div>
             </div>
         </div>
 
@@ -277,29 +295,77 @@
         // -------------------------------------------------------------------
         let currentSortBy  = '@(Model.SortBy ?? "")';
         let currentSortOrd = '@(Model.SortOrder ?? "asc")';
+        const directionInput   = document.getElementById('directionInput');
+        const directionSummary = document.getElementById('directionSelectionSummary');
+        const statusSummary    = document.getElementById('statusSelectionSummary');
+
+        function describeDirection(direction) {
+            if (!direction) return 'Showing all directions';
+            return direction === 'Departure' ? 'Showing departures only' : 'Showing arrivals only';
+        }
+
+        function getSelectedStatuses() {
+            return [...document.querySelectorAll('#statusButtons .status-btn.active')]
+                .map(b => b.dataset.status)
+                .filter(Boolean);
+        }
+
+        function updateDirectionButtons(selectedDirection = '') {
+            document.querySelectorAll('.direction-btn').forEach(btn => {
+                const isActive = btn.dataset.direction === selectedDirection;
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            if (directionInput) {
+                directionInput.value = selectedDirection;
+            }
+
+            if (directionSummary) {
+                directionSummary.textContent = describeDirection(selectedDirection);
+                directionSummary.classList.toggle('selection-summary--filtered', Boolean(selectedDirection));
+            }
+        }
+
+        function updateStatusButtons(selectedStatuses = getSelectedStatuses()) {
+            const normalized = [...new Set(selectedStatuses)];
+
+            document.querySelectorAll('#statusButtons .status-btn').forEach(btn => {
+                const isActive = normalized.includes(btn.dataset.status);
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            if (statusSummary) {
+                statusSummary.textContent = normalized.length
+                    ? `Status filters: ${normalized.join(', ')}`
+                    : 'No status filters selected';
+                statusSummary.classList.toggle('selection-summary--filtered', normalized.length > 0);
+            }
+        }
+
+        window.syncAdvancedSearchSelections = function () {
+            updateDirectionButtons(directionInput?.value ?? '');
+            updateStatusButtons();
+        };
 
         // -------------------------------------------------------------------
         // Direction toggle
         // -------------------------------------------------------------------
-        const directionInput = document.getElementById('directionInput');
         document.querySelectorAll('.direction-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.direction-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                directionInput.value = btn.dataset.direction;
+                updateDirectionButtons(btn.dataset.direction);
             });
         });
 
         // -------------------------------------------------------------------
         // Status multi-select
         // -------------------------------------------------------------------
-        function getSelectedStatuses() {
-            return [...document.querySelectorAll('#statusButtons .status-btn.active')]
-                .map(b => b.dataset.status);
-        }
-
         document.querySelectorAll('#statusButtons .status-btn').forEach(btn => {
-            btn.addEventListener('click', () => btn.classList.toggle('active'));
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                updateStatusButtons();
+            });
         });
 
         // -------------------------------------------------------------------
@@ -435,11 +501,12 @@
         // Clear filters
         // -------------------------------------------------------------------
         document.getElementById('clearFiltersBtn').addEventListener('click', () => {
-            document.querySelectorAll('#statusButtons .status-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.direction-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.direction-btn[data-direction=""]').classList.add('active');
-            directionInput.value = '';
-            document.getElementById('searchForm').reset();
+            const form = document.getElementById('searchForm');
+            form.reset();
+            form.querySelectorAll('input[type="text"], input[type="date"], input[type="time"]').forEach(input => input.value = '');
+            document.getElementById('terminal').value = '';
+            updateDirectionButtons('');
+            updateStatusButtons([]);
             document.getElementById('results-container').innerHTML = '';
             currentSortBy  = '';
             currentSortOrd = 'asc';
@@ -448,6 +515,8 @@
         // -------------------------------------------------------------------
         // Initialise
         // -------------------------------------------------------------------
+        updateDirectionButtons(directionInput?.value ?? '');
+        updateStatusButtons();
         attachSortHandlers();
         attachLoadMoreHandler();
     </script>
