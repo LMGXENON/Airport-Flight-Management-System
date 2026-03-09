@@ -30,6 +30,11 @@ builder.Services.AddMemoryCache();
 
 // Add HttpClient for API calls
 builder.Services.AddHttpClient<AeroDataBoxService>();
+builder.Services.AddHttpClient("DeepSeek", client =>
+{
+    var apiEndpoint = builder.Configuration["DeepSeek:ApiEndpoint"] ?? "https://api.deepseek.com/v1/";
+    client.BaseAddress = new Uri($"{apiEndpoint.TrimEnd('/')}/");
+});
 
 // Add database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

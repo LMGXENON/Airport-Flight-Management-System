@@ -42,6 +42,7 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     display: none;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .ai-chat-window.active {
@@ -86,6 +87,41 @@
     font-size: 15px;
     font-weight: 500;
     color: #ffffff;
+}
+
+.ai-chat-title p {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: #9aa5cb;
+}
+
+.ai-chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-chat-clear {
+    border: 1px solid #394268;
+    background: rgba(255, 255, 255, 0.04);
+    color: #cfd6f5;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.ai-chat-clear:hover {
+    background: rgba(65, 105, 225, 0.12);
+    border-color: #4c6ae4;
+    color: #ffffff;
+}
+
+.ai-chat-clear:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .ai-chat-close {
@@ -175,8 +211,20 @@
     font-family: inherit;
 }
 
+.chat-input-field:focus {
+    border-color: #4c6ae4;
+    box-shadow: 0 0 0 3px rgba(76, 106, 228, 0.15);
+}
+
 .chat-input-field::placeholder {
     color: #6b7280;
+}
+
+.chat-input-hint {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #7e88aa;
+    line-height: 1.4;
 }
 
 .chat-send-btn {
@@ -223,6 +271,7 @@
     max-width: 85%;
     margin-bottom: 10px;
     display: flex;
+    width: 100%;
 }
 
 .user-message {
@@ -255,6 +304,22 @@
     border: 1px solid #2d3454;
 }
 
+.assistant-message.info-message .message-bubble {
+    background: #202843;
+    border-color: #33406a;
+}
+
+.assistant-message.success-message .message-bubble {
+    background: #182d3f;
+    border-color: #245577;
+}
+
+.assistant-message.error-message .message-bubble {
+    background: #3a1f2a;
+    border-color: #6f3243;
+    color: #ffd7df;
+}
+
 .assistant-message .message-bubble strong {
     color: #ffffff;
 }
@@ -271,6 +336,18 @@
 ----------------------------------------------------------------------- */
 .thinking .message-bubble {
     padding: 14px 18px;
+}
+
+.thinking-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.thinking-label {
+    color: #e1e7ff;
+    font-weight: 600;
+    letter-spacing: 0.01em;
 }
 
 .dot-flashing {
@@ -313,4 +390,24 @@
 @keyframes dot-flashing {
     0%   { background-color: #8891b2; }
     50%, 100% { background-color: #2d3454; }
+}
+
+@media (max-width: 640px) {
+    .ai-chat-window {
+        width: min(360px, calc(100vw - 24px));
+        height: min(520px, calc(100vh - 100px));
+    }
+
+    .ai-chat-header {
+        padding: 14px;
+    }
+
+    .ai-chat-header-actions {
+        gap: 6px;
+    }
+
+    .ai-chat-clear {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
 }

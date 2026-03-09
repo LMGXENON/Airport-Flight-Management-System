@@ -1,5 +1,40 @@
 @model AFMS.Models.AdvancedSearchViewModel
 
+@{
+    var activeFilters = new List<(string Label, string Value)>();
+
+    if (!string.IsNullOrWhiteSpace(Model.Flight))
+        activeFilters.Add(("Flight", Model.Flight));
+
+    if (!string.IsNullOrWhiteSpace(Model.Airline))
+        activeFilters.Add(("Airline", Model.Airline));
+
+    if (!string.IsNullOrWhiteSpace(Model.Destination))
+        activeFilters.Add(("Destination", Model.Destination));
+
+    if (Model.DepartureDate.HasValue)
+        activeFilters.Add(("Departure date", Model.DepartureDate.Value.ToString("dd MMM yyyy")));
+
+    if (Model.ArrivalDate.HasValue)
+        activeFilters.Add(("Arrival date", Model.ArrivalDate.Value.ToString("dd MMM yyyy")));
+
+    if (!string.IsNullOrWhiteSpace(Model.Terminal))
+        activeFilters.Add(("Terminal", $"Terminal {Model.Terminal}"));
+
+    if (!string.IsNullOrWhiteSpace(Model.Direction))
+        activeFilters.Add(("Direction", Model.Direction == "Departure" ? "Departures" : "Arrivals"));
+
+    if (!string.IsNullOrWhiteSpace(Model.TimeRangeStart) || !string.IsNullOrWhiteSpace(Model.TimeRangeEnd))
+    {
+        var timeStart = Model.TimeRangeStart ?? "00:00";
+        var timeEnd = Model.TimeRangeEnd ?? "23:59";
+        activeFilters.Add(("Time", $"{timeStart} - {timeEnd}"));
+    }
+
+    if (Model.Statuses.Any())
+        activeFilters.Add(("Status", string.Join(", ", Model.Statuses)));
+}
+
 <div class="flights-section advanced-results">
     <div class="flights-header">
         <h2 class="section-title">
@@ -14,7 +49,41 @@
         <div class="search-notice">@Model.Notice</div>
     }
 
-    @if (!Model.Results.Any())
+    @if (Model.HasValidationErrors)
+    {
+        <div class="search-validation search-validation--server" aria-live="polite">
+            <div class="search-validation-title">Please fix these before searching:</div>
+            <ul class="search-validation-list">
+                @foreach (var error in Model.ValidationErrors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (activeFilters.Any())
+    {
+        <div class="active-filters" aria-label="Active search filters">
+            <div class="active-filters-header">
+                <span class="active-filters-title">Active filters</span>
+                <span class="active-filters-count">@activeFilters.Count selected</span>
+            </div>
+            <div class="active-filters-list">
+                @foreach (var filter in activeFilters)
+                {
+                    <span class="active-filter-chip">
+                        <strong>@filter.Label:</strong> @filter.Value
+                    </span>
+                }
+            </div>
+        </div>
+    }
+
+    @if (Model.HasValidationErrors)
+    {
+    }
+    else if (!Model.Results.Any())
     {
         <div class="empty-state">
             <p style="font-size: 18px; margin-bottom: 8px;">No flights matched your filters</p>
