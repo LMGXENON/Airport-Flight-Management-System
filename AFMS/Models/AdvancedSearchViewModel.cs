@@ -37,6 +37,8 @@ public class AdvancedSearchViewModel
     // --- Results ---
     public bool HasSearched { get; set; }
     public string? Notice { get; set; }
+    public List<string> ValidationErrors { get; set; } = new();
+    public bool HasValidationErrors => ValidationErrors.Count > 0;
     public string? UsedAirportCode { get; set; }
     public List<AeroDataBoxFlight> Results { get; set; } = new();
     public int TotalCount { get; set; }

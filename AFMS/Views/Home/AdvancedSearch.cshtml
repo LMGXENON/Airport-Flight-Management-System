@@ -266,6 +266,19 @@
                 Clear Filters
             </button>
         </div>
+
+        <div class="search-validation @(Model.HasValidationErrors ? "search-validation--visible" : "")"
+             id="searchValidationMessage"
+             aria-live="polite"
+             @(Model.HasValidationErrors ? "" : "hidden")>
+            <div class="search-validation-title">Please fix these before searching:</div>
+            <ul class="search-validation-list" id="searchValidationList">
+                @foreach (var error in Model.ValidationErrors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
     </form>
 
     <p class="api-hint">Tip: every filter is optional — combine any number of filters together.</p>
@@ -298,6 +311,9 @@
         const directionInput   = document.getElementById('directionInput');
         const directionSummary = document.getElementById('directionSelectionSummary');
         const statusSummary    = document.getElementById('statusSelectionSummary');
+        const searchForm       = document.getElementById('searchForm');
+        const validationBox    = document.getElementById('searchValidationMessage');
+        const validationList   = document.getElementById('searchValidationList');
 
         function describeDirection(direction) {
             if (!direction) return 'Showing all directions';
@@ -349,11 +365,91 @@
             updateStatusButtons();
         };
 
+        function setFieldError(id, isInvalid) {
+            const input = document.getElementById(id);
+            if (!input) return;
+
+            input.classList.toggle('input-error', isInvalid);
+            const fieldWrapper = input.closest('.choice-field');
+            if (fieldWrapper) {
+                fieldWrapper.classList.toggle('choice-field--error', isInvalid);
+            }
+        }
+
+        function clearValidationState() {
+            if (validationBox) {
+                validationBox.hidden = true;
+                validationBox.classList.remove('search-validation--visible');
+            }
+
+            if (validationList) {
+                validationList.innerHTML = '';
+            }
+
+            ['departureDate', 'arrivalDate', 'timeRangeStart', 'timeRangeEnd'].forEach(id => setFieldError(id, false));
+        }
+
+        function showValidationErrors(errors, fieldIds = []) {
+            if (!validationBox || !validationList) return;
+
+            validationList.innerHTML = errors.map(error => `<li>${error}</li>`).join('');
+            validationBox.hidden = false;
+            validationBox.classList.add('search-validation--visible');
+            ['departureDate', 'arrivalDate', 'timeRangeStart', 'timeRangeEnd'].forEach(id => {
+                setFieldError(id, fieldIds.includes(id));
+            });
+        }
+
+        function hasAnySearchFilter() {
+            return Boolean(
+                document.getElementById('flight')?.value.trim()
+                || document.getElementById('airline')?.value.trim()
+                || document.getElementById('destination')?.value.trim()
+                || document.getElementById('departureDate')?.value
+                || document.getElementById('arrivalDate')?.value
+                || document.getElementById('terminal')?.value
+                || directionInput?.value
+                || document.getElementById('timeRangeStart')?.value
+                || document.getElementById('timeRangeEnd')?.value
+                || getSelectedStatuses().length
+            );
+        }
+
+        function validateSearchForm() {
+            const errors = [];
+            const invalidFieldIds = [];
+            const departureDate = document.getElementById('departureDate')?.value;
+            const arrivalDate = document.getElementById('arrivalDate')?.value;
+            const timeRangeStart = document.getElementById('timeRangeStart')?.value;
+            const timeRangeEnd = document.getElementById('timeRangeEnd')?.value;
+
+            if (!hasAnySearchFilter()) {
+                errors.push('Choose at least one filter before searching.');
+            }
+
+            if (departureDate && arrivalDate && departureDate > arrivalDate) {
+                errors.push('Departure date cannot be after arrival date.');
+                invalidFieldIds.push('departureDate', 'arrivalDate');
+            }
+
+            if (timeRangeStart && timeRangeEnd && timeRangeStart > timeRangeEnd) {
+                errors.push('The start time cannot be later than the end time.');
+                invalidFieldIds.push('timeRangeStart', 'timeRangeEnd');
+            }
+
+            return {
+                isValid: errors.length === 0,
+                errors,
+                invalidFieldIds: [...new Set(invalidFieldIds)]
+            };
+        }
+
         // -------------------------------------------------------------------
         // Direction toggle
         // -------------------------------------------------------------------
         document.querySelectorAll('.direction-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                clearValidationState();
                 updateDirectionButtons(btn.dataset.direction);
             });
         });
@@ -363,6 +459,7 @@
         // -------------------------------------------------------------------
         document.querySelectorAll('#statusButtons .status-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                clearValidationState();
                 btn.classList.toggle('active');
                 updateStatusButtons();
             });
@@ -395,6 +492,7 @@
         // -------------------------------------------------------------------
         async function fetchResults(params) {
             const container = document.getElementById('results-container');
+            clearValidationState();
             document.getElementById('searchLoading').style.display = 'flex';
             container.style.opacity = '0.35';
 
@@ -490,8 +588,14 @@
         // -------------------------------------------------------------------
         // Form submit → AJAX
         // -------------------------------------------------------------------
-        document.getElementById('searchForm').addEventListener('submit', e => {
+        searchForm.addEventListener('submit', e => {
             e.preventDefault();
+            const validation = validateSearchForm();
+            if (!validation.isValid) {
+                showValidationErrors(validation.errors, validation.invalidFieldIds);
+                return;
+            }
+
             currentSortBy  = '';
             currentSortOrd = 'asc';
             fetchResults(buildParams(1, '', 'asc'));
@@ -501,15 +605,20 @@
         // Clear filters
         // -------------------------------------------------------------------
         document.getElementById('clearFiltersBtn').addEventListener('click', () => {
-            const form = document.getElementById('searchForm');
-            form.reset();
-            form.querySelectorAll('input[type="text"], input[type="date"], input[type="time"]').forEach(input => input.value = '');
+            searchForm.reset();
+            searchForm.querySelectorAll('input[type="text"], input[type="date"], input[type="time"]').forEach(input => input.value = '');
             document.getElementById('terminal').value = '';
             updateDirectionButtons('');
             updateStatusButtons([]);
+            clearValidationState();
             document.getElementById('results-container').innerHTML = '';
             currentSortBy  = '';
             currentSortOrd = 'asc';
+        });
+
+        searchForm.querySelectorAll('input, select').forEach(field => {
+            field.addEventListener('input', clearValidationState);
+            field.addEventListener('change', clearValidationState);
         });
 
         // -------------------------------------------------------------------
@@ -517,6 +626,9 @@
         // -------------------------------------------------------------------
         updateDirectionButtons(directionInput?.value ?? '');
         updateStatusButtons();
+        if (!validationBox?.classList.contains('search-validation--visible')) {
+            clearValidationState();
+        }
         attachSortHandlers();
         attachLoadMoreHandler();
     </script>

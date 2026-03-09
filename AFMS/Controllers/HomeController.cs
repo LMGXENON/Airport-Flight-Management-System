@@ -87,6 +87,10 @@ public class HomeController : Controller
         if (!model.HasSearched)
             return View(model);
 
+        ValidateSearchModel(model);
+        if (model.HasValidationErrors)
+            return View(model);
+
         await _flightSearchService.ExecuteSearchAsync(model);
         return View(model);
     }
@@ -112,6 +116,10 @@ public class HomeController : Controller
             departureDate, arrivalDate, terminal, direction,
             statuses, timeRangeStart, timeRangeEnd,
             sortBy, sortOrder, page);
+
+        ValidateSearchModel(model);
+        if (model.HasValidationErrors)
+            return PartialView("_AdvancedSearchResults", model);
 
         await _flightSearchService.ExecuteSearchAsync(model);
         return PartialView("_AdvancedSearchResults", model);
@@ -231,6 +239,61 @@ Rules:
             Page            = page < 1 ? 1 : page,
             HasSearched     = !string.IsNullOrWhiteSpace(search)
         };
+    }
+
+    private static void ValidateSearchModel(AdvancedSearchViewModel model)
+    {
+        model.ValidationErrors.Clear();
+        TimeSpan? startTime = null;
+        TimeSpan? endTime = null;
+
+        var hasAnyFilter =
+            !string.IsNullOrWhiteSpace(model.Flight)
+            || !string.IsNullOrWhiteSpace(model.Airline)
+            || !string.IsNullOrWhiteSpace(model.Destination)
+            || model.DepartureDate.HasValue
+            || model.ArrivalDate.HasValue
+            || !string.IsNullOrWhiteSpace(model.Terminal)
+            || !string.IsNullOrWhiteSpace(model.Direction)
+            || !string.IsNullOrWhiteSpace(model.TimeRangeStart)
+            || !string.IsNullOrWhiteSpace(model.TimeRangeEnd)
+            || model.Statuses.Any();
+
+        if (!hasAnyFilter)
+        {
+            model.ValidationErrors.Add("Choose at least one filter before searching.");
+            return;
+        }
+
+        var hasValidStartTime = string.IsNullOrWhiteSpace(model.TimeRangeStart);
+        if (!hasValidStartTime)
+            hasValidStartTime = TimeSpan.TryParse(model.TimeRangeStart, out var parsedStartTime) && (startTime = parsedStartTime).HasValue;
+
+        var hasValidEndTime = string.IsNullOrWhiteSpace(model.TimeRangeEnd);
+        if (!hasValidEndTime)
+            hasValidEndTime = TimeSpan.TryParse(model.TimeRangeEnd, out var parsedEndTime) && (endTime = parsedEndTime).HasValue;
+
+        if (!hasValidStartTime)
+            model.ValidationErrors.Add("Enter a valid start time.");
+
+        if (!hasValidEndTime)
+            model.ValidationErrors.Add("Enter a valid end time.");
+
+        if (hasValidStartTime && hasValidEndTime
+            && !string.IsNullOrWhiteSpace(model.TimeRangeStart)
+            && !string.IsNullOrWhiteSpace(model.TimeRangeEnd)
+            && startTime.HasValue
+            && endTime.HasValue
+            && startTime.Value > endTime.Value)
+        {
+            model.ValidationErrors.Add("The start time cannot be later than the end time.");
+        }
+
+        if (model.DepartureDate.HasValue && model.ArrivalDate.HasValue
+            && model.DepartureDate.Value.Date > model.ArrivalDate.Value.Date)
+        {
+            model.ValidationErrors.Add("Departure date cannot be after arrival date.");
+        }
     }
 
     private static AiSearchFiltersResponse NormalizeAiSearchFilters(AiSearchFiltersResponse response)

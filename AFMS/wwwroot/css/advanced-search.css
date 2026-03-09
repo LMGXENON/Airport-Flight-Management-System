@@ -39,6 +39,36 @@
     background: rgba(65, 105, 225, 0.08);
 }
 
+.search-validation {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 125, 125, 0.32);
+    background: rgba(120, 20, 20, 0.16);
+    color: #ffd5d5;
+}
+
+.search-validation[hidden] {
+    display: none;
+}
+
+.search-validation-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.search-validation-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.search-validation--server {
+    margin-bottom: 16px;
+}
+
 .active-filters {
     margin-bottom: 16px;
     padding: 14px 16px;
@@ -156,6 +186,12 @@
     box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.12);
 }
 
+.form-input.input-error {
+    border-color: rgba(255, 125, 125, 0.8);
+    background-color: rgba(120, 20, 20, 0.14);
+    box-shadow: 0 0 0 3px rgba(255, 125, 125, 0.12);
+}
+
 /* Select Dropdown */
 .form-input option {
     background-color: var(--bg-secondary);
@@ -177,6 +213,10 @@
 
 .choice-field:focus-within::after {
     box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.08);
+}
+
+.choice-field--error::after {
+    box-shadow: 0 0 0 3px rgba(255, 125, 125, 0.1);
 }
 
 .choice-field--select::before,
