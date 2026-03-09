@@ -46,3 +46,13 @@ resource "aws_route_table_association" "priv-rt" {
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[count.index].id
 }
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.afms_vpc.id
+}
+
+
+
+resource "aws_eip" "ngw-eip" {
+  count  = 2
+  domain = "vpc"
+}
