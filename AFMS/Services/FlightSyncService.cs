@@ -90,6 +90,10 @@ public class FlightSyncService
 
                 if (existingFlight != null)
                 {
+                    // Don't overwrite flights that have been manually edited by a user
+                    if (existingFlight.IsManualEntry)
+                        continue;
+
                     // Update existing flight
                     var hasChanged = false;
 

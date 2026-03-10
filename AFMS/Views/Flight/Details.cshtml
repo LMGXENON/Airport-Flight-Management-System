@@ -5,26 +5,21 @@
     
     var statusClass = Model.Status?.ToLower().Replace(" ", "") switch
     {
-        "ontime" => "status-ontime",
-        "delayed" => "status-delayed",
+        "ontime"    => "status-ontime",
+        "delayed"   => "status-delayed",
         "cancelled" => "status-cancelled",
-        "boarding" => "status-boarding",
-        "departed" => "status-departed",
-        "arrived" => "status-arrived",
-        _ => "status-scheduled"
+        "boarding"  => "status-boarding",
+        "departed"  => "status-departed",
+        "arrived"   => "status-arrived",
+        _           => "status-scheduled"
     };
 }
 
-<!-- Page Header -->
 <div class="page-header">
-    <a href="@Url.Action("Index", "Flight")" style="color: var(--accent-blue); text-decoration: none; margin-bottom: 10px; display: inline-block;">
-        ← Back to All Flights
-    </a>
     <h1 class="page-title">Flight @Model.FlightNumber</h1>
-    <p class="page-subtitle">@Model.Airline - @Model.Destination</p>
+    <p class="page-subtitle">@Model.Airline &mdash; @Model.Destination</p>
 </div>
 
-<!-- Flight Details Card -->
 <div class="details-card">
     <div class="details-header">
         <div>
@@ -39,27 +34,22 @@
             <p class="detail-label">Destination</p>
             <p class="detail-value">@Model.Destination</p>
         </div>
-        
         <div class="detail-item">
             <p class="detail-label">Departure Time</p>
-            <p class="detail-value">@Model.DepartureTime.ToString("MMM dd, yyyy HH:mm")</p>
+            <p class="detail-value">@Model.DepartureTime.ToString("ddd dd MMM, HH:mm")</p>
         </div>
-        
         <div class="detail-item">
             <p class="detail-label">Arrival Time</p>
-            <p class="detail-value">@Model.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</p>
+            <p class="detail-value">@Model.ArrivalTime.ToString("ddd dd MMM, HH:mm")</p>
         </div>
-        
         <div class="detail-item">
             <p class="detail-label">Gate</p>
             <p class="detail-value">@(Model.Gate ?? "TBD")</p>
         </div>
-        
         <div class="detail-item">
             <p class="detail-label">Terminal</p>
             <p class="detail-value">Terminal @Model.Terminal</p>
         </div>
-        
         <div class="detail-item">
             <p class="detail-label">Flight Duration</p>
             <p class="detail-value">
@@ -72,12 +62,8 @@
     </div>
 </div>
 
-<!-- Action Buttons -->
 <div class="detail-actions">
-    <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" class="btn btn-warning">
-        Edit Flight
-    </a>
-    <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" class="btn btn-danger">
-        Delete Flight
-    </a>
+    <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" class="btn btn-warning">Edit Flight</a>
+    <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" class="btn btn-danger">Delete Flight</a>
 </div>
+

@@ -19,10 +19,12 @@ namespace AFMS.Models
 
         [Required(ErrorMessage = "Departure time is required")]
         [Display(Name = "Departure Time")]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
         public DateTime DepartureTime { get; set; }
 
         [Required(ErrorMessage = "Arrival time is required")]
         [Display(Name = "Arrival Time")]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
         public DateTime ArrivalTime { get; set; }
 
         [Display(Name = "Gate")]
@@ -32,6 +34,10 @@ namespace AFMS.Models
         public string Terminal { get; set; } = "1";
 
         public string Status { get; set; } = "Scheduled";
+
+        /// <summary>True when this flight was added or edited manually via the UI.
+        /// The background sync service will not overwrite fields on manual entries.</summary>
+        public bool IsManualEntry { get; set; } = false;
     }
 }
 

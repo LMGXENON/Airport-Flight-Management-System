@@ -1,19 +1,25 @@
+using System.Net;
 using System.Text.Json;
 using AFMS.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AFMS.Services;
 
 public class AeroDataBoxService
 {
+    public const string ApiErrorCacheKey = "aerodatabox_api_error";
+
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AeroDataBoxService> _logger;
+    private readonly IMemoryCache _cache;
 
-    public AeroDataBoxService(HttpClient httpClient, IConfiguration configuration, ILogger<AeroDataBoxService> logger)
+    public AeroDataBoxService(HttpClient httpClient, IConfiguration configuration, ILogger<AeroDataBoxService> logger, IMemoryCache cache)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<List<AeroDataBoxFlight>> GetAirportFlightsAsync(string airportCode, DateTime date)
@@ -117,8 +123,17 @@ public class AeroDataBoxService
         {
             var errorContent = await response.Content.ReadAsStringAsync();
             _logger.LogWarning($"AeroDataBox API returned status code: {response.StatusCode}, Body: {errorContent}");
+
+            var errorReason = response.StatusCode == HttpStatusCode.TooManyRequests
+                ? "API quota exceeded — you have used your monthly or per-second limit on the BASIC plan. Upgrade at rapidapi.com or wait for your quota to reset."
+                : $"API error ({(int)response.StatusCode} {response.StatusCode})";
+            _cache.Set(ApiErrorCacheKey, errorReason, TimeSpan.FromMinutes(5));
+
             return new List<AeroDataBoxFlight>();
         }
+
+        // Clear any previous error on success
+        _cache.Remove(ApiErrorCacheKey);
 
         var body = await response.Content.ReadAsStringAsync();
         _logger.LogInformation($"API Response: {body.Substring(0, Math.Min(500, body.Length))}...");
