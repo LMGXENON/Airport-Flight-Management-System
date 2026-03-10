@@ -6,18 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load .env file
-var envFile = Path.Combine(builder.Environment.ContentRootPath, "..", ".env");
-if (File.Exists(envFile))
-{
-    foreach (var line in File.ReadAllLines(envFile))
-    {
-        if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
-        var parts = line.Split('=', 2, StringSplitOptions.TrimEntries);
-        if (parts.Length == 2)
-            Environment.SetEnvironmentVariable(parts[0], parts[1]);
-    }
-}
+AddDotEnvConfiguration(builder);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -87,3 +76,77 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+static void AddDotEnvConfiguration(WebApplicationBuilder builder)
+{
+    var configValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+    var envFilePaths = new[]
+    {
+        Path.Combine(builder.Environment.ContentRootPath, ".env"),
+        Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", ".env"))
+    }.Distinct(StringComparer.OrdinalIgnoreCase);
+
+    foreach (var envFilePath in envFilePaths)
+    {
+        if (!File.Exists(envFilePath))
+            continue;
+
+        foreach (var entry in ParseDotEnvFile(envFilePath))
+        {
+            if (string.IsNullOrWhiteSpace(entry.Key))
+                continue;
+
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(entry.Key)))
+                Environment.SetEnvironmentVariable(entry.Key, entry.Value);
+
+            foreach (var configKey in GetConfigurationKeys(entry.Key))
+                configValues[configKey] = entry.Value;
+        }
+    }
+
+    if (configValues.Count > 0)
+        builder.Configuration.AddInMemoryCollection(configValues);
+}
+
+static IEnumerable<KeyValuePair<string, string?>> ParseDotEnvFile(string filePath)
+{
+    foreach (var rawLine in File.ReadAllLines(filePath))
+    {
+        var line = rawLine.Trim();
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#", StringComparison.Ordinal))
+            continue;
+
+        var parts = line.Split('=', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length != 2)
+            continue;
+
+        var value = parts[1].Trim();
+        if (value.Length >= 2 && value.StartsWith('"') && value.EndsWith('"'))
+            value = value[1..^1];
+
+        yield return new KeyValuePair<string, string?>(parts[0], value);
+    }
+}
+
+static IEnumerable<string> GetConfigurationKeys(string key)
+{
+    yield return key.Replace("__", ":", StringComparison.Ordinal);
+
+    var alias = GetDotEnvAlias(key);
+    if (!string.IsNullOrWhiteSpace(alias))
+        yield return alias;
+}
+
+static string? GetDotEnvAlias(string key) => key switch
+{
+    "AERODATABOX_API_KEY" => "AeroDataBox:ApiKey",
+    "AERODATABOX_API_HOST" => "AeroDataBox:ApiHost",
+    "DEFAULT_AIRPORT" => "AeroDataBox:DefaultAirport",
+    "DEEPSEEK_API_KEY" => "DeepSeek:ApiKey",
+    "DEEPSEEK_API_ENDPOINT" => "DeepSeek:ApiEndpoint",
+    "DEEPSEEK_MODEL" => "DeepSeek:Model",
+    "DEEPSEEK_TIMEOUT_SECONDS" => "DeepSeek:TimeoutSeconds",
+    "DEEPSEEK_MAX_REQUESTS_PER_MINUTE" => "DeepSeek:MaxRequestsPerMinute",
+    "DEEPSEEK_PROMPT_FILE" => "DeepSeek:PromptFile",
+    _ => null
+};
