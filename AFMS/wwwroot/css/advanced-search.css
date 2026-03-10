@@ -3,8 +3,8 @@
 .search-form-container {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 24px;
+    border-radius: 16px;
+    padding: 32px;
     max-width: 100%;
 }
 
@@ -124,16 +124,23 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    padding: 16px;
+    border: 1px solid var(--bg-card);
+    border-radius: 14px;
+    background: var(--bg-card);
 }
 
 /* Form Groups */
 .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
+.form-label {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -142,10 +149,10 @@
 /* Form Inputs */
 .form-input {
     width: 100%;
-    padding: 11px 14px;
-    background-color: var(--bg-primary);
+    padding: 13px 15px;
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 10px;
     color: var(--text-primary);
     font-size: 14px;
     font-family: inherit;
