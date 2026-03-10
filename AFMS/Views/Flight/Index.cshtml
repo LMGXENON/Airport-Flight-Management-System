@@ -7,8 +7,8 @@
 <!-- Page Header -->
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <h1 class="page-title">All Flights</h1>
-        <p class="page-subtitle">View and manage all flights in the system</p>
+        <h1 class="page-title">Managed Flights</h1>
+        <p class="page-subtitle">Search, edit or remove flights. Changes appear live on the dashboard.</p>
     </div>
     <a href="@Url.Action("Add", "Flight")" class="btn-primary" style="padding: 12px 24px; background: var(--accent-blue); color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
         + Add New Flight
@@ -21,6 +21,26 @@
         @TempData["SuccessMessage"]
     </div>
 }
+
+<!-- Flight Number Search -->
+<form method="get" action="@Url.Action("Index", "Flight")" style="display:flex; gap:10px; align-items:center; margin-bottom:24px;">
+    <input type="text"
+           name="search"
+           value="@(ViewBag.Search as string)"
+           placeholder="Search by flight number (e.g. BA123)..."
+           style="flex:1; max-width:360px; padding:10px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:14px;" />
+    <button type="submit"
+            style="padding:10px 20px; background:var(--accent-blue); color:white; border:none; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer;">
+        Search
+    </button>
+    @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+    {
+        <a href="@Url.Action("Index", "Flight")"
+           style="padding:10px 16px; color:var(--text-secondary); text-decoration:none; font-size:14px;">
+            Clear
+        </a>
+    }
+</form>
 
 <!-- Flights Section -->
 <div class="flights-section">
@@ -77,8 +97,16 @@
         @if (!Model.Any())
         {
             <div class="empty-state">
-                <p style="font-size: 18px; margin-bottom: 8px;">No flights found</p>
-                <p>Click "Add New Flight" to create your first flight.</p>
+                @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+                {
+                    <p style="font-size: 18px; margin-bottom: 8px;">No flights found for "@ViewBag.Search"</p>
+                    <p>Try a different flight number or <a href="@Url.Action("Index", "Flight")" style="color:var(--accent-blue)">clear the search</a>.</p>
+                }
+                else
+                {
+                    <p style="font-size: 18px; margin-bottom: 8px;">No flights found</p>
+                    <p>Click "Add New Flight" to create your first flight.</p>
+                }
             </div>
         }
     </div>

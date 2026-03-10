@@ -51,6 +51,9 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.EnsureCreated();
+    // Add IsManualEntry column to existing databases that pre-date this field
+    try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Flights ADD COLUMN IsManualEntry INTEGER NOT NULL DEFAULT 0"); }
+    catch { /* Already exists – safe to ignore */ }
     Console.WriteLine("Database initialized successfully.");
 }
 

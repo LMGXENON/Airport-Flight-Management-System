@@ -69,6 +69,7 @@
                     <th>AIRLINE</th>
                     <th>AIRCRAFT</th>
                     <th>STATUS</th>
+                    <th>MANAGE</th>
                 </tr>
             </thead>
             <tbody>
@@ -241,7 +242,7 @@
                     {
                         lastDate = dateHeader;
                         <tr class="date-header-row">
-                            <td colspan="7" class="date-header">@dateHeader</td>
+                            <td colspan="8" class="date-header">@dateHeader</td>
                         </tr>
                     }
 
@@ -275,6 +276,18 @@
                         <td>@(flight.Airline?.Name ?? "-")</td>
                         <td class="aircraft-col">@aircraftInfo</td>
                         <td class="status-col"><span class="status-badge @statusClass">@detailedStatus</span></td>
+                        <td class="manage-col" onclick="event.stopPropagation()">
+                            @{
+                                var dbIds = ViewBag.DbFlightIds as Dictionary<string, int>;
+                                var fNum  = flight.Number ?? "";
+                            }
+                            @if (dbIds != null && dbIds.ContainsKey(fNum))
+                            {
+                                var dbId = dbIds[fNum];
+                                <a href="/Flight/Edit/@dbId"   class="manage-link manage-edit">Edit</a>
+                                <a href="/Flight/Delete/@dbId" class="manage-link manage-delete">Delete</a>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -282,10 +295,20 @@
 
         @if (!Model.Any())
         {
-            <div class="empty-state">
-                <p style="font-size: 18px; margin-bottom: 8px;">No live flight data available</p>
-                <p>The API may not have returned data for the current time window.</p>
-            </div>
+            @if (ViewBag.ApiError != null)
+            {
+                <div class="empty-state">
+                    <p style="font-size: 16px; font-weight: 600; color: var(--danger); margin-bottom: 8px;">Live data unavailable</p>
+                    <p style="color: var(--text-secondary);">@ViewBag.ApiError</p>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p style="font-size: 16px; margin-bottom: 8px;">No live flight data available</p>
+                    <p style="color: var(--text-secondary);">The API did not return flights for the current time window.</p>
+                </div>
+            }
         }
     </div>
 

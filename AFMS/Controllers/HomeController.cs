@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using AFMS.Data;
 using AFMS.Models;
 using AFMS.Services;
 
@@ -17,17 +19,20 @@ public class HomeController : Controller
 
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly FlightSearchService _flightSearchService;
+    private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
 
     public HomeController(
         AeroDataBoxService aeroDataBoxService,
         FlightSearchService flightSearchService,
+        ApplicationDbContext context,
         IConfiguration configuration,
         IMemoryCache cache)
     {
         _aeroDataBoxService  = aeroDataBoxService;
         _flightSearchService = flightSearchService;
+        _context             = context;
         _configuration       = configuration;
         _cache               = cache;
     }
@@ -58,7 +63,52 @@ public class HomeController : Controller
             })
             .ThenBy(f => f.Number)
             .ToList();
-        
+
+        // Fetch all DB flights once — used for MANAGE links and dashboard merge
+        var allDbFlights = await _context.Flights.ToListAsync();
+
+        // Build flight number → DB id lookup for the MANAGE column
+        ViewBag.DbFlightIds = allDbFlights
+            .GroupBy(f => f.FlightNumber)
+            .ToDictionary(g => g.Key, g => g.First().Id);
+
+        // Override API data with values from manually-edited DB flights
+        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
+        {
+            var existing = sortedFlights.FirstOrDefault(f =>
+                string.Equals(f.Number?.Trim(), dbFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
+                if (lhrLeg != null)
+                {
+                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
+                    if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
+                }
+                existing.Status = dbFlight.Status;
+            }
+        }
+
+        // Add manually-entered flights that the live API doesn't know about
+        var apiNumbers = sortedFlights
+            .Select(f => f.Number?.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
+            sortedFlights.Add(CreateSyntheticFlight(dbFlight));
+
+        // Re-sort so manual additions land in the right chronological position
+        sortedFlights = sortedFlights
+            .OrderBy(f => {
+                var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
+                return AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
+            })
+            .ThenBy(f => f.Number)
+            .ToList();
+
+        // Surface API error if the list is empty
+        if (!sortedFlights.Any())
+            ViewBag.ApiError = _cache.Get<string>(AFMS.Services.AeroDataBoxService.ApiErrorCacheKey);
+
         return View(sortedFlights);
     }
 
@@ -337,6 +387,35 @@ Rules:
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    private static AeroDataBoxFlight CreateSyntheticFlight(Flight f) => new()
+    {
+        Number    = f.FlightNumber,
+        Status    = f.Status,
+        Direction = "Departure",
+        Airline   = new Airline { Name = f.Airline },
+        Departure = new FlightMovement
+        {
+            Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
+            Gate     = f.Gate,
+            Terminal = f.Terminal,
+            Status   = f.Status,
+            ScheduledTime = new ScheduledTime
+            {
+                Local = f.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                Utc   = f.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+            }
+        },
+        Arrival = new FlightMovement
+        {
+            Airport = new Airport { Iata = f.Destination, Name = f.Destination },
+            ScheduledTime = new ScheduledTime
+            {
+                Local = f.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                Utc   = f.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+            }
+        }
+    };
 }
 
 public class AIQueryRequest

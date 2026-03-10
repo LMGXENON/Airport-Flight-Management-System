@@ -64,11 +64,6 @@ body {
     flex-shrink: 0;
 }
 
-.logo-icon {
-    font-size: 24px;
-    color: var(--text-primary);
-}
-
 .app-info {
     flex: 1;
     display: flex;
@@ -81,31 +76,6 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.2;
-}
-
-.app-version {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.close-btn {
-    width: 28px;
-    height: 28px;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: all 0.2s;
-}
-
-.close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
 }
 
 /* Sidebar Navigation */
@@ -137,12 +107,6 @@ body {
 .nav-item.active {
     background-color: var(--accent-blue);
     color: var(--text-primary);
-}
-
-.nav-icon {
-    font-size: 18px;
-    width: 20px;
-    text-align: center;
 }
 
 .nav-label {
@@ -284,12 +248,6 @@ body {
     position: relative;
 }
 
-.stat-icon {
-    font-size: 24px;
-    margin-bottom: 12px;
-    opacity: 0.7;
-}
-
 .stat-content {
     margin-bottom: 8px;
 }
@@ -317,11 +275,6 @@ body {
 .stat-badge.positive {
     background-color: rgba(16, 185, 129, 0.15);
     color: var(--success);
-}
-
-.stat-badge.negative {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: var(--danger);
 }
 
 /* Flights Section */
@@ -443,46 +396,16 @@ body {
     color: var(--success);
 }
 
-/* Expected — green, on time */
-.status-expected {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: var(--success);
-}
-
-/* Check-In — soft blue */
-.status-checkin {
-    background-color: rgba(96, 165, 250, 0.15);
-    color: #60a5fa;
-}
-
 /* Boarding — bright blue */
 .status-boarding {
     background-color: rgba(65, 105, 225, 0.2);
     color: var(--accent-blue);
 }
 
-/* Gate Closed — amber/warning */
-.status-gateclosed {
-    background-color: rgba(251, 191, 36, 0.15);
-    color: #fbbf24;
-}
-
 /* Departed — neutral grey */
 .status-departed {
     background-color: rgba(136, 145, 178, 0.15);
     color: var(--text-secondary);
-}
-
-/* En Route — sky blue */
-.status-enroute {
-    background-color: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-}
-
-/* Approaching — purple */
-.status-approaching {
-    background-color: rgba(167, 139, 250, 0.15);
-    color: #a78bfa;
 }
 
 /* Arrived — bright green */
@@ -507,12 +430,6 @@ body {
 .status-cancelled {
     background-color: rgba(239, 68, 68, 0.15);
     color: var(--danger);
-}
-
-/* Diverted — orange */
-.status-diverted {
-    background-color: rgba(249, 115, 22, 0.15);
-    color: #f97316;
 }
 
 /* Scheduled — neutral */
@@ -575,6 +492,38 @@ body {
 
 .status-col {
     min-width: 120px;
+}
+
+.manage-col {
+    white-space: nowrap;
+    min-width: 110px;
+}
+
+.manage-link {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 4px;
+    transition: opacity 0.15s;
+}
+
+.manage-link:hover {
+    opacity: 0.8;
+}
+
+.manage-edit {
+    background: #2563eb22;
+    color: #60a5fa;
+    border: 1px solid #2563eb55;
+}
+
+.manage-delete {
+    background: #dc262622;
+    color: #f87171;
+    border: 1px solid #dc262655;
 }
 
 /* Flight Details Modal */
@@ -774,11 +723,6 @@ body {
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-}
-
-.duration-icon {
-    font-size: 24px;
-    transform: rotate(90deg);
 }
 
 @media (max-width: 768px) {
@@ -970,6 +914,11 @@ body {
     opacity: 0.9;
 }
 
+.btn-primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
 .btn-warning {
     background: #f59e0b;
     color: white;
@@ -988,9 +937,6 @@ body {
 /* Responsive */
 @media (max-width: 1200px) {
     .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .stats-grid-status {
         grid-template-columns: repeat(2, 1fr);
     }
 }
@@ -1044,224 +990,4 @@ body {
 
 .flight-row:hover {
     background-color: rgba(65, 105, 225, 0.05);
-}
-
-/* Flight Details Modal */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-overlay.active {
-    display: flex;
-}
-
-.modal-content {
-    background-color: var(--bg-card);
-    border-radius: 12px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: var(--text-primary);
-    font-size: 28px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-    z-index: 1;
-}
-
-.modal-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.modal-header {
-    padding: 24px 24px 12px;
-}
-
-.modal-airline {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-}
-
-.modal-flight-number {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-}
-
-.modal-route {
-    font-size: 16px;
-    color: var(--text-secondary);
-}
-
-.modal-status-banner {
-    padding: 12px 24px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 14px;
-    
-}
-
-.modal-status-banner.status-ontime {
-    background-color: rgba(16, 185, 129, 0.2);
-    color: var(--success);
-}
-
-.modal-status-banner.status-boarding {
-    background-color: rgba(65, 105, 225, 0.25);
-    color: var(--accent-blue);
-}
-
-.modal-status-banner.status-departed {
-    background-color: rgba(136, 145, 178, 0.2);
-    color: var(--text-secondary);
-}
-
-.modal-status-banner.status-delayed {
-    background-color: rgba(239, 68, 68, 0.2);
-    color: var(--danger);
-}
-
-.modal-status-banner.status-cancelled {
-    background-color: rgba(239, 68, 68, 0.2);
-    color: var(--danger);
-}
-
-.modal-status-banner.status-landed {
-    background-color: rgba(16, 185, 129, 0.2);
-    color: var(--success);
-}
-
-.modal-body {
-    padding: 24px;
-}
-
-.modal-section {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    justify-content: space-between;
-}
-
-.modal-airport-block {
-    flex: 1;
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-}
-
-.airport-code {
-    font-size: 36px;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1;
-}
-
-.airport-info {
-    flex: 1;
-}
-
-.airport-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-}
-
-.flight-time-group {
-    margin-bottom: 16px;
-}
-
-.time-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-}
-
-.time-display {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.time-main {
-    font-size: 24px;
-    font-weight: 600;
-    color: #10b981;
-}
-
-.time-secondary {
-    font-size: 18px;
-    color: var(--text-secondary);
-    text-decoration: line-through;
-}
-
-.airport-details {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 8px 12px;
-    font-size: 14px;
-}
-
-.airport-details .detail-label {
-    color: var(--text-secondary);
-}
-
-.airport-details .detail-value {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.flight-duration {
-    flex-direction: column;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-}
-
-.duration-icon {
-    font-size: 24px;
-    transform: rotate(90deg);
-}
-
-@media (max-width: 768px) {
-    .modal-section {
-        flex-direction: column;
-        gap: 32px;
-    }
-    
-    .modal-airport-block {
-        width: 100%;
-    }
-    
-    .flight-duration {
-    flex-direction: column;
-        transform: rotate(90deg);
-    }
 }

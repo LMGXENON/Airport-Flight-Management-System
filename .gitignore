@@ -22,4 +22,4 @@
 *.hcl
 *.DS_store
 *.env
-*.env.example
+*.env.example.vscode/
