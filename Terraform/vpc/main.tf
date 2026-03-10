@@ -69,6 +69,6 @@ resource "aws_lb" "afms_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_sg_id]
-  subnets            = var.public_subnet_ids
+  subnets            = aws_subnet.public[*].id
 
 }
