@@ -752,6 +752,9 @@ body {
 }
 
 .page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 36px;
     height: 36px;
     padding: 0 10px;
@@ -764,6 +767,7 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    text-decoration: none;
 }
 
 .page-btn:hover:not([disabled]) {

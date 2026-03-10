@@ -16,8 +16,10 @@ namespace AFMS.Controllers
         }
 
         // GET: Flight/Index - List all flights, optionally filtered by flight number
-        public async Task<IActionResult> Index(string? search = null)
+        public async Task<IActionResult> Index(string? search = null, int page = 1)
         {
+            const int pageSize = 25;
+
             var query = _context.Flights
                 .OrderBy(f => f.DepartureTime)
                 .ThenBy(f => f.FlightNumber)
@@ -26,9 +28,30 @@ namespace AFMS.Controllers
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(f => f.FlightNumber.Contains(search));
 
-            ViewBag.Search = search;
-            var flights = await query.ToListAsync();
-            return View(flights);
+            var totalCount = await query.CountAsync();
+            var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling(totalCount / (double)pageSize);
+            var currentPage = totalCount == 0
+                ? 1
+                : Math.Min(Math.Max(page, 1), totalPages);
+
+            var flights = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var model = new FlightIndexViewModel
+            {
+                Search = search,
+                Flights = flights,
+                Pagination = new PaginationState
+                {
+                    Page = currentPage,
+                    PageSize = pageSize,
+                    TotalCount = totalCount
+                }
+            };
+
+            return View(model);
         }
 
         // GET: Flight/Details/5
@@ -36,9 +59,7 @@ namespace AFMS.Controllers
         {
             if (id == null)
             {
-                // If no id provided, show list of all flights
-                var flights = await _context.Flights.ToListAsync();
-                return View("Index", flights);
+                return RedirectToAction(nameof(Index));
             }
 
             var flight = await _context.Flights.FindAsync(id);

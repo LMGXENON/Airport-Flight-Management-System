@@ -61,6 +61,11 @@ public class FlightSearchService
         model.UsedAirportCode = airportCode;
         model.TotalCount      = sorted.Count;
 
+        var totalPages = Math.Max(1, (int)Math.Ceiling(model.TotalCount / (double)model.PageSize));
+        model.Page = model.TotalCount == 0
+            ? 1
+            : Math.Min(Math.Max(model.Page, 1), totalPages);
+
         // Paginate
         model.Results = sorted
             .Skip((model.Page - 1) * model.PageSize)

@@ -43,6 +43,12 @@ public class AdvancedSearchViewModel
     public List<AeroDataBoxFlight> Results { get; set; } = new();
     public int TotalCount { get; set; }
     public bool HasMoreResults => TotalCount > Page * PageSize;
+    public PaginationState Pagination => new()
+    {
+        Page = Page,
+        PageSize = PageSize,
+        TotalCount = TotalCount
+    };
 
     // --- Display helpers (moved here from Razor view) ---
 
