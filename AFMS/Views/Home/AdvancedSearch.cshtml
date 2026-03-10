@@ -254,7 +254,7 @@
         <!-- Hidden sort/page state (for progressive enhancement) -->
         <input type="hidden" id="sortByInput"    name="sortBy"    value="@Model.SortBy" />
         <input type="hidden" id="sortOrderInput" name="sortOrder" value="@Model.SortOrder" />
-        <input type="hidden" id="pageInput"      name="page"      value="1" />
+        <input type="hidden" id="pageInput"      name="page"      value="@Model.Page" />
 
         <!-- Action Buttons -->
         <div class="form-actions">
@@ -487,6 +487,12 @@
             return params;
         }
 
+        function syncSearchUrl(params) {
+            const nextParams = new URLSearchParams(params);
+            nextParams.set('search', '1');
+            window.history.replaceState({}, '', `/Home/AdvancedSearch?${nextParams.toString()}`);
+        }
+
         // -------------------------------------------------------------------
         // AJAX: replace results container
         // -------------------------------------------------------------------
@@ -503,58 +509,18 @@
                 container.style.opacity = '1';
                 attachFlightRowHandlers();
                 attachSortHandlers();
-                attachLoadMoreHandler();
+                attachPaginationHandlers();
                 currentSortBy  = params.get('sortBy')    ?? '';
                 currentSortOrd = params.get('sortOrder') ?? 'asc';
+                document.getElementById('sortByInput').value = currentSortBy;
+                document.getElementById('sortOrderInput').value = currentSortOrd;
+                document.getElementById('pageInput').value = params.get('page') ?? '1';
+                syncSearchUrl(params);
             } catch (err) {
                 console.error('Search failed:', err);
                 container.style.opacity = '1';
             } finally {
                 document.getElementById('searchLoading').style.display = 'none';
-            }
-        }
-
-        // -------------------------------------------------------------------
-        // AJAX: Load More (append rows, keep table intact)
-        // -------------------------------------------------------------------
-        async function fetchMoreResults(page) {
-            const params = buildParams(page, currentSortBy, currentSortOrd);
-            const btn    = document.getElementById('loadMoreBtn');
-            if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
-
-            try {
-                const res  = await fetch(`/Home/AdvancedSearchResults?${params}`);
-                const html = await res.text();
-
-                const temp = document.createElement('div');
-                temp.innerHTML = html;
-
-                // Append new rows
-                const newRows = [...temp.querySelectorAll('.flights-table tbody tr')];
-                const tbody   = document.querySelector('#results-container .flights-table tbody');
-                if (tbody && newRows.length) {
-                    newRows.forEach(r => tbody.appendChild(r));
-                    attachFlightRowHandlers();
-                }
-
-                // Swap Load More section
-                const newLM     = temp.querySelector('#load-more-section');
-                const existingLM = document.getElementById('load-more-section');
-                if (existingLM) {
-                    existingLM[newLM ? 'replaceWith' : 'remove'](newLM);
-                } else if (newLM) {
-                    document.getElementById('results-container').appendChild(newLM);
-                }
-
-                // Update result count in header
-                const newCount = temp.querySelector('.result-count');
-                const oldCount = document.querySelector('#results-container .result-count');
-                if (newCount && oldCount) oldCount.innerHTML = newCount.innerHTML;
-
-                attachLoadMoreHandler();
-            } catch (err) {
-                console.error('Load more failed:', err);
-                if (btn) { btn.disabled = false; btn.textContent = 'Load More'; }
             }
         }
 
@@ -574,15 +540,16 @@
         }
 
         // -------------------------------------------------------------------
-        // Load More button (re-attached after each render)
+        // Pagination links (re-attached after each render)
         // -------------------------------------------------------------------
-        function attachLoadMoreHandler() {
-            const btn = document.getElementById('loadMoreBtn');
-            if (btn) {
-                btn.addEventListener('click', () => {
-                    fetchMoreResults(Number(btn.dataset.page ?? 2));
+        function attachPaginationHandlers() {
+            document.querySelectorAll('#results-container .pagination-link').forEach(link => {
+                link.addEventListener('click', event => {
+                    event.preventDefault();
+                    const page = Number(link.dataset.page ?? 1);
+                    fetchResults(buildParams(page, currentSortBy, currentSortOrd));
                 });
-            }
+            });
         }
 
         // -------------------------------------------------------------------
@@ -614,6 +581,10 @@
             document.getElementById('results-container').innerHTML = '';
             currentSortBy  = '';
             currentSortOrd = 'asc';
+            document.getElementById('sortByInput').value = '';
+            document.getElementById('sortOrderInput').value = 'asc';
+            document.getElementById('pageInput').value = '1';
+            window.history.replaceState({}, '', '/Home/AdvancedSearch');
         });
 
         searchForm.querySelectorAll('input, select').forEach(field => {
@@ -630,6 +601,6 @@
             clearValidationState();
         }
         attachSortHandlers();
-        attachLoadMoreHandler();
+        attachPaginationHandlers();
     </script>
 }

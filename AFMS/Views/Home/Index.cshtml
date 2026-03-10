@@ -401,14 +401,30 @@
 <script>
 (function () {
     const PAGE_SIZE = 25;
-    let currentPage = 1;
-    let currentDir = 'all';
+    const query = new URLSearchParams(window.location.search);
+    const requestedPage = Number.parseInt(query.get('page') ?? '1', 10);
+    const requestedDirection = query.get('direction');
+    let currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    let currentDir = requestedDirection === 'Departure' || requestedDirection === 'Arrival'
+        ? requestedDirection
+        : 'all';
 
     const allRows = Array.from(document.querySelectorAll('#flightsTable tbody tr'));
     const flightRows = allRows.filter(r => r.classList.contains('flight-row'));
     const dateHeaderRows = allRows.filter(r => r.classList.contains('date-header-row'));
     const buttons = document.querySelectorAll('.filter-btn');
     const pagination = document.getElementById('pagination');
+
+    function syncQueryState() {
+        const nextUrl = new URL(window.location.href);
+        if (currentPage > 1) nextUrl.searchParams.set('page', currentPage);
+        else nextUrl.searchParams.delete('page');
+
+        if (currentDir !== 'all') nextUrl.searchParams.set('direction', currentDir);
+        else nextUrl.searchParams.delete('direction');
+
+        window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}`);
+    }
 
     function getFilteredRows() {
         if (currentDir === 'all') {
@@ -481,9 +497,14 @@
         html += '<span class="page-info">Showing ' + (filtered.length ? start + 1 : 0) + '–' + Math.min(end, filtered.length) + ' of ' + filtered.length + '</span>';
 
         pagination.innerHTML = html;
+        syncQueryState();
     }
 
     // Direction filter
+    buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-direction') === currentDir);
+    });
+
     buttons.forEach(btn => {
         btn.addEventListener('click', function () {
             buttons.forEach(b => b.classList.remove('active'));

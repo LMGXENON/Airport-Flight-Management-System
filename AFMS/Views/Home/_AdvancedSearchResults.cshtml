@@ -2,6 +2,7 @@
 
 @{
     var activeFilters = new List<(string Label, string Value)>();
+    var pagination = Model.Pagination;
 
     if (!string.IsNullOrWhiteSpace(Model.Flight))
         activeFilters.Add(("Flight", Model.Flight));
@@ -33,6 +34,41 @@
 
     if (Model.Statuses.Any())
         activeFilters.Add(("Status", string.Join(", ", Model.Statuses)));
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var queryItems = new List<KeyValuePair<string, string?>>();
+
+        void Add(string key, string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                queryItems.Add(new KeyValuePair<string, string?>(key, value));
+            }
+        }
+
+        queryItems.Add(new KeyValuePair<string, string?>("search", "1"));
+        Add("flight", Model.Flight);
+        Add("airline", Model.Airline);
+        Add("destination", Model.Destination);
+        Add("departureDate", Model.DepartureDate?.ToString("yyyy-MM-dd"));
+        Add("arrivalDate", Model.ArrivalDate?.ToString("yyyy-MM-dd"));
+        Add("terminal", Model.Terminal);
+        Add("direction", Model.Direction);
+        Add("timeRangeStart", Model.TimeRangeStart);
+        Add("timeRangeEnd", Model.TimeRangeEnd);
+        Add("sortBy", Model.SortBy);
+        Add("sortOrder", Model.SortOrder);
+
+        foreach (var status in Model.Statuses.Where(status => !string.IsNullOrWhiteSpace(status)))
+        {
+            queryItems.Add(new KeyValuePair<string, string?>("statuses", status));
+        }
+
+        queryItems.Add(new KeyValuePair<string, string?>("page", pageNumber.ToString()));
+
+        return $"{Url.Action("AdvancedSearch", "Home")}{Microsoft.AspNetCore.Http.QueryString.Create(queryItems)}";
+    }
 }
 
 <div class="flights-section advanced-results">
@@ -249,25 +285,64 @@
             </table>
         </div>
 
-        @if (Model.HasMoreResults)
-        {
-            <div id="load-more-section" class="load-more-section">
-                <button class="btn btn-secondary" id="loadMoreBtn"
-                        data-page="@(Model.Page + 1)"
-                        data-total="@Model.TotalCount"
-                        data-showing="@(Model.Page * Model.PageSize)">
-                    Load More
-                    <span class="load-more-meta">
-                        (showing @(Model.Page * Model.PageSize) of @Model.TotalCount)
-                    </span>
-                </button>
-            </div>
-        }
-        else if (Model.TotalCount > Model.PageSize)
-        {
-            <div class="load-more-section">
-                <p class="all-loaded-label">All @Model.TotalCount results shown</p>
-            </div>
-        }
+        <div class="pagination" aria-label="Advanced search pagination">
+            @if (pagination.HasPreviousPage)
+            {
+                <a class="page-btn pagination-link"
+                   href="@BuildPageUrl(pagination.Page - 1)"
+                   data-page="@(pagination.Page - 1)">‹ Prev</a>
+            }
+            else
+            {
+                <button type="button" class="page-btn" disabled>‹ Prev</button>
+            }
+
+            @if (pagination.VisiblePages().First() > 1)
+            {
+                <a class="page-btn pagination-link" href="@BuildPageUrl(1)" data-page="1">1</a>
+                @if (pagination.VisiblePages().First() > 2)
+                {
+                    <span class="page-ellipsis">…</span>
+                }
+            }
+
+            @foreach (var pageNumber in pagination.VisiblePages())
+            {
+                if (pageNumber == pagination.Page)
+                {
+                    <button type="button" class="page-btn active" aria-current="page" disabled>@pageNumber</button>
+                }
+                else
+                {
+                    <a class="page-btn pagination-link"
+                       href="@BuildPageUrl(pageNumber)"
+                       data-page="@pageNumber">@pageNumber</a>
+                }
+            }
+
+            @if (pagination.VisiblePages().Last() < pagination.TotalPages)
+            {
+                @if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
+                {
+                    <span class="page-ellipsis">…</span>
+                }
+                <a class="page-btn pagination-link"
+                   href="@BuildPageUrl(pagination.TotalPages)"
+                   data-page="@pagination.TotalPages">@pagination.TotalPages</a>
+            }
+
+            @if (pagination.HasNextPage)
+            {
+                <a class="page-btn pagination-link"
+                   href="@BuildPageUrl(pagination.Page + 1)"
+                   data-page="@(pagination.Page + 1)">Next ›</a>
+            }
+            else
+            {
+                <button type="button" class="page-btn" disabled>Next ›</button>
+            }
+
+            <span class="page-info">Showing @pagination.PageStart-@pagination.PageEnd of @Model.TotalCount</span>
+        </div>
     }
 </div>
