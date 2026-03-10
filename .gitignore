@@ -21,5 +21,6 @@
 *.terraform
 *.hcl
 *.DS_store
-*.env
-*.env.example.vscode/
+*.env.local
+*.env.example
+.vscode/
