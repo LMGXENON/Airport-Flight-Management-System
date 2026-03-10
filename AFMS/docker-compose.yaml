@@ -2,7 +2,7 @@ services:
   afms:
     build: .
     env_file:
-      - ../.env
+      - ../AFMS/.env
     ports:
       - "8080:8080"
     environment:
