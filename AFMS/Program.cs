@@ -104,6 +104,25 @@ static void AddDotEnvConfiguration(WebApplicationBuilder builder)
         }
     }
 
+    // Map environment variables that were set externally (e.g. by Docker env_file)
+    // even when no .env file exists on disk inside the container.
+    string[] knownEnvVars =
+    [
+        "AERODATABOX_API_KEY", "AERODATABOX_API_HOST", "DEFAULT_AIRPORT",
+        "DEEPSEEK_API_KEY", "DEEPSEEK_API_ENDPOINT", "DEEPSEEK_MODEL",
+        "DEEPSEEK_TIMEOUT_SECONDS", "DEEPSEEK_MAX_REQUESTS_PER_MINUTE", "DEEPSEEK_PROMPT_FILE"
+    ];
+
+    foreach (var envVar in knownEnvVars)
+    {
+        var value = Environment.GetEnvironmentVariable(envVar);
+        if (!string.IsNullOrEmpty(value))
+        {
+            foreach (var configKey in GetConfigurationKeys(envVar))
+                configValues.TryAdd(configKey, value);
+        }
+    }
+
     if (configValues.Count > 0)
         builder.Configuration.AddInMemoryCollection(configValues);
 }
