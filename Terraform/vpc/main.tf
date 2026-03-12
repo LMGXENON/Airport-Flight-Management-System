@@ -64,17 +64,3 @@ resource "aws_nat_gateway" "ngw" {
 
 }
 
-resource "aws_lb" "afms_alb" {
-  name               = "afms-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = aws_subnet.public[*].id
-
-}
-resource "aws_security_group" "alb_sg" {
-  name   = "alb"
-  vpc_id = aws_vpc.afms_vpc.id
-
-
-}
