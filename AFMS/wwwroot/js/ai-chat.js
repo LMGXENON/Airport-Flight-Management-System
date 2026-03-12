@@ -1,6 +1,8 @@
 (function () {
     const path = window.location.pathname.toLowerCase();
     const isAdvancedSearch = path.includes('advancedsearch');
+    const isAddFlight = path.includes('/flight/add');
+    const isAiEnabledPage = isAdvancedSearch || isAddFlight;
 
     document.addEventListener('DOMContentLoaded', function () {
         const toggle     = document.getElementById('aiChatToggle');
@@ -9,6 +11,7 @@
         const clearBtn   = document.getElementById('aiChatClear');
         const sendBtn    = document.getElementById('chatSendBtn');
         const inputEl    = document.getElementById('chatInput');
+        const inputHint  = document.getElementById('chatInputHint');
         const messages   = document.getElementById('chatMessages');
         let isBusy       = false;
 
@@ -17,14 +20,39 @@
         const welcome = messages.querySelector('.welcome-message');
         const welcomePara = chatWindow.querySelector('.welcome-message p');
         const welcomeTitle = chatWindow.querySelector('.welcome-message h4');
-        if (welcomePara) {
-            welcomePara.textContent = isAdvancedSearch
-                ? 'Describe the flight you want to find and I\'ll apply search filters. I only handle flight search requests.'
-                : 'The AI assistant is only available on the Advanced Search page.';
+
+        function getReadyPlaceholder() {
+            if (isAdvancedSearch) return 'Describe your flight search...';
+            if (isAddFlight) return 'e.g. BA123 to JFK tomorrow at 14:30';
+            return 'AI assistant unavailable on this page';
         }
 
-        if (welcomeTitle && isAdvancedSearch) {
-            welcomeTitle.textContent = 'Flight Search Assistant';
+        if (welcomePara) {
+            if (isAdvancedSearch) {
+                welcomePara.textContent = 'Describe the flight you want to find and I\'ll apply search filters. I only handle flight search requests.';
+            } else if (isAddFlight) {
+                welcomePara.textContent = 'Provide flight number, airline, destination, and departure time. I\'ll estimate arrival, gate, and terminal.';
+            } else {
+                welcomePara.textContent = 'The AI assistant is only available on the Advanced Search and Add Flight pages.';
+            }
+        }
+
+        if (welcomeTitle) {
+            if (isAdvancedSearch) {
+                welcomeTitle.textContent = 'Flight Search Assistant';
+            } else if (isAddFlight) {
+                welcomeTitle.textContent = 'Add Flight Assistant';
+            }
+        }
+
+        if (inputHint) {
+            inputHint.textContent = isAddFlight
+                ? 'Required: flight number, airline, destination, departure time. Press Enter to send.'
+                : 'Press Enter to send. Shift+Enter adds a new line.';
+        }
+
+        if (inputEl) {
+            inputEl.placeholder = getReadyPlaceholder();
         }
 
         function setWindowOpen(isOpen) {
@@ -50,13 +78,15 @@
 
         function setBusyState(busy) {
             isBusy = busy;
-            sendBtn.disabled = busy || !isAdvancedSearch;
+            sendBtn.disabled = busy || !isAiEnabledPage;
             if (inputEl) {
-                inputEl.disabled = busy || !isAdvancedSearch;
+                inputEl.disabled = busy || !isAiEnabledPage;
                 if (busy) {
-                    inputEl.placeholder = 'Working on your search request...';
-                } else if (isAdvancedSearch) {
-                    inputEl.placeholder = 'Describe your flight search...';
+                    inputEl.placeholder = isAddFlight
+                        ? 'Preparing flight details...'
+                        : 'Working on your search request...';
+                } else {
+                    inputEl.placeholder = getReadyPlaceholder();
                 }
             }
 
@@ -74,10 +104,10 @@
             }
         });
 
-        if (!isAdvancedSearch) {
+        if (!isAiEnabledPage) {
             if (inputEl) {
                 inputEl.disabled = true;
-                inputEl.placeholder = 'Only available on Advanced Search';
+                inputEl.placeholder = getReadyPlaceholder();
             }
             if (sendBtn) sendBtn.disabled = true;
             if (clearBtn) clearBtn.disabled = true;
@@ -162,6 +192,39 @@
             }
         }
 
+        function fillAddFlightFields(params) {
+            const setInput = (id, val) => {
+                const el = document.getElementById(id);
+                if (!el || val === undefined || val === null || val === '') return;
+                el.value = val;
+            };
+
+            const setSelect = (id, val) => {
+                const el = document.getElementById(id);
+                if (!el || val === undefined || val === null || val === '') return;
+
+                const optionExists = Array.from(el.options).some(option =>
+                    option.value.toLowerCase() === String(val).toLowerCase());
+
+                if (!optionExists && id === 'Airline') {
+                    const option = document.createElement('option');
+                    option.value = val;
+                    option.textContent = val;
+                    el.appendChild(option);
+                }
+
+                el.value = val;
+            };
+
+            setInput('FlightNumber', params.flightNumber);
+            setSelect('Airline', params.airline);
+            setInput('Destination', params.destination);
+            setInput('DepartureTime', params.departureTime);
+            setInput('ArrivalTime', params.arrivalTime);
+            setInput('Gate', params.gate);
+            setSelect('Terminal', params.terminal);
+        }
+
         function triggerSearch() {
             const form = document.getElementById('searchForm');
             if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
@@ -198,11 +261,18 @@
             );
         }
 
-        async function callDeepSeek(userMessage) {
+        function hasAddFlightFields(params) {
+            return Boolean(
+                params.flightNumber || params.airline || params.destination ||
+                params.departureTime || params.arrivalTime || params.gate || params.terminal
+            );
+        }
+
+        async function callAssistant(endpoint, userMessage) {
             const controller = new AbortController();
             const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
-            const res = await fetch('/Home/ProcessAIQuery', {
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query: userMessage }),
@@ -228,9 +298,19 @@
             return await res.json();
         }
 
+        async function callSearchAssistant(userMessage) {
+            return await callAssistant('/Home/ProcessAIQuery', userMessage);
+        }
+
+        async function callAddFlightAssistant(userMessage) {
+            return await callAssistant('/Home/ProcessAddFlightQuery', userMessage);
+        }
+
         function getFriendlyErrorMessage(err) {
             if (err?.name === 'AbortError') {
-                return 'That took too long. Try a shorter request like “British Airways departures today” or send it again.';
+                return isAddFlight
+                    ? 'That took too long. Try a shorter request like "BA123 to JFK tomorrow 14:30".'
+                    : 'That took too long. Try a shorter request like "British Airways departures today" or send it again.';
             }
 
             if (err?.status === 429) {
@@ -238,14 +318,99 @@
             }
 
             if (err?.status === 400) {
-                return 'I could not turn that into search filters. Try naming an airline, destination, date, time, terminal, or status.';
+                return isAddFlight
+                    ? 'I could not map that to add-flight fields. Include flight number, airline, destination, and departure time.'
+                    : 'I could not turn that into search filters. Try naming an airline, destination, date, time, terminal, or status.';
             }
 
             if (err?.status >= 500) {
-                return 'The assistant hit a server problem. Try again in a moment, or use the filters manually.';
+                return isAddFlight
+                    ? 'The assistant hit a server problem. Try again in a moment, then review fields manually.'
+                    : 'The assistant hit a server problem. Try again in a moment, or use the filters manually.';
             }
 
-            return 'I could not process that search request. Try rephrasing it more clearly, for example “arrivals from Doha today after 18:00”.';
+            return isAddFlight
+                ? 'I could not process that add-flight request. Try "BA123 British Airways to JFK tomorrow 14:30".'
+                : 'I could not process that search request. Try rephrasing it more clearly, for example "arrivals from Doha today after 18:00".';
+        }
+
+        function getMissingFieldLabel(fieldName) {
+            switch ((fieldName || '').toLowerCase()) {
+                case 'flightnumber':
+                    return 'flight number';
+                case 'airline':
+                    return 'airline';
+                case 'destination':
+                    return 'destination';
+                case 'departuretime':
+                    return 'departure time';
+                default:
+                    return fieldName;
+            }
+        }
+
+        function buildAddFlightSummary(params) {
+            const parts = [];
+
+            if (params.flightNumber) parts.push(`flight <strong>${params.flightNumber}</strong>`);
+            if (params.airline) parts.push(`airline <strong>${params.airline}</strong>`);
+            if (params.destination) parts.push(`destination <strong>${params.destination}</strong>`);
+            if (params.departureTime) parts.push(`departure <strong>${params.departureTime}</strong>`);
+            if (params.arrivalTime) {
+                const label = params.arrivalEstimated ? 'estimated arrival' : 'arrival';
+                parts.push(`${label} <strong>${params.arrivalTime}</strong>`);
+            }
+            if (params.gate) {
+                const label = params.gateEstimated ? 'estimated gate' : 'gate';
+                parts.push(`${label} <strong>${params.gate}</strong>`);
+            }
+            if (params.terminal) {
+                const label = params.terminalEstimated ? 'estimated terminal' : 'terminal';
+                parts.push(`${label} <strong>${params.terminal}</strong>`);
+            }
+
+            const mainSummary = parts.length
+                ? `Updated form with ${parts.join(', ')}.`
+                : 'No fields were extracted from that request.';
+
+            const missing = Array.isArray(params.missingRequiredFields)
+                ? params.missingRequiredFields.map(getMissingFieldLabel)
+                : [];
+
+            const details = [];
+            if (params.message) details.push(`<small style="opacity:.85">${escapeHtml(params.message)}</small>`);
+            if (missing.length) details.push(`<small style="opacity:.75">Still required: <strong>${missing.join(', ')}</strong>.</small>`);
+
+            return `${mainSummary}${details.length ? `<br>${details.join('<br>')}` : ''}`;
+        }
+
+        async function handleAdvancedSearchRequest(text) {
+            const params = await callSearchAssistant(text);
+
+            if (params.isSearchRequest === false || !hasSearchFilters(params)) {
+                appendMessage('assistant', escapeHtml(params.message || 'I can only help with flight searches. Try asking by airline, destination, flight number, date, time, terminal or status.'), 'info');
+                return;
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const clearFiltersButton = document.getElementById('clearFiltersBtn');
+            if (clearFiltersButton) clearFiltersButton.click();
+
+            fillFormFields(params);
+            appendMessage('assistant', buildSummary(params), 'success');
+            setTimeout(triggerSearch, 350);
+        }
+
+        async function handleAddFlightRequest(text) {
+            const params = await callAddFlightAssistant(text);
+
+            if (params.isAddFlightRequest === false && !hasAddFlightFields(params)) {
+                appendMessage('assistant', escapeHtml(params.message || 'I can only help with adding flights. Include flight number, airline, destination, and departure time.'), 'info');
+                return;
+            }
+
+            fillAddFlightFields(params);
+            appendMessage('assistant', buildAddFlightSummary(params), 'success');
         }
 
         async function handleSend() {
@@ -260,21 +425,13 @@
             const thinkingEl = appendThinking();
 
             try {
-                const params = await callDeepSeek(text);
                 thinkingEl.remove();
 
-                if (params.isSearchRequest === false || !hasSearchFilters(params)) {
-                    appendMessage('assistant', escapeHtml(params.message || 'I can only help with flight searches. Try asking by airline, destination, flight number, date, time, terminal or status.'), 'info');
-                    return;
+                if (isAdvancedSearch) {
+                    await handleAdvancedSearchRequest(text);
+                } else if (isAddFlight) {
+                    await handleAddFlightRequest(text);
                 }
-
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                const clearBtn = document.getElementById('clearFiltersBtn');
-                if (clearBtn) clearBtn.click();
-
-                fillFormFields(params);
-                appendMessage('assistant', buildSummary(params), 'success');
-                setTimeout(triggerSearch, 350);
             } catch (err) {
                 thinkingEl.remove();
                 appendMessage('assistant', escapeHtml(getFriendlyErrorMessage(err)), 'error');
