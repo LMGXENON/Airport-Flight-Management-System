@@ -34,7 +34,7 @@
     position: absolute;
     bottom: 70px;
     right: 0;
-    width: 360px;
+    width: min(420px, calc(100vw - 32px));
     height: 500px;
     background: #1a1f3a;
     border-radius: 12px;

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -15,7 +16,13 @@ public class HomeController : Controller
 {
     private const string SearchOnlyMessage = "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
     private const string DeepSeekPromptTemplateCacheKey = "deepseek_prompt_template";
+    private const string AddFlightOnlyMessage = "I can only help with adding flights here. Share flight number, airline, destination, and departure time.";
+    private const string DeepSeekAddFlightPromptTemplateCacheKey = "deepseek_add_flight_prompt_template";
     private static readonly object AiThrottleLock = new();
+    private static readonly string[] RequiredAddFlightFields =
+    [
+        "flightNumber", "airline", "destination", "departureTime"
+    ];
     private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
     {
         "Expected", "Boarding", "Departed", "Arrived", "Delayed", "Canceled"
@@ -304,6 +311,121 @@ public class HomeController : Controller
         }
     }
 
+    [HttpPost]
+    [Route("Home/ProcessAddFlightQuery")]
+    public async Task<IActionResult> ProcessAddFlightQuery([FromBody] AIQueryRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Query))
+            return BadRequest(new { error = "Query is required" });
+
+        var clientKey = GetAiClientKey();
+        if (!TryBeginAiRequest(clientKey, out var retryAfterSeconds))
+        {
+            Response.Headers["Retry-After"] = retryAfterSeconds.ToString();
+            _logger.LogWarning("AI add-flight query throttled for client {ClientKey}. Retry after {RetryAfterSeconds}s.", clientKey, retryAfterSeconds);
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { error = "Too many AI requests. Please wait a few seconds and try again." });
+        }
+
+        try
+        {
+            var apiKey = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY")
+                ?? _configuration["DeepSeek:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                _logger.LogError("DeepSeek API key is not configured.");
+                return StatusCode(500, new { error = "DeepSeek API key not configured" });
+            }
+
+            var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
+            var systemPrompt = BuildDeepSeekAddFlightSystemPrompt();
+            var deepSeekClient = _httpClientFactory.CreateClient("DeepSeek");
+            deepSeekClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+            var requestBody = new
+            {
+                model,
+                messages = new[]
+                {
+                    new { role = "system", content = systemPrompt },
+                    new { role = "user", content = request.Query }
+                },
+                temperature = 0,
+                max_tokens = 360
+            };
+
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds()));
+
+            var response = await deepSeekClient.PostAsJsonAsync("chat/completions", requestBody, timeoutCts.Token);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning(
+                    "DeepSeek add-flight request returned {StatusCode} for client {ClientKey}. Details: {Details}",
+                    (int)response.StatusCode,
+                    clientKey,
+                    Truncate(errorContent, 300));
+
+                return StatusCode((int)response.StatusCode, new
+                {
+                    error = $"DeepSeek API error: {response.StatusCode}",
+                    details = Truncate(errorContent, 300)
+                });
+            }
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+            DeepSeekResponse? jsonResponse;
+            try
+            {
+                jsonResponse = JsonSerializer.Deserialize<DeepSeekResponse>(jsonContent, opts);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "DeepSeek returned invalid outer JSON for add-flight request (client {ClientKey}).", clientKey);
+                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI service returned an invalid response." });
+            }
+
+            var content = jsonResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? "{}";
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"```(?:json)?|```", "").Trim();
+
+            AiAddFlightResponse parsedParams;
+            try
+            {
+                parsedParams = JsonSerializer.Deserialize<AiAddFlightResponse>(content, opts) ?? new AiAddFlightResponse();
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "DeepSeek returned invalid add-flight JSON for client {ClientKey}. Payload: {Payload}", clientKey, Truncate(content, 300));
+                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not parse that into add-flight fields. Please try again." });
+            }
+
+            var normalizedParams = NormalizeAiAddFlightResponse(parsedParams);
+            _logger.LogInformation(
+                "AI add-flight query processed for client {ClientKey}. AddFlightRequest={IsAddFlightRequest}, MissingRequired={MissingRequired}",
+                clientKey,
+                normalizedParams.IsAddFlightRequest,
+                string.Join(",", normalizedParams.MissingRequiredFields));
+
+            return Ok(normalizedParams);
+        }
+        catch (OperationCanceledException ex) when (!HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex, "DeepSeek add-flight request timed out for client {ClientKey}.", clientKey);
+            return StatusCode(StatusCodes.Status504GatewayTimeout, new { error = "DeepSeek request timed out" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to process add-flight AI query for client {ClientKey}.", clientKey);
+            return StatusCode(500, new { error = "Failed to process add-flight AI request" });
+        }
+        finally
+        {
+            EndAiRequest(clientKey);
+        }
+    }
+
     private static AdvancedSearchViewModel BuildSearchModel(
         string? search,
         string? flight, string? airline, string? destination,
@@ -485,6 +607,17 @@ public class HomeController : Controller
             .Replace("{searchOnlyMessage}", SearchOnlyMessage, StringComparison.Ordinal);
     }
 
+    private string BuildDeepSeekAddFlightSystemPrompt()
+    {
+        var utcToday = DateTime.UtcNow.Date;
+        var promptTemplate = GetDeepSeekAddFlightPromptTemplate();
+
+        return promptTemplate
+            .Replace("{today}", utcToday.ToString("yyyy-MM-dd"), StringComparison.Ordinal)
+            .Replace("{tomorrow}", utcToday.AddDays(1).ToString("yyyy-MM-dd"), StringComparison.Ordinal)
+            .Replace("{addFlightOnlyMessage}", AddFlightOnlyMessage, StringComparison.Ordinal);
+    }
+
     private string GetDeepSeekPromptTemplate()
     {
         return _cache.GetOrCreate(DeepSeekPromptTemplateCacheKey, entry =>
@@ -501,6 +634,25 @@ public class HomeController : Controller
 
             _logger.LogWarning("DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
             return "You fill Advanced Search filters for a London Heathrow flight search page. You are NOT a general chatbot. If the message is not clearly about searching or filtering flights, return JSON with isSearchRequest false and message {searchOnlyMessage}. If the message is about searching flights, return only valid JSON using the known search fields and statuses [{allowedStatuses}]. If the user says today, use {today}.";
+        }) ?? string.Empty;
+    }
+
+    private string GetDeepSeekAddFlightPromptTemplate()
+    {
+        return _cache.GetOrCreate(DeepSeekAddFlightPromptTemplateCacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+
+            var configuredPath = _configuration["DeepSeek:AddFlightPromptFile"] ?? "Prompts/DeepSeekAddFlightPrompt.txt";
+            var promptPath = Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(_environment.ContentRootPath, configuredPath);
+
+            if (System.IO.File.Exists(promptPath))
+                return System.IO.File.ReadAllText(promptPath);
+
+            _logger.LogWarning("Add-flight DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
+            return "You fill an Add Flight form for London Heathrow operations. You are NOT a general chatbot. If request is not about creating or editing a flight entry, return JSON with isAddFlightRequest false and message {addFlightOnlyMessage}. For add-flight requests, return only JSON with flightNumber, airline, destination, departureTime, arrivalTime, gate, terminal, and missingRequiredFields. Use datetime-local format yyyy-MM-ddTHH:mm. If today/tomorrow are used, map to {today}/{tomorrow}.";
         }) ?? string.Empty;
     }
 
@@ -543,6 +695,75 @@ public class HomeController : Controller
         || !string.IsNullOrWhiteSpace(response.TimeRangeStart)
         || !string.IsNullOrWhiteSpace(response.TimeRangeEnd)
         || (response.Statuses?.Count > 0);
+
+    private static bool HasAnyAddFlightFields(AiAddFlightResponse response) =>
+        !string.IsNullOrWhiteSpace(response.FlightNumber)
+        || !string.IsNullOrWhiteSpace(response.Airline)
+        || !string.IsNullOrWhiteSpace(response.Destination)
+        || !string.IsNullOrWhiteSpace(response.DepartureTime)
+        || !string.IsNullOrWhiteSpace(response.ArrivalTime)
+        || !string.IsNullOrWhiteSpace(response.Gate)
+        || !string.IsNullOrWhiteSpace(response.Terminal);
+
+    private static AiAddFlightResponse NormalizeAiAddFlightResponse(AiAddFlightResponse response)
+    {
+        response.FlightNumber = NormalizeFlightNumber(response.FlightNumber);
+        response.Airline = Clean(response.Airline);
+        response.Destination = NormalizeDestination(response.Destination);
+        response.DepartureTime = NormalizeDateTimeForForm(response.DepartureTime);
+        response.ArrivalTime = NormalizeDateTimeForForm(response.ArrivalTime);
+        response.Gate = NormalizeGate(response.Gate);
+        response.Terminal = NormalizeTerminalForAddForm(response.Terminal);
+        response.Message = Clean(response.Message);
+
+        if (!response.IsAddFlightRequest && !HasAnyAddFlightFields(response))
+        {
+            response.MissingRequiredFields = RequiredAddFlightFields.ToList();
+            response.Message ??= AddFlightOnlyMessage;
+            return response;
+        }
+
+        response.IsAddFlightRequest = true;
+
+        if (TryParseDateTimeLocal(response.DepartureTime, out var departureTime))
+        {
+            if (!TryParseDateTimeLocal(response.ArrivalTime, out var arrivalTime) || arrivalTime <= departureTime)
+            {
+                response.ArrivalTime = departureTime.AddHours(2).ToString("yyyy-MM-ddTHH:mm");
+                response.ArrivalEstimated = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(response.Terminal))
+            {
+                response.Terminal = EstimateTerminal(response.Airline);
+                response.TerminalEstimated = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(response.Gate))
+            {
+                response.Gate = EstimateGate(response.Terminal, response.FlightNumber);
+                response.GateEstimated = true;
+            }
+        }
+        else
+        {
+            response.ArrivalTime = null;
+            response.ArrivalEstimated = false;
+        }
+
+        response.MissingRequiredFields = BuildMissingRequiredFields(response);
+
+        if (response.MissingRequiredFields.Count > 0)
+        {
+            response.Message ??= "I still need the required details before this flight can be saved.";
+        }
+        else if (string.IsNullOrWhiteSpace(response.Message))
+        {
+            response.Message = "Flight details filled. Review and save when ready.";
+        }
+
+        return response;
+    }
 
     private static string? Clean(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
@@ -595,6 +816,128 @@ public class HomeController : Controller
         return TimeSpan.TryParse(cleaned, out var parsed)
             ? $"{parsed.Hours:00}:{parsed.Minutes:00}"
             : cleaned;
+    }
+
+    private static string? NormalizeFlightNumber(string? value)
+    {
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned)) return null;
+
+        return cleaned.Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
+    }
+
+    private static string? NormalizeGate(string? value)
+    {
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned)) return null;
+
+        var normalized = cleaned
+            .ToUpperInvariant()
+            .Replace(" ", string.Empty, StringComparison.Ordinal);
+
+        return normalized.Length > 6 ? normalized[..6] : normalized;
+    }
+
+    private static string? NormalizeTerminalForAddForm(string? value)
+    {
+        var normalized = NormalizeTerminal(value);
+        if (string.IsNullOrWhiteSpace(normalized)) return null;
+
+        return int.TryParse(normalized, out var number) && number is >= 1 and <= 5
+            ? number.ToString(CultureInfo.InvariantCulture)
+            : null;
+    }
+
+    private static string? NormalizeDateTimeForForm(string? value)
+    {
+        if (!TryParseDateTimeLocal(value, out var parsedDateTime))
+            return null;
+
+        return parsedDateTime.ToString("yyyy-MM-ddTHH:mm");
+    }
+
+    private static bool TryParseDateTimeLocal(string? value, out DateTime parsed)
+    {
+        parsed = default;
+        var cleaned = Clean(value);
+        if (string.IsNullOrWhiteSpace(cleaned))
+            return false;
+
+        string[] formats =
+        [
+            "yyyy-MM-ddTHH:mm",
+            "yyyy-MM-dd HH:mm",
+            "yyyy-MM-ddTHH:mm:ss",
+            "yyyy-MM-dd"
+        ];
+
+        if (DateTime.TryParseExact(cleaned, formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out parsed))
+        {
+            if (cleaned.Length == 10)
+                parsed = parsed.Date.AddHours(12);
+
+            return true;
+        }
+
+        return DateTime.TryParse(cleaned, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out parsed)
+            || DateTime.TryParse(cleaned, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out parsed);
+    }
+
+    private static string EstimateTerminal(string? airline)
+    {
+        var normalizedAirline = (airline ?? string.Empty).ToLowerInvariant();
+
+        if (normalizedAirline.Contains("british airways", StringComparison.Ordinal))
+            return "5";
+
+        if (normalizedAirline.Contains("virgin atlantic", StringComparison.Ordinal))
+            return "3";
+
+        if (normalizedAirline.Contains("emirates", StringComparison.Ordinal)
+            || normalizedAirline.Contains("qatar", StringComparison.Ordinal)
+            || normalizedAirline.Contains("etihad", StringComparison.Ordinal)
+            || normalizedAirline.Contains("air india", StringComparison.Ordinal))
+        {
+            return "4";
+        }
+
+        return "3";
+    }
+
+    private static string EstimateGate(string? terminal, string? flightNumber)
+    {
+        var prefix = terminal switch
+        {
+            "1" => "A",
+            "2" => "B",
+            "3" => "C",
+            "4" => "D",
+            "5" => "A",
+            _ => "C"
+        };
+
+        var gateNumber = 12;
+        var digits = new string((flightNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (digits.Length > 0)
+        {
+            var tailDigits = digits.Length > 2 ? digits[^2..] : digits;
+            if (int.TryParse(tailDigits, out var parsedDigits))
+                gateNumber = Math.Clamp(parsedDigits % 39 + 1, 1, 40);
+        }
+
+        return $"{prefix}{gateNumber:00}";
+    }
+
+    private static List<string> BuildMissingRequiredFields(AiAddFlightResponse response)
+    {
+        var missing = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(response.FlightNumber)) missing.Add("flightNumber");
+        if (string.IsNullOrWhiteSpace(response.Airline)) missing.Add("airline");
+        if (string.IsNullOrWhiteSpace(response.Destination)) missing.Add("destination");
+        if (string.IsNullOrWhiteSpace(response.DepartureTime)) missing.Add("departureTime");
+
+        return missing;
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -673,4 +1016,21 @@ public class AiSearchFiltersResponse
     public List<string> Statuses { get; set; } = new();
     public string? TimeRangeStart { get; set; }
     public string? TimeRangeEnd { get; set; }
+}
+
+public class AiAddFlightResponse
+{
+    public bool IsAddFlightRequest { get; set; } = true;
+    public string? Message { get; set; }
+    public string? FlightNumber { get; set; }
+    public string? Airline { get; set; }
+    public string? Destination { get; set; }
+    public string? DepartureTime { get; set; }
+    public string? ArrivalTime { get; set; }
+    public string? Gate { get; set; }
+    public string? Terminal { get; set; }
+    public bool ArrivalEstimated { get; set; }
+    public bool GateEstimated { get; set; }
+    public bool TerminalEstimated { get; set; }
+    public List<string> MissingRequiredFields { get; set; } = new();
 }
