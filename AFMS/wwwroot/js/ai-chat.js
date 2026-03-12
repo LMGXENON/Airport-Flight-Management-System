@@ -56,7 +56,7 @@
                 if (busy) {
                     inputEl.placeholder = 'Working on your search request...';
                 } else if (isAdvancedSearch) {
-                    inputEl.placeholder = 'Describe the flight you want to search for...';
+                    inputEl.placeholder = 'Describe your flight search...';
                 }
             }
 
