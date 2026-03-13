@@ -12,8 +12,8 @@ resource "aws_security_group" "alb_sg" {
 
 
 }
-resource "aws_lb_target_group" "gatus_alb_tg" {
-  name        = "gatus-alb-tg"
+resource "aws_lb_target_group" "afms_tg" {
+  name        = "afms-alb-tg"
   port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
@@ -31,4 +31,19 @@ resource "aws_lb_target_group" "gatus_alb_tg" {
 
   }
 
+}
+resource "aws_lb_listener" "HTTP" {
+  load_balancer_arn = aws_lb.afms_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
 }
