@@ -278,14 +278,36 @@
             );
         }
 
-        async function callAssistant(endpoint, userMessage) {
+        function getAddFlightContext() {
+            if (!isAddFlight) return null;
+
+            const readValue = id => {
+                const el = document.getElementById(id);
+                return el ? (el.value || '').trim() : '';
+            };
+
+            const context = {
+                flightNumber: readValue('FlightNumber'),
+                airline: readValue('Airline'),
+                destination: readValue('Destination'),
+                departureTime: readValue('DepartureTime'),
+                arrivalTime: readValue('ArrivalTime'),
+                gate: readValue('Gate'),
+                terminal: readValue('Terminal')
+            };
+
+            const hasAny = Object.values(context).some(Boolean);
+            return hasAny ? context : null;
+        }
+
+        async function callAssistant(endpoint, payload) {
             const controller = new AbortController();
             const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: userMessage }),
+                body: JSON.stringify(payload),
                 signal: controller.signal
             });
 
@@ -309,11 +331,14 @@
         }
 
         async function callSearchAssistant(userMessage) {
-            return await callAssistant('/Home/ProcessAIQuery', userMessage);
+            return await callAssistant('/Home/ProcessAIQuery', { query: userMessage });
         }
 
         async function callAddFlightAssistant(userMessage) {
-            return await callAssistant('/Home/ProcessAddFlightQuery', userMessage);
+            return await callAssistant('/Home/ProcessAddFlightQuery', {
+                query: userMessage,
+                addFlightContext: getAddFlightContext()
+            });
         }
 
         function getFriendlyErrorMessage(err) {

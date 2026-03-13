@@ -338,17 +338,36 @@ public class HomeController : Controller
 
             var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
             var systemPrompt = BuildDeepSeekAddFlightSystemPrompt();
+            var normalizedContext = NormalizeAiAddFlightContext(request.AddFlightContext);
             var deepSeekClient = _httpClientFactory.CreateClient("DeepSeek");
             deepSeekClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+            var messages = new List<object>
+            {
+                new { role = "system", content = systemPrompt }
+            };
+
+            if (HasAnyAddFlightContextFields(normalizedContext))
+            {
+                var contextJson = JsonSerializer.Serialize(
+                    normalizedContext,
+                    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+
+                messages.Add(new
+                {
+                    role = "user",
+                    content =
+                        "Current Add Flight form values already captured from previous messages. Use this as context and keep these values unless the new message updates them.\n"
+                        + $"Context JSON: {contextJson}"
+                });
+            }
+
+            messages.Add(new { role = "user", content = request.Query });
 
             var requestBody = new
             {
                 model,
-                messages = new[]
-                {
-                    new { role = "system", content = systemPrompt },
-                    new { role = "user", content = request.Query }
-                },
+                messages,
                 temperature = 0,
                 max_tokens = 360
             };
@@ -401,7 +420,8 @@ public class HomeController : Controller
                 return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not parse that into add-flight fields. Please try again." });
             }
 
-            var normalizedParams = NormalizeAiAddFlightResponse(parsedParams);
+            var mergedParams = MergeWithAiAddFlightContext(parsedParams, normalizedContext);
+            var normalizedParams = NormalizeAiAddFlightResponse(mergedParams);
             _logger.LogInformation(
                 "AI add-flight query processed for client {ClientKey}. AddFlightRequest={IsAddFlightRequest}, MissingRequired={MissingRequired}",
                 clientKey,
@@ -705,6 +725,77 @@ public class HomeController : Controller
         || !string.IsNullOrWhiteSpace(response.Gate)
         || !string.IsNullOrWhiteSpace(response.Terminal);
 
+    private static bool HasAnyAddFlightContextFields(AiAddFlightContext? context) =>
+        context is not null
+        && (!string.IsNullOrWhiteSpace(context.FlightNumber)
+            || !string.IsNullOrWhiteSpace(context.Airline)
+            || !string.IsNullOrWhiteSpace(context.Destination)
+            || !string.IsNullOrWhiteSpace(context.DepartureTime)
+            || !string.IsNullOrWhiteSpace(context.ArrivalTime)
+            || !string.IsNullOrWhiteSpace(context.Gate)
+            || !string.IsNullOrWhiteSpace(context.Terminal));
+
+    private static AiAddFlightContext? NormalizeAiAddFlightContext(AiAddFlightContext? context)
+    {
+        if (context is null)
+            return null;
+
+        var normalized = new AiAddFlightContext
+        {
+            FlightNumber = NormalizeFlightNumber(context.FlightNumber),
+            Airline = Clean(context.Airline),
+            Destination = NormalizeDestination(context.Destination),
+            DepartureTime = NormalizeDateTimeForForm(context.DepartureTime),
+            ArrivalTime = NormalizeDateTimeForForm(context.ArrivalTime),
+            Gate = NormalizeGate(context.Gate),
+            Terminal = NormalizeTerminalForAddForm(context.Terminal)
+        };
+
+        return HasAnyAddFlightContextFields(normalized) ? normalized : null;
+    }
+
+    private static AiAddFlightResponse MergeWithAiAddFlightContext(AiAddFlightResponse aiResponse, AiAddFlightContext? context)
+    {
+        if (!HasAnyAddFlightContextFields(context))
+            return aiResponse;
+
+        aiResponse.FlightNumber = string.IsNullOrWhiteSpace(aiResponse.FlightNumber)
+            ? context!.FlightNumber
+            : aiResponse.FlightNumber;
+        aiResponse.Airline = string.IsNullOrWhiteSpace(aiResponse.Airline)
+            ? context!.Airline
+            : aiResponse.Airline;
+        aiResponse.Destination = string.IsNullOrWhiteSpace(aiResponse.Destination)
+            ? context!.Destination
+            : aiResponse.Destination;
+        aiResponse.DepartureTime = string.IsNullOrWhiteSpace(aiResponse.DepartureTime)
+            ? context!.DepartureTime
+            : aiResponse.DepartureTime;
+
+        if (string.IsNullOrWhiteSpace(aiResponse.ArrivalTime))
+        {
+            aiResponse.ArrivalTime = context!.ArrivalTime;
+            if (!string.IsNullOrWhiteSpace(aiResponse.ArrivalTime))
+                aiResponse.ArrivalEstimated = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(aiResponse.Gate))
+        {
+            aiResponse.Gate = context!.Gate;
+            if (!string.IsNullOrWhiteSpace(aiResponse.Gate))
+                aiResponse.GateEstimated = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(aiResponse.Terminal))
+        {
+            aiResponse.Terminal = context!.Terminal;
+            if (!string.IsNullOrWhiteSpace(aiResponse.Terminal))
+                aiResponse.TerminalEstimated = false;
+        }
+
+        return aiResponse;
+    }
+
     private static AiAddFlightResponse NormalizeAiAddFlightResponse(AiAddFlightResponse response)
     {
         response.FlightNumber = NormalizeFlightNumber(response.FlightNumber);
@@ -979,6 +1070,18 @@ public class HomeController : Controller
 public class AIQueryRequest
 {
     public string? Query { get; set; }
+    public AiAddFlightContext? AddFlightContext { get; set; }
+}
+
+public class AiAddFlightContext
+{
+    public string? FlightNumber { get; set; }
+    public string? Airline { get; set; }
+    public string? Destination { get; set; }
+    public string? DepartureTime { get; set; }
+    public string? ArrivalTime { get; set; }
+    public string? Gate { get; set; }
+    public string? Terminal { get; set; }
 }
 
 public class DeepSeekResponse

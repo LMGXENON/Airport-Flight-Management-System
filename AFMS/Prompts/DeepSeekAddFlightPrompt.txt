@@ -37,6 +37,8 @@ Rules:
 - Return JSON only. No markdown. No explanation.
 - Required fields are: flightNumber, airline, destination, departureTime.
 - If required fields are missing, include them in missingRequiredFields.
+- You may receive a prior context message with existing form values. Treat those as already captured and keep them unless the latest user message clearly changes them.
+- The latest user message may contain only missing fields or a full replacement. In both cases, extract updates and keep isAddFlightRequest true.
 - If user says "today", use {today}. If user says "tomorrow", use {tomorrow}.
 - If only a time is provided with no date, assume today.
 - Keep destination as airport code when obvious; otherwise keep user text.
