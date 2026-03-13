@@ -332,7 +332,7 @@
 }
 
 /* -----------------------------------------------------------------------
-   Thinking / loading dots animation
+    Thinking / loading animation
 ----------------------------------------------------------------------- */
 .thinking .message-bubble {
     padding: 14px 18px;
@@ -350,46 +350,18 @@
     letter-spacing: 0.01em;
 }
 
-.dot-flashing {
-    position: relative;
-    width: 8px;
-    height: 8px;
+.thinking-spinner {
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background-color: #8891b2;
-    color: #8891b2;
-    animation: dot-flashing 1s infinite linear alternate;
-    animation-delay: 0.5s;
+    border: 2px solid #45517b;
+    border-top-color: #c7d2ff;
+    animation: ai-chat-spin 0.9s linear infinite;
     display: inline-block;
 }
 
-.dot-flashing::before,
-.dot-flashing::after {
-    content: '';
-    display: inline-block;
-    position: absolute;
-    top: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #8891b2;
-    color: #8891b2;
-}
-
-.dot-flashing::before {
-    left: -14px;
-    animation: dot-flashing 1s infinite alternate;
-    animation-delay: 0s;
-}
-
-.dot-flashing::after {
-    left: 14px;
-    animation: dot-flashing 1s infinite alternate;
-    animation-delay: 1s;
-}
-
-@keyframes dot-flashing {
-    0%   { background-color: #8891b2; }
-    50%, 100% { background-color: #2d3454; }
+@keyframes ai-chat-spin {
+    to { transform: rotate(360deg); }
 }
 
 @media (max-width: 640px) {

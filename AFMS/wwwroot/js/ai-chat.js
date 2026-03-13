@@ -14,6 +14,7 @@
         const inputHint  = document.getElementById('chatInputHint');
         const messages   = document.getElementById('chatMessages');
         let isBusy       = false;
+        let activeThinkingEl = null;
 
         if (!toggle || !chatWindow) return;
 
@@ -134,18 +135,27 @@
             return wrap;
         }
 
+        function clearThinkingIndicators() {
+            messages.querySelectorAll('.chat-message.assistant-message.thinking').forEach(node => node.remove());
+            activeThinkingEl = null;
+        }
+
         function appendThinking() {
             hideWelcomeState();
 
+            clearThinkingIndicators();
+
             const wrap = document.createElement('div');
             wrap.className = 'chat-message assistant-message thinking';
-            wrap.innerHTML = '<div class="message-bubble"><div class="thinking-row"><span class="dot-flashing"></span><span class="thinking-label">Thinking...</span></div><small>Reading your request and turning it into search filters.</small></div>';
+            wrap.innerHTML = '<div class="message-bubble"><div class="thinking-row"><span class="thinking-spinner" aria-hidden="true"></span><span class="thinking-label">Working...</span></div><small>Reading your request and preparing the reply.</small></div>';
             messages.appendChild(wrap);
             messages.scrollTop = messages.scrollHeight;
+            activeThinkingEl = wrap;
             return wrap;
         }
 
         function clearChat() {
+            clearThinkingIndicators();
             messages.querySelectorAll('.chat-message').forEach(node => node.remove());
             showWelcomeState();
             if (inputEl) {
@@ -422,21 +432,20 @@
             setBusyState(true);
 
             appendMessage('user', escapeHtml(text));
-            const thinkingEl = appendThinking();
+            appendThinking();
 
             try {
-                thinkingEl.remove();
-
                 if (isAdvancedSearch) {
                     await handleAdvancedSearchRequest(text);
                 } else if (isAddFlight) {
                     await handleAddFlightRequest(text);
                 }
             } catch (err) {
-                thinkingEl.remove();
                 appendMessage('assistant', escapeHtml(getFriendlyErrorMessage(err)), 'error');
                 console.error('[AI Chat] DeepSeek error:', err);
             } finally {
+                if (activeThinkingEl) activeThinkingEl.remove();
+                activeThinkingEl = null;
                 setBusyState(false);
                 inputEl.focus();
             }
