@@ -147,7 +147,7 @@
 
             const wrap = document.createElement('div');
             wrap.className = 'chat-message assistant-message thinking';
-            wrap.innerHTML = '<div class="message-bubble"><div class="thinking-row"><span class="thinking-spinner" aria-hidden="true"></span><span class="thinking-label">Working...</span></div><small>Reading your request and preparing the reply.</small></div>';
+            wrap.innerHTML = '<div class="message-bubble"><div class="thinking-row"><span class="thinking-dots" aria-hidden="true"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></span><span class="thinking-label">Thinking...</span></div><small>Reading your request and preparing the reply.</small></div>';
             messages.appendChild(wrap);
             messages.scrollTop = messages.scrollHeight;
             activeThinkingEl = wrap;
