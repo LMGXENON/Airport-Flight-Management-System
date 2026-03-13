@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -26,6 +27,19 @@ public class HomeController : Controller
     private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
     {
         "Expected", "Boarding", "Departed", "Arrived", "Delayed", "Canceled"
+    };
+    private static readonly Dictionary<string, string> AirportAliasToIata = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["heathrow"] = "LHR",
+        ["london heathrow"] = "LHR",
+        ["lhr"] = "LHR",
+        ["egll"] = "LHR",
+        ["gatwick"] = "LGW",
+        ["london gatwick"] = "LGW",
+        ["lgw"] = "LGW",
+        ["stansted"] = "STN",
+        ["london stansted"] = "STN",
+        ["stn"] = "STN"
     };
 
     private readonly AeroDataBoxService _aeroDataBoxService;
@@ -338,17 +352,36 @@ public class HomeController : Controller
 
             var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
             var systemPrompt = BuildDeepSeekAddFlightSystemPrompt();
+            var normalizedContext = NormalizeAiAddFlightContext(request.AddFlightContext);
             var deepSeekClient = _httpClientFactory.CreateClient("DeepSeek");
             deepSeekClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+            var messages = new List<object>
+            {
+                new { role = "system", content = systemPrompt }
+            };
+
+            if (HasAnyAddFlightContextFields(normalizedContext))
+            {
+                var contextJson = JsonSerializer.Serialize(
+                    normalizedContext,
+                    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+
+                messages.Add(new
+                {
+                    role = "user",
+                    content =
+                        "Current Add Flight form values already captured from previous messages. Use this as context and keep these values unless the new message updates them.\n"
+                        + $"Context JSON: {contextJson}"
+                });
+            }
+
+            messages.Add(new { role = "user", content = request.Query });
 
             var requestBody = new
             {
                 model,
-                messages = new[]
-                {
-                    new { role = "system", content = systemPrompt },
-                    new { role = "user", content = request.Query }
-                },
+                messages,
                 temperature = 0,
                 max_tokens = 360
             };
@@ -401,7 +434,9 @@ public class HomeController : Controller
                 return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not parse that into add-flight fields. Please try again." });
             }
 
-            var normalizedParams = NormalizeAiAddFlightResponse(parsedParams);
+            var mergedParams = MergeWithAiAddFlightContext(parsedParams, normalizedContext);
+            var enrichedParams = EnrichAddFlightFromNaturalLanguage(request.Query, mergedParams);
+            var normalizedParams = NormalizeAiAddFlightResponse(enrichedParams);
             _logger.LogInformation(
                 "AI add-flight query processed for client {ClientKey}. AddFlightRequest={IsAddFlightRequest}, MissingRequired={MissingRequired}",
                 clientKey,
@@ -705,6 +740,272 @@ public class HomeController : Controller
         || !string.IsNullOrWhiteSpace(response.Gate)
         || !string.IsNullOrWhiteSpace(response.Terminal);
 
+    private static bool HasAnyAddFlightContextFields(AiAddFlightContext? context) =>
+        context is not null
+        && (!string.IsNullOrWhiteSpace(context.FlightNumber)
+            || !string.IsNullOrWhiteSpace(context.Airline)
+            || !string.IsNullOrWhiteSpace(context.Destination)
+            || !string.IsNullOrWhiteSpace(context.DepartureTime)
+            || !string.IsNullOrWhiteSpace(context.ArrivalTime)
+            || !string.IsNullOrWhiteSpace(context.Gate)
+            || !string.IsNullOrWhiteSpace(context.Terminal));
+
+    private static AiAddFlightContext? NormalizeAiAddFlightContext(AiAddFlightContext? context)
+    {
+        if (context is null)
+            return null;
+
+        var normalized = new AiAddFlightContext
+        {
+            FlightNumber = NormalizeFlightNumber(context.FlightNumber),
+            Airline = Clean(context.Airline),
+            Destination = NormalizeDestination(context.Destination),
+            DepartureTime = NormalizeDateTimeForForm(context.DepartureTime),
+            ArrivalTime = NormalizeDateTimeForForm(context.ArrivalTime),
+            Gate = NormalizeGate(context.Gate),
+            Terminal = NormalizeTerminalForAddForm(context.Terminal)
+        };
+
+        return HasAnyAddFlightContextFields(normalized) ? normalized : null;
+    }
+
+    private static AiAddFlightResponse MergeWithAiAddFlightContext(AiAddFlightResponse aiResponse, AiAddFlightContext? context)
+    {
+        if (!HasAnyAddFlightContextFields(context))
+            return aiResponse;
+
+        aiResponse.FlightNumber = string.IsNullOrWhiteSpace(aiResponse.FlightNumber)
+            ? context!.FlightNumber
+            : aiResponse.FlightNumber;
+        aiResponse.Airline = string.IsNullOrWhiteSpace(aiResponse.Airline)
+            ? context!.Airline
+            : aiResponse.Airline;
+        aiResponse.Destination = string.IsNullOrWhiteSpace(aiResponse.Destination)
+            ? context!.Destination
+            : aiResponse.Destination;
+        aiResponse.DepartureTime = string.IsNullOrWhiteSpace(aiResponse.DepartureTime)
+            ? context!.DepartureTime
+            : aiResponse.DepartureTime;
+
+        if (string.IsNullOrWhiteSpace(aiResponse.ArrivalTime))
+        {
+            aiResponse.ArrivalTime = context!.ArrivalTime;
+            if (!string.IsNullOrWhiteSpace(aiResponse.ArrivalTime))
+                aiResponse.ArrivalEstimated = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(aiResponse.Gate))
+        {
+            aiResponse.Gate = context!.Gate;
+            if (!string.IsNullOrWhiteSpace(aiResponse.Gate))
+                aiResponse.GateEstimated = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(aiResponse.Terminal))
+        {
+            aiResponse.Terminal = context!.Terminal;
+            if (!string.IsNullOrWhiteSpace(aiResponse.Terminal))
+                aiResponse.TerminalEstimated = false;
+        }
+
+        return aiResponse;
+    }
+
+    private static AiAddFlightResponse EnrichAddFlightFromNaturalLanguage(string? query, AiAddFlightResponse response)
+    {
+        var cleanedQuery = Clean(query);
+        if (string.IsNullOrWhiteSpace(cleanedQuery))
+            return response;
+
+        if (string.IsNullOrWhiteSpace(response.FlightNumber))
+            response.FlightNumber = TryExtractFlightNumber(cleanedQuery);
+
+        if (string.IsNullOrWhiteSpace(response.Airline))
+            response.Airline = TryExtractAirline(cleanedQuery);
+
+        if (string.IsNullOrWhiteSpace(response.Destination))
+            response.Destination = TryExtractDestination(cleanedQuery);
+
+        if (string.IsNullOrWhiteSpace(response.DepartureTime))
+            response.DepartureTime = TryExtractDepartureDateTime(cleanedQuery);
+
+        if (string.IsNullOrWhiteSpace(response.Terminal))
+            response.Terminal = TryExtractTerminal(cleanedQuery);
+
+        if (string.IsNullOrWhiteSpace(response.Gate))
+            response.Gate = TryExtractGate(cleanedQuery);
+
+        return response;
+    }
+
+    private static string? TryExtractFlightNumber(string text)
+    {
+        var matches = Regex.Matches(text, @"\b([A-Za-z]{2,5}\s?\d{1,4}[A-Za-z]?)\b", RegexOptions.IgnoreCase);
+        foreach (Match match in matches)
+        {
+            var raw = match.Groups[1].Value;
+            var normalized = NormalizeFlightNumber(raw);
+            if (string.IsNullOrWhiteSpace(normalized))
+                continue;
+
+            if (!normalized.Any(char.IsLetter) || !normalized.Any(char.IsDigit))
+                continue;
+
+            return normalized;
+        }
+
+        return null;
+    }
+
+    private static string? TryExtractAirline(string text)
+    {
+        var match = Regex.Match(
+            text,
+            @"\b([A-Za-z][A-Za-z\s&\-]{1,40}(?:airlines?|airways|air))\b",
+            RegexOptions.IgnoreCase);
+
+        if (!match.Success)
+            return null;
+
+        var airline = match.Groups[1].Value.Trim();
+        return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(airline.ToLowerInvariant());
+    }
+
+    private static string? TryExtractDestination(string text)
+    {
+        var segments = text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        foreach (var segment in segments)
+        {
+            var lowered = segment.ToLowerInvariant();
+            var toIndex = lowered.LastIndexOf(" to ", StringComparison.Ordinal);
+            if (toIndex < 0)
+                continue;
+
+            var originCandidate = segment[..toIndex].Trim();
+            var destinationCandidate = segment[(toIndex + 4)..].Trim();
+
+            var normalizedTo = NormalizeDestinationCandidate(destinationCandidate);
+            if (IsHeathrowAlias(normalizedTo))
+            {
+                // Add Flight only creates outgoing flights from Heathrow, so reverse route phrasing
+                // like "Portugal to Heathrow" should map destination to the non-Heathrow side.
+                var normalizedFrom = NormalizeDestinationCandidate(originCandidate);
+                if (!string.IsNullOrWhiteSpace(normalizedFrom) && !IsHeathrowAlias(normalizedFrom))
+                    return normalizedFrom;
+            }
+
+            if (!string.IsNullOrWhiteSpace(normalizedTo))
+                return normalizedTo;
+        }
+
+        var toMatch = Regex.Match(
+            text,
+            @"\bto\s+([A-Za-z][A-Za-z\s]{1,40}?)(?=\s+at\s+|\s+on\s+|\s+gate\b|\s+terminal\b|,|$)",
+            RegexOptions.IgnoreCase);
+
+        if (toMatch.Success)
+        {
+            var normalized = NormalizeDestinationCandidate(toMatch.Groups[1].Value);
+            if (!string.IsNullOrWhiteSpace(normalized))
+                return normalized;
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeDestinationCandidate(string? candidate)
+    {
+        var cleaned = Clean(candidate);
+        if (string.IsNullOrWhiteSpace(cleaned))
+            return null;
+
+        var normalizedAliasKey = cleaned.ToLowerInvariant();
+        if (AirportAliasToIata.TryGetValue(normalizedAliasKey, out var aliasIata))
+            return aliasIata;
+
+        var compact = new string(cleaned.Where(char.IsLetter).ToArray());
+        if (AirportAliasToIata.TryGetValue(compact, out var compactAliasIata))
+            return compactAliasIata;
+
+        if (Regex.IsMatch(cleaned, @"^[A-Za-z]{3}$"))
+            return cleaned.ToUpperInvariant();
+
+        if (Regex.IsMatch(cleaned, @"^[A-Za-z]{4}$"))
+            return AdvancedSearchViewModel.ConvertToIata(cleaned.ToUpperInvariant());
+
+        return cleaned;
+    }
+
+    private static bool IsHeathrowAlias(string? destination)
+    {
+        if (string.IsNullOrWhiteSpace(destination))
+            return false;
+
+        var normalized = destination.Trim().ToUpperInvariant();
+        return normalized is "LHR" or "EGLL" or "HEATHROW" or "LONDON HEATHROW";
+    }
+
+    private static string? TryExtractDepartureDateTime(string text)
+    {
+        var isoMatch = Regex.Match(text, @"\b(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\b", RegexOptions.IgnoreCase);
+        if (isoMatch.Success && TryParseDateTimeLocal(isoMatch.Groups[1].Value, out var isoParsed))
+            return isoParsed.ToString("yyyy-MM-ddTHH:mm");
+
+        var londonNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/London"));
+        var baseDate = londonNow.Date;
+        var lower = text.ToLowerInvariant();
+
+        if (lower.Contains("tomorrow", StringComparison.Ordinal))
+            baseDate = baseDate.AddDays(1);
+        else if (lower.Contains("yesterday", StringComparison.Ordinal))
+            baseDate = baseDate.AddDays(-1);
+
+        var amPmMatch = Regex.Match(text, @"\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(am|pm)\b", RegexOptions.IgnoreCase);
+        if (amPmMatch.Success)
+        {
+            var hour = int.Parse(amPmMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+            var minute = amPmMatch.Groups[2].Success
+                ? int.Parse(amPmMatch.Groups[2].Value, CultureInfo.InvariantCulture)
+                : 0;
+            var meridian = amPmMatch.Groups[3].Value.ToLowerInvariant();
+
+            if (meridian == "pm" && hour < 12) hour += 12;
+            if (meridian == "am" && hour == 12) hour = 0;
+
+            return baseDate.AddHours(hour).AddMinutes(minute).ToString("yyyy-MM-ddTHH:mm");
+        }
+
+        var hhmmMatch = Regex.Match(text, @"\b([01]?\d|2[0-3]):([0-5]\d)\b");
+        if (hhmmMatch.Success)
+        {
+            var hour = int.Parse(hhmmMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+            var minute = int.Parse(hhmmMatch.Groups[2].Value, CultureInfo.InvariantCulture);
+            return baseDate.AddHours(hour).AddMinutes(minute).ToString("yyyy-MM-ddTHH:mm");
+        }
+
+        return null;
+    }
+
+    private static string? TryExtractTerminal(string text)
+    {
+        var match = Regex.Match(text, @"\bterminal\s*([1-5])\b", RegexOptions.IgnoreCase);
+        if (match.Success)
+            return match.Groups[1].Value;
+
+        var shortMatch = Regex.Match(text, @"\bt\s*([1-5])\b", RegexOptions.IgnoreCase);
+        return shortMatch.Success ? shortMatch.Groups[1].Value : null;
+    }
+
+    private static string? TryExtractGate(string text)
+    {
+        var labelled = Regex.Match(text, @"\bgate\s*([A-Za-z]\d{1,2})\b", RegexOptions.IgnoreCase);
+        if (labelled.Success)
+            return labelled.Groups[1].Value;
+
+        var standalone = Regex.Match(text, @"\b([A-SU-Z]\d{1,2})\b", RegexOptions.IgnoreCase);
+        return standalone.Success ? standalone.Groups[1].Value : null;
+    }
+
     private static AiAddFlightResponse NormalizeAiAddFlightResponse(AiAddFlightResponse response)
     {
         response.FlightNumber = NormalizeFlightNumber(response.FlightNumber);
@@ -729,7 +1030,7 @@ public class HomeController : Controller
         {
             if (!TryParseDateTimeLocal(response.ArrivalTime, out var arrivalTime) || arrivalTime <= departureTime)
             {
-                response.ArrivalTime = departureTime.AddHours(2).ToString("yyyy-MM-ddTHH:mm");
+                response.ArrivalTime = departureTime.Add(EstimateArrivalOffset(response.Destination)).ToString("yyyy-MM-ddTHH:mm");
                 response.ArrivalEstimated = true;
             }
 
@@ -763,6 +1064,19 @@ public class HomeController : Controller
         }
 
         return response;
+    }
+
+    private static TimeSpan EstimateArrivalOffset(string? destination)
+    {
+        var normalized = NormalizeDestinationCandidate(destination)?.ToUpperInvariant() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(normalized))
+            return TimeSpan.FromHours(2);
+
+        if (normalized is "LIS" or "OPO" or "FAO" || normalized.Contains("PORTUGAL", StringComparison.Ordinal))
+            return TimeSpan.FromMinutes(160);
+
+        return TimeSpan.FromHours(2);
     }
 
     private static string? Clean(string? value) =>
@@ -979,6 +1293,18 @@ public class HomeController : Controller
 public class AIQueryRequest
 {
     public string? Query { get; set; }
+    public AiAddFlightContext? AddFlightContext { get; set; }
+}
+
+public class AiAddFlightContext
+{
+    public string? FlightNumber { get; set; }
+    public string? Airline { get; set; }
+    public string? Destination { get; set; }
+    public string? DepartureTime { get; set; }
+    public string? ArrivalTime { get; set; }
+    public string? Gate { get; set; }
+    public string? Terminal { get; set; }
 }
 
 public class DeepSeekResponse

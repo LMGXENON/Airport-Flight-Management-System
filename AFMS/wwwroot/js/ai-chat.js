@@ -14,6 +14,7 @@
         const inputHint  = document.getElementById('chatInputHint');
         const messages   = document.getElementById('chatMessages');
         let isBusy       = false;
+        let activeThinkingEl = null;
 
         if (!toggle || !chatWindow) return;
 
@@ -134,18 +135,27 @@
             return wrap;
         }
 
+        function clearThinkingIndicators() {
+            messages.querySelectorAll('.chat-message.assistant-message.thinking').forEach(node => node.remove());
+            activeThinkingEl = null;
+        }
+
         function appendThinking() {
             hideWelcomeState();
 
+            clearThinkingIndicators();
+
             const wrap = document.createElement('div');
             wrap.className = 'chat-message assistant-message thinking';
-            wrap.innerHTML = '<div class="message-bubble"><div class="thinking-row"><span class="dot-flashing"></span><span class="thinking-label">Thinking...</span></div><small>Reading your request and turning it into search filters.</small></div>';
+            wrap.innerHTML = '<div class="message-bubble"><div class="thinking-row"><span class="thinking-dots" aria-hidden="true"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></span><span class="thinking-label">Thinking...</span></div><small>Reading your request and preparing the reply.</small></div>';
             messages.appendChild(wrap);
             messages.scrollTop = messages.scrollHeight;
+            activeThinkingEl = wrap;
             return wrap;
         }
 
         function clearChat() {
+            clearThinkingIndicators();
             messages.querySelectorAll('.chat-message').forEach(node => node.remove());
             showWelcomeState();
             if (inputEl) {
@@ -268,14 +278,36 @@
             );
         }
 
-        async function callAssistant(endpoint, userMessage) {
+        function getAddFlightContext() {
+            if (!isAddFlight) return null;
+
+            const readValue = id => {
+                const el = document.getElementById(id);
+                return el ? (el.value || '').trim() : '';
+            };
+
+            const context = {
+                flightNumber: readValue('FlightNumber'),
+                airline: readValue('Airline'),
+                destination: readValue('Destination'),
+                departureTime: readValue('DepartureTime'),
+                arrivalTime: readValue('ArrivalTime'),
+                gate: readValue('Gate'),
+                terminal: readValue('Terminal')
+            };
+
+            const hasAny = Object.values(context).some(Boolean);
+            return hasAny ? context : null;
+        }
+
+        async function callAssistant(endpoint, payload) {
             const controller = new AbortController();
             const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: userMessage }),
+                body: JSON.stringify(payload),
                 signal: controller.signal
             });
 
@@ -299,11 +331,14 @@
         }
 
         async function callSearchAssistant(userMessage) {
-            return await callAssistant('/Home/ProcessAIQuery', userMessage);
+            return await callAssistant('/Home/ProcessAIQuery', { query: userMessage });
         }
 
         async function callAddFlightAssistant(userMessage) {
-            return await callAssistant('/Home/ProcessAddFlightQuery', userMessage);
+            return await callAssistant('/Home/ProcessAddFlightQuery', {
+                query: userMessage,
+                addFlightContext: getAddFlightContext()
+            });
         }
 
         function getFriendlyErrorMessage(err) {
@@ -422,21 +457,20 @@
             setBusyState(true);
 
             appendMessage('user', escapeHtml(text));
-            const thinkingEl = appendThinking();
+            appendThinking();
 
             try {
-                thinkingEl.remove();
-
                 if (isAdvancedSearch) {
                     await handleAdvancedSearchRequest(text);
                 } else if (isAddFlight) {
                     await handleAddFlightRequest(text);
                 }
             } catch (err) {
-                thinkingEl.remove();
                 appendMessage('assistant', escapeHtml(getFriendlyErrorMessage(err)), 'error');
                 console.error('[AI Chat] DeepSeek error:', err);
             } finally {
+                if (activeThinkingEl) activeThinkingEl.remove();
+                activeThinkingEl = null;
                 setBusyState(false);
                 inputEl.focus();
             }

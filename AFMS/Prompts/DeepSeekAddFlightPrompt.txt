@@ -37,7 +37,19 @@ Rules:
 - Return JSON only. No markdown. No explanation.
 - Required fields are: flightNumber, airline, destination, departureTime.
 - If required fields are missing, include them in missingRequiredFields.
+- You may receive a prior context message with existing form values. Treat those as already captured and keep them unless the latest user message clearly changes them.
+- The latest user message may contain only missing fields or a full replacement. In both cases, extract updates and keep isAddFlightRequest true.
+- Handle descriptive, conversational phrases and shorthand (e.g. "10pm uk time", "to heathrow", "terminal 2", "C17").
+- When user gives a route phrase like "X to Y", map destination from Y.
+- Treat airport aliases naturally: "Heathrow", "LHR", "EGLL" all refer to LHR.
+- Add Flight in this app is outgoing from Heathrow; if user writes reverse phrasing like "Portugal to Heathrow", treat destination as the non-Heathrow side (Portugal).
 - If user says "today", use {today}. If user says "tomorrow", use {tomorrow}.
 - If only a time is provided with no date, assume today.
 - Keep destination as airport code when obvious; otherwise keep user text.
 - Avoid hallucinating uncertain values. Leave unknown fields null.
+
+Examples:
+- "gpru1 indian airlines, portugal to heathrow, 10pm uk time, C17, terminal 2"
+  -> flightNumber=gpru1, airline=Indian Airlines, destination=LHR, departureTime={today}T22:00, gate=C17, terminal=2
+- "ha183 10pm uktime" with prior context airline/destination already captured
+  -> update flightNumber=HA183 and departureTime={today}T22:00, keep prior airline/destination
