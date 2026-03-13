@@ -881,10 +881,21 @@ public class HomeController : Controller
             if (toIndex < 0)
                 continue;
 
-            var candidate = segment[(toIndex + 4)..].Trim();
-            var normalizedCandidate = NormalizeDestinationCandidate(candidate);
-            if (!string.IsNullOrWhiteSpace(normalizedCandidate))
-                return normalizedCandidate;
+            var originCandidate = segment[..toIndex].Trim();
+            var destinationCandidate = segment[(toIndex + 4)..].Trim();
+
+            var normalizedTo = NormalizeDestinationCandidate(destinationCandidate);
+            if (IsHeathrowAlias(normalizedTo))
+            {
+                // Add Flight only creates outgoing flights from Heathrow, so reverse route phrasing
+                // like "Portugal to Heathrow" should map destination to the non-Heathrow side.
+                var normalizedFrom = NormalizeDestinationCandidate(originCandidate);
+                if (!string.IsNullOrWhiteSpace(normalizedFrom) && !IsHeathrowAlias(normalizedFrom))
+                    return normalizedFrom;
+            }
+
+            if (!string.IsNullOrWhiteSpace(normalizedTo))
+                return normalizedTo;
         }
 
         var toMatch = Regex.Match(
@@ -923,6 +934,15 @@ public class HomeController : Controller
             return AdvancedSearchViewModel.ConvertToIata(cleaned.ToUpperInvariant());
 
         return cleaned;
+    }
+
+    private static bool IsHeathrowAlias(string? destination)
+    {
+        if (string.IsNullOrWhiteSpace(destination))
+            return false;
+
+        var normalized = destination.Trim().ToUpperInvariant();
+        return normalized is "LHR" or "EGLL" or "HEATHROW" or "LONDON HEATHROW";
     }
 
     private static string? TryExtractDepartureDateTime(string text)
@@ -1010,7 +1030,7 @@ public class HomeController : Controller
         {
             if (!TryParseDateTimeLocal(response.ArrivalTime, out var arrivalTime) || arrivalTime <= departureTime)
             {
-                response.ArrivalTime = departureTime.AddHours(2).ToString("yyyy-MM-ddTHH:mm");
+                response.ArrivalTime = departureTime.Add(EstimateArrivalOffset(response.Destination)).ToString("yyyy-MM-ddTHH:mm");
                 response.ArrivalEstimated = true;
             }
 
@@ -1044,6 +1064,19 @@ public class HomeController : Controller
         }
 
         return response;
+    }
+
+    private static TimeSpan EstimateArrivalOffset(string? destination)
+    {
+        var normalized = NormalizeDestinationCandidate(destination)?.ToUpperInvariant() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(normalized))
+            return TimeSpan.FromHours(2);
+
+        if (normalized is "LIS" or "OPO" or "FAO" || normalized.Contains("PORTUGAL", StringComparison.Ordinal))
+            return TimeSpan.FromMinutes(160);
+
+        return TimeSpan.FromHours(2);
     }
 
     private static string? Clean(string? value) =>

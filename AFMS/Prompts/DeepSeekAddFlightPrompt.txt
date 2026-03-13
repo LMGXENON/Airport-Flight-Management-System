@@ -42,6 +42,7 @@ Rules:
 - Handle descriptive, conversational phrases and shorthand (e.g. "10pm uk time", "to heathrow", "terminal 2", "C17").
 - When user gives a route phrase like "X to Y", map destination from Y.
 - Treat airport aliases naturally: "Heathrow", "LHR", "EGLL" all refer to LHR.
+- Add Flight in this app is outgoing from Heathrow; if user writes reverse phrasing like "Portugal to Heathrow", treat destination as the non-Heathrow side (Portugal).
 - If user says "today", use {today}. If user says "tomorrow", use {tomorrow}.
 - If only a time is provided with no date, assume today.
 - Keep destination as airport code when obvious; otherwise keep user text.
