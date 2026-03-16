@@ -15,6 +15,7 @@
         const messages   = document.getElementById('chatMessages');
         let isBusy       = false;
         let activeThinkingEl = null;
+        let awaitingAddFlightConfirmation = false;
 
         if (!toggle || !chatWindow) return;
 
@@ -140,6 +141,10 @@
             activeThinkingEl = null;
         }
 
+        function clearAddFlightConfirmation() {
+            awaitingAddFlightConfirmation = false;
+        }
+
         function appendThinking() {
             hideWelcomeState();
 
@@ -156,6 +161,7 @@
 
         function clearChat() {
             clearThinkingIndicators();
+            clearAddFlightConfirmation();
             messages.querySelectorAll('.chat-message').forEach(node => node.remove());
             showWelcomeState();
             if (inputEl) {
@@ -233,6 +239,44 @@
             setInput('ArrivalTime', params.arrivalTime);
             setInput('Gate', params.gate);
             setSelect('Terminal', params.terminal);
+        }
+
+        function getAddFlightForm() {
+            return document.getElementById('addFlightForm')
+                || document.querySelector('form[action$="/Flight/Add"]')
+                || document.querySelector('form[action="/Flight/Add"]')
+                || document.querySelector('.form-card form');
+        }
+
+        function hasRequiredAddFlightFormValues() {
+            const requiredIds = ['FlightNumber', 'Airline', 'Destination', 'DepartureTime'];
+            return requiredIds.every(id => {
+                const el = document.getElementById(id);
+                return el && String(el.value || '').trim().length > 0;
+            });
+        }
+
+        function isAffirmativeResponse(text) {
+            return /^(yes|y|yeah|yep|sure|ok|okay|confirm|save|submit|go ahead|do it|please do)\b/i.test(text.trim());
+        }
+
+        function isNegativeResponse(text) {
+            return /^(no|n|nope|nah|cancel|not now|don't save|do not save|keep editing)\b/i.test(text.trim());
+        }
+
+        function submitAddFlightForm() {
+            const form = getAddFlightForm();
+            if (!form) {
+                appendMessage('assistant', 'I could not find the Add Flight form to submit. Please use the Save Flight button.', 'error');
+                return;
+            }
+
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+                return;
+            }
+
+            form.submit();
         }
 
         function triggerSearch() {
@@ -419,6 +463,10 @@
             return `${mainSummary}${details.length ? `<br>${details.join('<br>')}` : ''}`;
         }
 
+        function buildAddFlightConfirmationPrompt() {
+            return 'Looks good. Should I save this flight now?<br><small style="opacity:.75">Reply <strong>yes</strong> to save automatically, or <strong>no</strong> to keep editing.</small>';
+        }
+
         async function handleAdvancedSearchRequest(text) {
             const params = await callSearchAssistant(text);
 
@@ -446,6 +494,17 @@
 
             fillAddFlightFields(params);
             appendMessage('assistant', buildAddFlightSummary(params), 'success');
+
+            const missingRequired = Array.isArray(params.missingRequiredFields)
+                ? params.missingRequiredFields
+                : [];
+
+            if (missingRequired.length === 0 && hasRequiredAddFlightFormValues()) {
+                awaitingAddFlightConfirmation = true;
+                appendMessage('assistant', buildAddFlightConfirmationPrompt(), 'info');
+            } else {
+                clearAddFlightConfirmation();
+            }
         }
 
         async function handleSend() {
@@ -454,9 +513,26 @@
 
             inputEl.value = '';
             inputEl.style.height = 'auto';
-            setBusyState(true);
-
             appendMessage('user', escapeHtml(text));
+
+            if (isAddFlight && awaitingAddFlightConfirmation) {
+                if (isAffirmativeResponse(text)) {
+                    clearAddFlightConfirmation();
+                    appendMessage('assistant', 'Saving this flight now.', 'success');
+                    submitAddFlightForm();
+                    return;
+                }
+
+                if (isNegativeResponse(text)) {
+                    clearAddFlightConfirmation();
+                    appendMessage('assistant', 'No problem, I will keep the form as-is. Share any changes you want.', 'info');
+                    return;
+                }
+
+                clearAddFlightConfirmation();
+            }
+
+            setBusyState(true);
             appendThinking();
 
             try {
