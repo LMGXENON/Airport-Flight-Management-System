@@ -1,10 +1,17 @@
-resource "aws_s3_bucket" "terraform_state" {
-  bucket = "afms-tfstate"
+resource "aws_s3_bucket" "tf-state" {
+  bucket = "afms-state"
 
   lifecycle {
     prevent_destroy = true
   }
 
+}
+resource "aws_s3_bucket_versioning" "tf_state_versioning" {
+  bucket = aws_s3_bucket.tf-state.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 resource "aws_ecr_repository" "afms_repo" {
   name         = "afms-repo"
