@@ -28,6 +28,19 @@ public class HomeController : Controller
     {
         "Expected", "Boarding", "Departed", "Arrived", "Delayed", "Canceled"
     };
+    private static readonly HashSet<string> SearchClearableFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "flight", "airline", "destination", "departureDate", "arrivalDate",
+        "terminal", "direction", "timeRangeStart", "timeRangeEnd", "statuses"
+    };
+    private static readonly Dictionary<string, string> SearchClearFieldAliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["status"] = "statuses",
+        ["timeStart"] = "timeRangeStart",
+        ["timeEnd"] = "timeRangeEnd",
+        ["departure"] = "departureDate",
+        ["arrival"] = "arrivalDate"
+    };
     private static readonly Dictionary<string, string> AirportAliasToIata = new(StringComparer.OrdinalIgnoreCase)
     {
         ["heathrow"] = "LHR",
@@ -236,17 +249,36 @@ public class HomeController : Controller
 
             var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
             var systemPrompt = BuildDeepSeekSystemPrompt();
+            var normalizedContext = NormalizeAiSearchContext(request.SearchContext);
             var deepSeekClient = _httpClientFactory.CreateClient("DeepSeek");
             deepSeekClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+            var messages = new List<object>
+            {
+                new { role = "system", content = systemPrompt }
+            };
+
+            if (HasAnySearchContextFields(normalizedContext))
+            {
+                var contextJson = JsonSerializer.Serialize(
+                    normalizedContext,
+                    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+
+                messages.Add(new
+                {
+                    role = "user",
+                    content =
+                        "Current Advanced Search filters already selected in the UI. Keep existing filters unless the new message updates or clears them.\n"
+                        + $"Context JSON: {contextJson}"
+                });
+            }
+
+            messages.Add(new { role = "user", content = request.Query });
 
             var requestBody = new
             {
                 model,
-                messages = new[]
-                {
-                    new { role = "system", content = systemPrompt },
-                    new { role = "user", content = request.Query }
-                },
+                messages,
                 temperature = 0,
                 max_tokens = 300
             };
@@ -300,7 +332,8 @@ public class HomeController : Controller
                 return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not turn that request into search filters. Please try again." });
             }
 
-            var normalizedParams = NormalizeAiSearchFilters(parsedParams);
+            var mergedParams = MergeWithAiSearchContext(parsedParams, normalizedContext, request.Query);
+            var normalizedParams = NormalizeAiSearchFilters(mergedParams);
             _logger.LogInformation(
                 "AI query processed for client {ClientKey}. SearchRequest={IsSearchRequest}, FilterCount={FilterCount}",
                 clientKey,
@@ -555,20 +588,17 @@ public class HomeController : Controller
         response.Direction = NormalizeDirection(response.Direction);
         response.TimeRangeStart = NormalizeTime(response.TimeRangeStart);
         response.TimeRangeEnd = NormalizeTime(response.TimeRangeEnd);
-        response.Statuses = (response.Statuses ?? new List<string>())
-            .Where(s => !string.IsNullOrWhiteSpace(s) && AllowedStatuses.Contains(s))
-            .Select(s => AllowedStatuses.First(x => x.Equals(s, StringComparison.OrdinalIgnoreCase)))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        response.Statuses = NormalizeSearchStatuses(response.Statuses);
+        response.ClearFields = NormalizeSearchClearFields(response.ClearFields);
         response.Message = Clean(response.Message);
 
-        if (!response.IsSearchRequest && !HasAnySearchFilters(response))
+        if (!response.IsSearchRequest && !HasAnySearchFilters(response) && response.ClearFields.Count == 0)
         {
             response.Message ??= SearchOnlyMessage;
             return response;
         }
 
-        response.IsSearchRequest = HasAnySearchFilters(response);
+        response.IsSearchRequest = HasAnySearchFilters(response) || response.ClearFields.Count > 0;
 
         if (!response.IsSearchRequest)
         {
@@ -668,7 +698,7 @@ public class HomeController : Controller
                 return System.IO.File.ReadAllText(promptPath);
 
             _logger.LogWarning("DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
-            return "You fill Advanced Search filters for a London Heathrow flight search page. You are NOT a general chatbot. If the message is not clearly about searching or filtering flights, return JSON with isSearchRequest false and message {searchOnlyMessage}. If the message is about searching flights, return only valid JSON using the known search fields and statuses [{allowedStatuses}]. If the user says today, use {today}.";
+            return "You fill Advanced Search filters for a London Heathrow flight search page. You are NOT a general chatbot. If the message is not clearly about searching or filtering flights, return JSON with isSearchRequest false and message {searchOnlyMessage}. If the message is about searching flights, return only valid JSON using known search fields plus clearFields for explicit removals and statuses [{allowedStatuses}]. If the user says today, use {today}.";
         }) ?? string.Empty;
     }
 
@@ -749,6 +779,166 @@ public class HomeController : Controller
             || !string.IsNullOrWhiteSpace(context.ArrivalTime)
             || !string.IsNullOrWhiteSpace(context.Gate)
             || !string.IsNullOrWhiteSpace(context.Terminal));
+
+    private static bool HasAnySearchContextFields(AiSearchContext? context) =>
+        context is not null
+        && (!string.IsNullOrWhiteSpace(context.Flight)
+            || !string.IsNullOrWhiteSpace(context.Airline)
+            || !string.IsNullOrWhiteSpace(context.Destination)
+            || !string.IsNullOrWhiteSpace(context.DepartureDate)
+            || !string.IsNullOrWhiteSpace(context.ArrivalDate)
+            || !string.IsNullOrWhiteSpace(context.Terminal)
+            || !string.IsNullOrWhiteSpace(context.Direction)
+            || !string.IsNullOrWhiteSpace(context.TimeRangeStart)
+            || !string.IsNullOrWhiteSpace(context.TimeRangeEnd)
+            || (context.Statuses?.Count ?? 0) > 0);
+
+    private static AiSearchContext? NormalizeAiSearchContext(AiSearchContext? context)
+    {
+        if (context is null)
+            return null;
+
+        var normalized = new AiSearchContext
+        {
+            Flight = NormalizeFlightNumber(context.Flight),
+            Airline = Clean(context.Airline),
+            Destination = NormalizeDestination(context.Destination),
+            DepartureDate = NormalizeDate(context.DepartureDate),
+            ArrivalDate = NormalizeDate(context.ArrivalDate),
+            Terminal = NormalizeTerminal(context.Terminal),
+            Direction = NormalizeDirection(context.Direction),
+            TimeRangeStart = NormalizeTime(context.TimeRangeStart),
+            TimeRangeEnd = NormalizeTime(context.TimeRangeEnd),
+            Statuses = NormalizeSearchStatuses(context.Statuses)
+        };
+
+        return HasAnySearchContextFields(normalized) ? normalized : null;
+    }
+
+    private static AiSearchFiltersResponse MergeWithAiSearchContext(AiSearchFiltersResponse aiResponse, AiSearchContext? context, string? query)
+    {
+        var clearFields = NormalizeSearchClearFields((aiResponse.ClearFields ?? new List<string>())
+            .Concat(ExtractClearFieldsFromQuery(query))
+            .ToList());
+        aiResponse.ClearFields = clearFields;
+
+        if (!HasAnySearchContextFields(context))
+            return aiResponse;
+
+        bool shouldClear(string fieldName) => clearFields.Contains(fieldName, StringComparer.OrdinalIgnoreCase);
+
+        aiResponse.Flight = shouldClear("flight")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.Flight) ? context!.Flight : aiResponse.Flight;
+
+        aiResponse.Airline = shouldClear("airline")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.Airline) ? context!.Airline : aiResponse.Airline;
+
+        aiResponse.Destination = shouldClear("destination")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.Destination) ? context!.Destination : aiResponse.Destination;
+
+        aiResponse.DepartureDate = shouldClear("departureDate")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.DepartureDate) ? context!.DepartureDate : aiResponse.DepartureDate;
+
+        aiResponse.ArrivalDate = shouldClear("arrivalDate")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.ArrivalDate) ? context!.ArrivalDate : aiResponse.ArrivalDate;
+
+        aiResponse.Terminal = shouldClear("terminal")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.Terminal) ? context!.Terminal : aiResponse.Terminal;
+
+        aiResponse.Direction = shouldClear("direction")
+            ? string.Empty
+            : string.IsNullOrWhiteSpace(aiResponse.Direction) ? context!.Direction : aiResponse.Direction;
+
+        aiResponse.TimeRangeStart = shouldClear("timeRangeStart")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.TimeRangeStart) ? context!.TimeRangeStart : aiResponse.TimeRangeStart;
+
+        aiResponse.TimeRangeEnd = shouldClear("timeRangeEnd")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.TimeRangeEnd) ? context!.TimeRangeEnd : aiResponse.TimeRangeEnd;
+
+        if (shouldClear("statuses"))
+        {
+            aiResponse.Statuses = new List<string>();
+        }
+        else if ((aiResponse.Statuses?.Count ?? 0) == 0 && (context!.Statuses?.Count ?? 0) > 0)
+        {
+            aiResponse.Statuses = (context.Statuses ?? new List<string>()).ToList();
+        }
+
+        return aiResponse;
+    }
+
+    private static List<string> NormalizeSearchStatuses(IEnumerable<string>? statuses) =>
+        (statuses ?? Array.Empty<string>())
+            .Where(s => !string.IsNullOrWhiteSpace(s) && AllowedStatuses.Contains(s))
+            .Select(s => AllowedStatuses.First(x => x.Equals(s, StringComparison.OrdinalIgnoreCase)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+    private static List<string> NormalizeSearchClearFields(IEnumerable<string>? clearFields)
+    {
+        var result = new List<string>();
+
+        foreach (var raw in clearFields ?? Array.Empty<string>())
+        {
+            var cleaned = Clean(raw);
+            if (string.IsNullOrWhiteSpace(cleaned))
+                continue;
+
+            if (SearchClearFieldAliases.TryGetValue(cleaned, out var mapped))
+                cleaned = mapped;
+
+            if (SearchClearableFields.Contains(cleaned) && !result.Contains(cleaned, StringComparer.OrdinalIgnoreCase))
+                result.Add(cleaned);
+        }
+
+        return result;
+    }
+
+    private static List<string> ExtractClearFieldsFromQuery(string? query)
+    {
+        var text = Clean(query)?.ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(text))
+            return new List<string>();
+
+        var clearFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var hasClearIntent = Regex.IsMatch(text, @"\b(clear|remove|reset|drop|delete|without|show all)\b", RegexOptions.IgnoreCase);
+
+        if (!hasClearIntent)
+            return clearFields.ToList();
+
+        if (Regex.IsMatch(text, @"\b(clear|reset|remove)\s+(all|everything|all filters|filters)\b", RegexOptions.IgnoreCase))
+        {
+            foreach (var field in SearchClearableFields)
+                clearFields.Add(field);
+            return clearFields.ToList();
+        }
+
+        if (Regex.IsMatch(text, @"\b(show\s+all\s+status(?:es)?|remove\s+status(?:es)?|clear\s+status(?:es)?)\b", RegexOptions.IgnoreCase))
+            clearFields.Add("statuses");
+
+        if (text.Contains("terminal", StringComparison.OrdinalIgnoreCase)) clearFields.Add("terminal");
+        if (Regex.IsMatch(text, @"\b(departure\s+date|depart\s+date|departure filter)\b", RegexOptions.IgnoreCase)) clearFields.Add("departureDate");
+        if (Regex.IsMatch(text, @"\b(arrival\s+date|arrival filter)\b", RegexOptions.IgnoreCase)) clearFields.Add("arrivalDate");
+        if (Regex.IsMatch(text, @"\b(time\s+range|from\s+time|to\s+time|time filter)\b", RegexOptions.IgnoreCase))
+        {
+            clearFields.Add("timeRangeStart");
+            clearFields.Add("timeRangeEnd");
+        }
+        if (text.Contains("direction", StringComparison.OrdinalIgnoreCase) || text.Contains("arrival/departure", StringComparison.OrdinalIgnoreCase)) clearFields.Add("direction");
+        if (text.Contains("flight", StringComparison.OrdinalIgnoreCase) && text.Contains("number", StringComparison.OrdinalIgnoreCase)) clearFields.Add("flight");
+        if (text.Contains("airline", StringComparison.OrdinalIgnoreCase)) clearFields.Add("airline");
+        if (text.Contains("destination", StringComparison.OrdinalIgnoreCase)) clearFields.Add("destination");
+
+        return clearFields.ToList();
+    }
 
     private static AiAddFlightContext? NormalizeAiAddFlightContext(AiAddFlightContext? context)
     {
@@ -835,7 +1025,59 @@ public class HomeController : Controller
         if (string.IsNullOrWhiteSpace(response.Gate))
             response.Gate = TryExtractGate(cleanedQuery);
 
+        response = ApplyRequestedAddFlightFieldGeneration(cleanedQuery, response);
+
         return response;
+    }
+
+    private static AiAddFlightResponse ApplyRequestedAddFlightFieldGeneration(string query, AiAddFlightResponse response)
+    {
+        if (!HasGenerationIntent(query))
+            return response;
+
+        var lower = query.ToLowerInvariant();
+        var wantsAllFields = Regex.IsMatch(lower, @"\b(all|these|required)\s+(fields?|details?)\b", RegexOptions.IgnoreCase)
+            || lower.Contains("enter these fields", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("auto fill", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("autofill", StringComparison.OrdinalIgnoreCase);
+
+        bool wantsField(params string[] terms) => wantsAllFields || terms.Any(term => lower.Contains(term, StringComparison.OrdinalIgnoreCase));
+
+        if (string.IsNullOrWhiteSpace(response.FlightNumber) && wantsField("flight name", "flight number", "flight"))
+            response.FlightNumber = GenerateFlightNumber(response.Airline);
+
+        if (string.IsNullOrWhiteSpace(response.Airline) && wantsField("airline"))
+            response.Airline = "British Airways";
+
+        if (string.IsNullOrWhiteSpace(response.Destination) && wantsField("destination", "route"))
+            response.Destination = "CDG";
+
+        if (string.IsNullOrWhiteSpace(response.DepartureTime) && wantsField("departure", "departure time", "time"))
+        {
+            var londonNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/London"));
+            response.DepartureTime = londonNow.AddHours(2).ToString("yyyy-MM-ddTHH:mm");
+        }
+
+        if (string.IsNullOrWhiteSpace(response.Message))
+            response.Message = "I generated the requested missing flight fields. You can edit any value before saving.";
+
+        return response;
+    }
+
+    private static bool HasGenerationIntent(string query) =>
+        Regex.IsMatch(query, @"\b(generate|auto\s*fill|autofill|make up|create|enter)\b", RegexOptions.IgnoreCase);
+
+    private static string GenerateFlightNumber(string? airline)
+    {
+        var letters = new string((airline ?? string.Empty)
+            .Where(char.IsLetter)
+            .Select(char.ToUpperInvariant)
+            .Take(2)
+            .ToArray());
+
+        var prefix = letters.Length >= 2 ? letters : "BA";
+        var suffix = (DateTime.UtcNow.Ticks % 9000) + 1000;
+        return $"{prefix}{suffix}";
     }
 
     private static string? TryExtractFlightNumber(string text)
@@ -1293,7 +1535,22 @@ public class HomeController : Controller
 public class AIQueryRequest
 {
     public string? Query { get; set; }
+    public AiSearchContext? SearchContext { get; set; }
     public AiAddFlightContext? AddFlightContext { get; set; }
+}
+
+public class AiSearchContext
+{
+    public string? Flight { get; set; }
+    public string? Airline { get; set; }
+    public string? Destination { get; set; }
+    public string? DepartureDate { get; set; }
+    public string? ArrivalDate { get; set; }
+    public string? Terminal { get; set; }
+    public string? Direction { get; set; }
+    public List<string> Statuses { get; set; } = new();
+    public string? TimeRangeStart { get; set; }
+    public string? TimeRangeEnd { get; set; }
 }
 
 public class AiAddFlightContext
@@ -1342,6 +1599,7 @@ public class AiSearchFiltersResponse
     public List<string> Statuses { get; set; } = new();
     public string? TimeRangeStart { get; set; }
     public string? TimeRangeEnd { get; set; }
+    public List<string> ClearFields { get; set; } = new();
 }
 
 public class AiAddFlightResponse

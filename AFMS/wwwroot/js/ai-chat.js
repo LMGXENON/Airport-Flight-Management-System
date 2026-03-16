@@ -15,6 +15,7 @@
         const messages   = document.getElementById('chatMessages');
         let isBusy       = false;
         let activeThinkingEl = null;
+        let awaitingAddFlightConfirmation = false;
 
         if (!toggle || !chatWindow) return;
 
@@ -140,6 +141,10 @@
             activeThinkingEl = null;
         }
 
+        function clearAddFlightConfirmation() {
+            awaitingAddFlightConfirmation = false;
+        }
+
         function appendThinking() {
             hideWelcomeState();
 
@@ -156,6 +161,7 @@
 
         function clearChat() {
             clearThinkingIndicators();
+            clearAddFlightConfirmation();
             messages.querySelectorAll('.chat-message').forEach(node => node.remove());
             showWelcomeState();
             if (inputEl) {
@@ -166,31 +172,45 @@
         }
 
         function fillFormFields(params) {
-            const set = (id, val) => {
+            const clearFields = new Set((Array.isArray(params.clearFields) ? params.clearFields : [])
+                .map(field => String(field).toLowerCase()));
+            const shouldClear = fieldName => clearFields.has(String(fieldName).toLowerCase());
+
+            const set = (id, val, fieldName = id) => {
                 const el = document.getElementById(id);
-                if (el && val !== undefined && val !== null && val !== '') el.value = val;
+                if (!el) return;
+
+                if (shouldClear(fieldName)) {
+                    el.value = '';
+                    return;
+                }
+
+                if (val !== undefined && val !== null && val !== '') el.value = val;
             };
 
-            set('flight',         params.flight);
-            set('airline',        params.airline);
-            set('destination',    params.destination);
-            set('departureDate',  params.departureDate);
-            set('arrivalDate',    params.arrivalDate);
-            set('terminal',       params.terminal);
-            set('timeRangeStart', params.timeRangeStart);
-            set('timeRangeEnd',   params.timeRangeEnd);
+            set('flight',         params.flight, 'flight');
+            set('airline',        params.airline, 'airline');
+            set('destination',    params.destination, 'destination');
+            set('departureDate',  params.departureDate, 'departureDate');
+            set('arrivalDate',    params.arrivalDate, 'arrivalDate');
+            set('terminal',       params.terminal, 'terminal');
+            set('timeRangeStart', params.timeRangeStart, 'timeRangeStart');
+            set('timeRangeEnd',   params.timeRangeEnd, 'timeRangeEnd');
 
-            if (params.direction !== undefined) {
+            if (params.direction !== undefined || shouldClear('direction')) {
+                const selectedDirection = shouldClear('direction') ? '' : params.direction;
                 document.querySelectorAll('.direction-btn').forEach(b => {
-                    const isActive = b.dataset.direction === params.direction;
+                    const isActive = b.dataset.direction === selectedDirection;
                     b.classList.toggle('active', isActive);
                     b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
                 });
                 const dirInput = document.getElementById('directionInput');
-                if (dirInput) dirInput.value = params.direction;
+                if (dirInput) dirInput.value = selectedDirection;
             }
 
-            const selectedStatuses = Array.isArray(params.statuses) ? params.statuses : [];
+            const selectedStatuses = shouldClear('statuses')
+                ? []
+                : (Array.isArray(params.statuses) ? params.statuses : []);
             document.querySelectorAll('#statusButtons .status-btn').forEach(b => {
                 const isActive = selectedStatuses.includes(b.dataset.status);
                 b.classList.toggle('active', isActive);
@@ -235,6 +255,44 @@
             setSelect('Terminal', params.terminal);
         }
 
+        function getAddFlightForm() {
+            return document.getElementById('addFlightForm')
+                || document.querySelector('form[action$="/Flight/Add"]')
+                || document.querySelector('form[action="/Flight/Add"]')
+                || document.querySelector('.form-card form');
+        }
+
+        function hasRequiredAddFlightFormValues() {
+            const requiredIds = ['FlightNumber', 'Airline', 'Destination', 'DepartureTime'];
+            return requiredIds.every(id => {
+                const el = document.getElementById(id);
+                return el && String(el.value || '').trim().length > 0;
+            });
+        }
+
+        function isAffirmativeResponse(text) {
+            return /^(yes|y|yeah|yep|sure|ok|okay|confirm|save|submit|go ahead|do it|please do)\b/i.test(text.trim());
+        }
+
+        function isNegativeResponse(text) {
+            return /^(no|n|nope|nah|cancel|not now|don't save|do not save|keep editing)\b/i.test(text.trim());
+        }
+
+        function submitAddFlightForm() {
+            const form = getAddFlightForm();
+            if (!form) {
+                appendMessage('assistant', 'I could not find the Add Flight form to submit. Please use the Save Flight button.', 'error');
+                return;
+            }
+
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+                return;
+            }
+
+            form.submit();
+        }
+
         function triggerSearch() {
             const form = document.getElementById('searchForm');
             if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
@@ -276,6 +334,42 @@
                 params.flightNumber || params.airline || params.destination ||
                 params.departureTime || params.arrivalTime || params.gate || params.terminal
             );
+        }
+
+        function getSearchContext() {
+            if (!isAdvancedSearch) return null;
+
+            const readTrimmed = id => {
+                const el = document.getElementById(id);
+                return el ? (el.value || '').trim() : '';
+            };
+
+            const statuses = Array.from(document.querySelectorAll('#statusButtons .status-btn.active'))
+                .map(btn => btn.dataset.status)
+                .filter(Boolean);
+
+            const directionInput = document.getElementById('directionInput');
+            const context = {
+                flight: readTrimmed('flight'),
+                airline: readTrimmed('airline'),
+                destination: readTrimmed('destination'),
+                departureDate: readTrimmed('departureDate'),
+                arrivalDate: readTrimmed('arrivalDate'),
+                terminal: readTrimmed('terminal'),
+                direction: directionInput ? (directionInput.value || '').trim() : '',
+                statuses,
+                timeRangeStart: readTrimmed('timeRangeStart'),
+                timeRangeEnd: readTrimmed('timeRangeEnd')
+            };
+
+            const hasAny = Boolean(
+                context.flight || context.airline || context.destination ||
+                context.departureDate || context.arrivalDate || context.terminal ||
+                context.direction || context.timeRangeStart || context.timeRangeEnd ||
+                context.statuses.length
+            );
+
+            return hasAny ? context : null;
         }
 
         function getAddFlightContext() {
@@ -331,7 +425,10 @@
         }
 
         async function callSearchAssistant(userMessage) {
-            return await callAssistant('/Home/ProcessAIQuery', { query: userMessage });
+            return await callAssistant('/Home/ProcessAIQuery', {
+                query: userMessage,
+                searchContext: getSearchContext()
+            });
         }
 
         async function callAddFlightAssistant(userMessage) {
@@ -419,6 +516,10 @@
             return `${mainSummary}${details.length ? `<br>${details.join('<br>')}` : ''}`;
         }
 
+        function buildAddFlightConfirmationPrompt() {
+            return 'Looks good. Should I save this flight now?<br><small style="opacity:.75">Reply <strong>yes</strong> to save automatically, or <strong>no</strong> to keep editing.</small>';
+        }
+
         async function handleAdvancedSearchRequest(text) {
             const params = await callSearchAssistant(text);
 
@@ -446,6 +547,17 @@
 
             fillAddFlightFields(params);
             appendMessage('assistant', buildAddFlightSummary(params), 'success');
+
+            const missingRequired = Array.isArray(params.missingRequiredFields)
+                ? params.missingRequiredFields
+                : [];
+
+            if (missingRequired.length === 0 && hasRequiredAddFlightFormValues()) {
+                awaitingAddFlightConfirmation = true;
+                appendMessage('assistant', buildAddFlightConfirmationPrompt(), 'info');
+            } else {
+                clearAddFlightConfirmation();
+            }
         }
 
         async function handleSend() {
@@ -454,9 +566,26 @@
 
             inputEl.value = '';
             inputEl.style.height = 'auto';
-            setBusyState(true);
-
             appendMessage('user', escapeHtml(text));
+
+            if (isAddFlight && awaitingAddFlightConfirmation) {
+                if (isAffirmativeResponse(text)) {
+                    clearAddFlightConfirmation();
+                    appendMessage('assistant', 'Saving this flight now.', 'success');
+                    submitAddFlightForm();
+                    return;
+                }
+
+                if (isNegativeResponse(text)) {
+                    clearAddFlightConfirmation();
+                    appendMessage('assistant', 'No problem, I will keep the form as-is. Share any changes you want.', 'info');
+                    return;
+                }
+
+                clearAddFlightConfirmation();
+            }
+
+            setBusyState(true);
             appendThinking();
 
             try {
