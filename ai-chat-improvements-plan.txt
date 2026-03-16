@@ -1,9 +1,7 @@
 # AI Chatbox Improvements Plan
 
 ## 1. Advanced Search Improvements
-- **Conversational Filter State**: Pass existing filters back to the prompt (like Add Flight does) to enable relative refinements (e.g., "Change the terminal to 5" or "Actually, search tomorrow instead"). Currently, it treats every search iteratively.
-- **Results Summarization**: Instead of just applying filters silently, the AI could read the results (or the backend could inject result stats) and reply verbally, e.g., "I found 4 delayed BA flights for you."
-- **Filter Negation**: Make sure the AI understands requests to clear filters, such as "Remove the terminal filter" or "Show all statuses again."
+- **Filter Negation**: Make sure the AI understands requests to clear filters, such as "Remove the terminal filter" or "Show all statuses again." or "enter these fields" ai should create specified fields without user providing them with the infomation like generate a flight name
 
 ## 3. Dashboard Integration (Home/Index)
 **Goal:** Make the Dashboard an interactive command center.

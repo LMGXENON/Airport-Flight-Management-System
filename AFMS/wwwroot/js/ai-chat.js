@@ -172,31 +172,45 @@
         }
 
         function fillFormFields(params) {
-            const set = (id, val) => {
+            const clearFields = new Set((Array.isArray(params.clearFields) ? params.clearFields : [])
+                .map(field => String(field).toLowerCase()));
+            const shouldClear = fieldName => clearFields.has(String(fieldName).toLowerCase());
+
+            const set = (id, val, fieldName = id) => {
                 const el = document.getElementById(id);
-                if (el && val !== undefined && val !== null && val !== '') el.value = val;
+                if (!el) return;
+
+                if (shouldClear(fieldName)) {
+                    el.value = '';
+                    return;
+                }
+
+                if (val !== undefined && val !== null && val !== '') el.value = val;
             };
 
-            set('flight',         params.flight);
-            set('airline',        params.airline);
-            set('destination',    params.destination);
-            set('departureDate',  params.departureDate);
-            set('arrivalDate',    params.arrivalDate);
-            set('terminal',       params.terminal);
-            set('timeRangeStart', params.timeRangeStart);
-            set('timeRangeEnd',   params.timeRangeEnd);
+            set('flight',         params.flight, 'flight');
+            set('airline',        params.airline, 'airline');
+            set('destination',    params.destination, 'destination');
+            set('departureDate',  params.departureDate, 'departureDate');
+            set('arrivalDate',    params.arrivalDate, 'arrivalDate');
+            set('terminal',       params.terminal, 'terminal');
+            set('timeRangeStart', params.timeRangeStart, 'timeRangeStart');
+            set('timeRangeEnd',   params.timeRangeEnd, 'timeRangeEnd');
 
-            if (params.direction !== undefined) {
+            if (params.direction !== undefined || shouldClear('direction')) {
+                const selectedDirection = shouldClear('direction') ? '' : params.direction;
                 document.querySelectorAll('.direction-btn').forEach(b => {
-                    const isActive = b.dataset.direction === params.direction;
+                    const isActive = b.dataset.direction === selectedDirection;
                     b.classList.toggle('active', isActive);
                     b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
                 });
                 const dirInput = document.getElementById('directionInput');
-                if (dirInput) dirInput.value = params.direction;
+                if (dirInput) dirInput.value = selectedDirection;
             }
 
-            const selectedStatuses = Array.isArray(params.statuses) ? params.statuses : [];
+            const selectedStatuses = shouldClear('statuses')
+                ? []
+                : (Array.isArray(params.statuses) ? params.statuses : []);
             document.querySelectorAll('#statusButtons .status-btn').forEach(b => {
                 const isActive = selectedStatuses.includes(b.dataset.status);
                 b.classList.toggle('active', isActive);
@@ -322,6 +336,42 @@
             );
         }
 
+        function getSearchContext() {
+            if (!isAdvancedSearch) return null;
+
+            const readTrimmed = id => {
+                const el = document.getElementById(id);
+                return el ? (el.value || '').trim() : '';
+            };
+
+            const statuses = Array.from(document.querySelectorAll('#statusButtons .status-btn.active'))
+                .map(btn => btn.dataset.status)
+                .filter(Boolean);
+
+            const directionInput = document.getElementById('directionInput');
+            const context = {
+                flight: readTrimmed('flight'),
+                airline: readTrimmed('airline'),
+                destination: readTrimmed('destination'),
+                departureDate: readTrimmed('departureDate'),
+                arrivalDate: readTrimmed('arrivalDate'),
+                terminal: readTrimmed('terminal'),
+                direction: directionInput ? (directionInput.value || '').trim() : '',
+                statuses,
+                timeRangeStart: readTrimmed('timeRangeStart'),
+                timeRangeEnd: readTrimmed('timeRangeEnd')
+            };
+
+            const hasAny = Boolean(
+                context.flight || context.airline || context.destination ||
+                context.departureDate || context.arrivalDate || context.terminal ||
+                context.direction || context.timeRangeStart || context.timeRangeEnd ||
+                context.statuses.length
+            );
+
+            return hasAny ? context : null;
+        }
+
         function getAddFlightContext() {
             if (!isAddFlight) return null;
 
@@ -375,7 +425,10 @@
         }
 
         async function callSearchAssistant(userMessage) {
-            return await callAssistant('/Home/ProcessAIQuery', { query: userMessage });
+            return await callAssistant('/Home/ProcessAIQuery', {
+                query: userMessage,
+                searchContext: getSearchContext()
+            });
         }
 
         async function callAddFlightAssistant(userMessage) {

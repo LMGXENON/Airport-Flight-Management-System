@@ -20,12 +20,16 @@ If the message is about searching flights, return ONLY a valid JSON object with:
     timeRangeStart  - HH:mm
     timeRangeEnd    - HH:mm
     statuses        - array from [{allowedStatuses}]
+    clearFields     - array of fields to clear from: ["flight","airline","destination","departureDate","arrivalDate","terminal","direction","timeRangeStart","timeRangeEnd","statuses"]
 
 Rules:
 - Only return JSON. No markdown. No explanation.
+- You may receive a prior context message with current filter values. Keep those values unless the latest user message changes or clears them.
 - Use destination codes when clear; otherwise leave destination empty.
 - If the user says "today", use {today} as the date.
 - If the user says "tomorrow", use the next calendar day from today.
 - Direction hints: "from heathrow", "departing", "leaving" => Departure. "to heathrow", "arriving", "landing" => Arrival.
+- If the user asks to remove/clear/reset a filter (for example "remove terminal filter" or "show all statuses again"), add the field names to clearFields.
+- If the user asks you to generate values for specific fields (for example "enter these fields" or "generate a flight number"), provide plausible values in those requested fields.
 - City/country to IATA when obvious: Doha/Qatar->DOH, New York->JFK, Dubai->DXB, Paris->CDG, Frankfurt->FRA, Tokyo->HND, Amsterdam->AMS, Madrid->MAD, Singapore->SIN, Los Angeles->LAX, Sydney->SYD, Toronto->YYZ, Chicago->ORD, Miami->MIA, Barcelona->BCN, Rome->FCO, Lisbon->LIS, Istanbul->IST, Athens->ATH, Cairo->CAI, Bangkok->BKK, Hong Kong->HKG, Seoul->ICN, Shanghai->PVG, Beijing->PEK, Kuala Lumpur->KUL, Mumbai->BOM, Delhi->DEL, Nairobi->NBO, Cape Town->CPT, Johannesburg->JNB, Sao Paulo->GRU, Buenos Aires->EZE, Mexico City->MEX, Vancouver->YVR, Montreal->YUL, Boston->BOS, Washington->IAD, San Francisco->SFO, Seattle->SEA, Dallas->DFW, Houston->IAH, Atlanta->ATL, Denver->DEN, Orlando->MCO, Las Vegas->LAS, Manchester->MAN, Edinburgh->EDI, Glasgow->GLA, Birmingham->BHX, Bristol->BRS, Dublin->DUB.
 - If nothing usable can be extracted for a search, return isSearchRequest false with the short search-only message.

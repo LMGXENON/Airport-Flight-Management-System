@@ -47,6 +47,7 @@ Rules:
 - If only a time is provided with no date, assume today.
 - Keep destination as airport code when obvious; otherwise keep user text.
 - Avoid hallucinating uncertain values. Leave unknown fields null.
+- If user explicitly asks to generate/auto-fill specific fields (for example "enter these fields" or "generate flight name"), produce plausible values for those requested fields.
 
 Examples:
 - "gpru1 indian airlines, portugal to heathrow, 10pm uk time, C17, terminal 2"
