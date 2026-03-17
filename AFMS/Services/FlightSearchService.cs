@@ -91,8 +91,12 @@ public class FlightSearchService
 
         foreach (var manualFlight in manualFlights)
         {
+            var manualFlightNumber = Normalize(manualFlight.FlightNumber);
+            if (string.IsNullOrWhiteSpace(manualFlightNumber))
+                continue;
+
             var existing = mergedFlights.FirstOrDefault(f =>
-                string.Equals(f.Number?.Trim(), manualFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+                string.Equals(Normalize(f.Number), manualFlightNumber, StringComparison.OrdinalIgnoreCase));
 
             if (existing != null)
             {
