@@ -9,13 +9,12 @@
 }
 
 <div class="page-header">
-    <
-        h1 class="page-title">Add Flight</h1>
+    <h1 class="page-title">Add Flight</h1>
     <p class="page-subtitle">Enter flight details to add it to the dashboard</p>
 </div>
 
 <div class="form-card">
-    <form asp-action="Add" method="post">
+    <form id="addFlightForm" asp-action="Add" method="post">
         @Html.AntiForgeryToken()
 
         <div class="form-section">

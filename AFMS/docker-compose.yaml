@@ -1,13 +1,10 @@
 services:
   afms:
     build: .
+    env_file:
+      - ../AFMS/.env
     ports:
       - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      AeroDataBox__ApiKey: "${AERODATABOX_API_KEY}"
-      AeroDataBox__ApiHost: "${AERODATABOX_API_HOST}"
-      AeroDataBox__DefaultAirport: "${DEFAULT_AIRPORT:-EGLL}"
-      DeepSeek__ApiKey: "${DEEPSEEK_API_KEY}"
-      DeepSeek__ApiEndpoint: "${DEEPSEEK_API_ENDPOINT}"
     restart: unless-stopped

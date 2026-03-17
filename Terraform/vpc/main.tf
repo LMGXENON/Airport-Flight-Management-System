@@ -64,11 +64,3 @@ resource "aws_nat_gateway" "ngw" {
 
 }
 
-resource "aws_lb" "afms_alb" {
-  name               = "afms-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [var.alb_sg_id]
-  subnets            = var.public_subnet_ids
-
-}
