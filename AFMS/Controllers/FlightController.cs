@@ -21,12 +21,13 @@ namespace AFMS.Controllers
             const int pageSize = 25;
 
             var query = _context.Flights
+                .AsNoTracking()
                 .OrderBy(f => f.DepartureTime)
                 .ThenBy(f => f.FlightNumber)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(f => f.FlightNumber.Contains(search));
+                query = query.Where(f => (f.FlightNumber ?? string.Empty).Contains(search));
 
             var totalCount = await query.CountAsync();
             var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -74,10 +75,11 @@ namespace AFMS.Controllers
         // GET: Flight/Add
         public async Task<IActionResult> Add()
         {
+            var now = DateTime.Now;
             var flight = new Flight
             {
-                DepartureTime = DateTime.Now,
-                ArrivalTime = DateTime.Now.AddHours(2),
+                DepartureTime = now,
+                ArrivalTime = now.AddHours(2),
                 Terminal = "1"
             };
             ViewBag.Airlines = await GetAirlinesSelectListAsync();

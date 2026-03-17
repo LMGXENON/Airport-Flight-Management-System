@@ -2,6 +2,7 @@ using AFMS.BackgroundServices;
 using AFMS.Data;
 using AFMS.Hubs;
 using AFMS.Services;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,11 +46,20 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var startupLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
     dbContext.Database.EnsureCreated();
+
     // Add IsManualEntry column to existing databases that pre-date this field
-    try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Flights ADD COLUMN IsManualEntry INTEGER NOT NULL DEFAULT 0"); }
-    catch { /* Already exists – safe to ignore */ }
-    Console.WriteLine("Database initialized successfully.");
+    try
+    {
+        dbContext.Database.ExecuteSqlRaw("ALTER TABLE Flights ADD COLUMN IsManualEntry INTEGER NOT NULL DEFAULT 0");
+    }
+    catch (SqliteException ex) when (ex.Message.Contains("duplicate column name: IsManualEntry", StringComparison.OrdinalIgnoreCase))
+    {
+        startupLogger.LogDebug("IsManualEntry column already exists; skipping startup schema patch.");
+    }
+
+    startupLogger.LogInformation("Database initialized successfully.");
 }
 
 // Configure the HTTP request pipeline.

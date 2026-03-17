@@ -15,6 +15,7 @@ namespace AFMS.Controllers;
 
 public class HomeController : Controller
 {
+    private const string LondonTimeZoneId = "Europe/London";
     private const string SearchOnlyMessage = "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
     private const string DeepSeekPromptTemplateCacheKey = "deepseek_prompt_template";
     private const string AddFlightOnlyMessage = "I can only help with adding flights here. Share flight number, airline, destination, and departure time.";
@@ -90,50 +91,77 @@ public class HomeController : Controller
     public async Task<IActionResult> Index()
     {
         var airportCode = _configuration["AeroDataBox:DefaultAirport"] ?? "EGLL"; // London Heathrow ICAO
-        
+
         // Get London local time (GMT/BST)
-        var londonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
-        var londonTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTimeZone);
-        
+        var londonTime = GetLondonNow();
+
         // Use cache to avoid hitting API rate limits (BASIC plan has strict limits)
         var cacheKey = $"flights_{airportCode}_{londonTime:yyyyMMddHH}";
-        
+
         var flights = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             // Cache for 2 minutes to reduce API calls
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
             return await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
         });
-        
-        // Sort flights by the LHR leg time (departure time for departures, arrival time for arrivals)
-        var sortedFlights = (flights ?? new List<AeroDataBoxFlight>())
-            .OrderBy(f => {
-                var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
-                return AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
-            })
-            .ThenBy(f => f.Number)
-            .ToList();
+
+        var sortedFlights = SortFlightsByLhrLegTime(flights ?? []);
 
         // Fetch all DB flights once — used for MANAGE links and dashboard merge
         var allDbFlights = await _context.Flights.ToListAsync();
+        var manualDbFlights = allDbFlights.Where(f => f.IsManualEntry).ToList();
 
         // Build flight number → DB id lookup for the MANAGE column
         ViewBag.DbFlightIds = allDbFlights
-            .GroupBy(f => f.FlightNumber)
-            .ToDictionary(g => g.Key, g => g.First().Id);
+            .Where(f => !string.IsNullOrWhiteSpace(f.FlightNumber))
+            .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
+            .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
 
+<<<<<<< HEAD
         sortedFlights = _manualFlightMergeService
             .MergeManualFlights(sortedFlights, allDbFlights)
             .ToList();
+=======
+        // Override API data with values from manually-edited DB flights
+        foreach (var dbFlight in manualDbFlights)
+        {
+            var dbFlightNumber = NormalizeFlightNumber(dbFlight.FlightNumber);
+            if (string.IsNullOrWhiteSpace(dbFlightNumber))
+                continue;
+
+            var existing = sortedFlights.FirstOrDefault(f =>
+                string.Equals(NormalizeFlightNumber(f.Number), dbFlightNumber, StringComparison.OrdinalIgnoreCase));
+
+            if (existing != null)
+            {
+                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
+                if (lhrLeg != null)
+                {
+                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
+                    if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
+                }
+                existing.Status = dbFlight.Status;
+            }
+        }
+
+        // Add manually-entered flights that the live API doesn't know about
+        var apiNumbers = sortedFlights
+            .Select(f => NormalizeFlightNumber(f.Number))
+            .Where(flightNumber => !string.IsNullOrWhiteSpace(flightNumber))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var dbFlight in manualDbFlights)
+        {
+            var dbFlightNumber = NormalizeFlightNumber(dbFlight.FlightNumber);
+            if (string.IsNullOrWhiteSpace(dbFlightNumber) || apiNumbers.Contains(dbFlightNumber))
+                continue;
+
+            sortedFlights.Add(CreateSyntheticFlight(dbFlight));
+        }
+>>>>>>> 798cf9427149d90968f8791b3be4da1a762baf90
 
         // Re-sort so manual additions land in the right chronological position
-        sortedFlights = sortedFlights
-            .OrderBy(f => {
-                var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
-                return AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
-            })
-            .ThenBy(f => f.Number)
-            .ToList();
+        sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
 
         // Surface API error if the list is empty
         if (!sortedFlights.Any())
@@ -1037,7 +1065,7 @@ public class HomeController : Controller
 
         if (string.IsNullOrWhiteSpace(response.DepartureTime) && wantsField("departure", "departure time", "time"))
         {
-            var londonNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/London"));
+            var londonNow = GetLondonNow();
             response.DepartureTime = londonNow.AddHours(2).ToString("yyyy-MM-ddTHH:mm");
         }
 
@@ -1176,7 +1204,7 @@ public class HomeController : Controller
         if (isoMatch.Success && TryParseDateTimeLocal(isoMatch.Groups[1].Value, out var isoParsed))
             return isoParsed.ToString("yyyy-MM-ddTHH:mm");
 
-        var londonNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/London"));
+        var londonNow = GetLondonNow();
         var baseDate = londonNow.Date;
         var lower = text.ToLowerInvariant();
 
@@ -1306,6 +1334,22 @@ public class HomeController : Controller
 
     private static string? Clean(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static DateTime GetLondonNow()
+    {
+        var londonTimeZone = TimeZoneInfo.FindSystemTimeZoneById(LondonTimeZoneId);
+        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTimeZone);
+    }
+
+    private static List<AeroDataBoxFlight> SortFlightsByLhrLegTime(IEnumerable<AeroDataBoxFlight> flights) =>
+        flights
+            .OrderBy(f =>
+            {
+                var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
+                return AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
+            })
+            .ThenBy(f => f.Number)
+            .ToList();
 
     private static string? NormalizeDestination(string? value)
     {

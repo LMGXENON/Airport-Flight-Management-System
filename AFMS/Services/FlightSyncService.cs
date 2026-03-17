@@ -51,23 +51,17 @@ public class FlightSyncService
             {
                 var flightNumber = extFlight.Number ?? "Unknown";
                 var airline = extFlight.Airline?.Name ?? "Unknown Airline";
-                
+
                 // Parse times
-                DateTime departureTime = DateTime.UtcNow;
-                DateTime arrivalTime = DateTime.UtcNow;
-                
+                var now = DateTime.UtcNow;
+                DateTime departureTime = now;
+                DateTime arrivalTime = now;
+
                 var departureLeg = extFlight.Departure;
                 var arrivalLeg = extFlight.Arrival;
-                
-                if (departureLeg?.ScheduledTime?.Utc != null)
-                {
-                    DateTime.TryParse(departureLeg.ScheduledTime.Utc, out departureTime);
-                }
-                
-                if (arrivalLeg?.ScheduledTime?.Utc != null)
-                {
-                    DateTime.TryParse(arrivalLeg.ScheduledTime.Utc, out arrivalTime);
-                }
+
+                departureTime = ParseUtcOrFallback(departureLeg?.ScheduledTime?.Utc, departureTime);
+                arrivalTime = ParseUtcOrFallback(arrivalLeg?.ScheduledTime?.Utc, arrivalTime);
 
                 var destination = extFlight.Direction == "Departure" 
                     ? (arrivalLeg?.Airport?.Iata ?? "Unknown")
@@ -151,23 +145,33 @@ public class FlightSyncService
             // Notify connected clients about updates
             if (updatedFlights.Any())
             {
-                _logger.LogInformation($"Sending {updatedFlights.Count} flight updates to clients");
+                _logger.LogInformation("Sending {UpdatedFlightCount} flight updates to clients", updatedFlights.Count);
                 await _hubContext.Clients.Group("FlightUpdates")
                     .SendAsync("FlightUpdated", updatedFlights);
             }
 
             if (newFlights.Any())
             {
-                _logger.LogInformation($"Sending {newFlights.Count} new flights to clients");
+                _logger.LogInformation("Sending {NewFlightCount} new flights to clients", newFlights.Count);
                 await _hubContext.Clients.Group("FlightUpdates")
                     .SendAsync("FlightAdded", newFlights);
             }
 
-            _logger.LogInformation($"Flight sync complete: {updatedFlights.Count} updated, {newFlights.Count} new");
+            _logger.LogInformation("Flight sync complete: {UpdatedFlightCount} updated, {NewFlightCount} new", updatedFlights.Count, newFlights.Count);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error syncing flights");
         }
+    }
+
+    private static DateTime ParseUtcOrFallback(string? utcValue, DateTime fallback)
+    {
+        if (string.IsNullOrWhiteSpace(utcValue))
+            return fallback;
+
+        return DateTime.TryParse(utcValue, out var parsedUtc)
+            ? parsedUtc
+            : fallback;
     }
 }
