@@ -57,6 +57,7 @@ public class HomeController : Controller
 
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly FlightSearchService _flightSearchService;
+    private readonly ManualFlightMergeService _manualFlightMergeService;
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
@@ -67,6 +68,7 @@ public class HomeController : Controller
     public HomeController(
         AeroDataBoxService aeroDataBoxService,
         FlightSearchService flightSearchService,
+        ManualFlightMergeService manualFlightMergeService,
         ApplicationDbContext context,
         IConfiguration configuration,
         IMemoryCache cache,
@@ -76,6 +78,7 @@ public class HomeController : Controller
     {
         _aeroDataBoxService  = aeroDataBoxService;
         _flightSearchService = flightSearchService;
+        _manualFlightMergeService = manualFlightMergeService;
         _context             = context;
         _configuration       = configuration;
         _cache               = cache;
@@ -119,29 +122,9 @@ public class HomeController : Controller
             .GroupBy(f => f.FlightNumber)
             .ToDictionary(g => g.Key, g => g.First().Id);
 
-        // Override API data with values from manually-edited DB flights
-        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
-        {
-            var existing = sortedFlights.FirstOrDefault(f =>
-                string.Equals(f.Number?.Trim(), dbFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (existing != null)
-            {
-                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
-                if (lhrLeg != null)
-                {
-                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
-                    if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
-                }
-                existing.Status = dbFlight.Status;
-            }
-        }
-
-        // Add manually-entered flights that the live API doesn't know about
-        var apiNumbers = sortedFlights
-            .Select(f => f.Number?.Trim())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
-            sortedFlights.Add(CreateSyntheticFlight(dbFlight));
+        sortedFlights = _manualFlightMergeService
+            .MergeManualFlights(sortedFlights, allDbFlights)
+            .ToList();
 
         // Re-sort so manual additions land in the right chronological position
         sortedFlights = sortedFlights
@@ -1502,34 +1485,6 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
-    private static AeroDataBoxFlight CreateSyntheticFlight(Flight f) => new()
-    {
-        Number    = f.FlightNumber,
-        Status    = f.Status,
-        Direction = "Departure",
-        Airline   = new Airline { Name = f.Airline },
-        Departure = new FlightMovement
-        {
-            Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
-            Gate     = f.Gate,
-            Terminal = f.Terminal,
-            Status   = f.Status,
-            ScheduledTime = new ScheduledTime
-            {
-                Local = f.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc   = f.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        },
-        Arrival = new FlightMovement
-        {
-            Airport = new Airport { Iata = f.Destination, Name = f.Destination },
-            ScheduledTime = new ScheduledTime
-            {
-                Local = f.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc   = f.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        }
-    };
 }
 
 public class AIQueryRequest

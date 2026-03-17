@@ -16,15 +16,18 @@ public class FlightSearchService
     };
 
     private readonly AeroDataBoxService _aeroDataBoxService;
+    private readonly ManualFlightMergeService _manualFlightMergeService;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
 
     public FlightSearchService(
         AeroDataBoxService aeroDataBoxService,
+        ManualFlightMergeService manualFlightMergeService,
         IConfiguration configuration,
         ApplicationDbContext context)
     {
         _aeroDataBoxService = aeroDataBoxService;
+        _manualFlightMergeService = manualFlightMergeService;
         _configuration = configuration;
         _context = context;
     }
@@ -61,7 +64,11 @@ public class FlightSearchService
         if (to < from) to = from.AddHours(24);
 
         var apiFlights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, from, to, withCancelled: true);
-        var allFlights = await MergeManualFlightsAsync(apiFlights);
+        var manualFlights = await _context.Flights
+            .AsNoTracking()
+            .Where(f => f.IsManualEntry)
+            .ToListAsync();
+        var allFlights = _manualFlightMergeService.MergeManualFlights(apiFlights, manualFlights);
 
         var filtered = ApplyFilters(allFlights, model);
         var sorted   = ApplySorting(filtered, model);
@@ -80,73 +87,6 @@ public class FlightSearchService
             .Take(model.PageSize)
             .ToList();
     }
-
-    private async Task<List<AeroDataBoxFlight>> MergeManualFlightsAsync(List<AeroDataBoxFlight> apiFlights)
-    {
-        var mergedFlights = apiFlights.ToList();
-        var manualFlights = await _context.Flights
-            .AsNoTracking()
-            .Where(f => f.IsManualEntry)
-            .ToListAsync();
-
-        foreach (var manualFlight in manualFlights)
-        {
-            var existing = mergedFlights.FirstOrDefault(f =>
-                string.Equals(f.Number?.Trim(), manualFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
-
-            if (existing != null)
-            {
-                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
-                if (lhrLeg != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Gate))
-                        lhrLeg.Gate = manualFlight.Gate;
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Terminal))
-                        lhrLeg.Terminal = manualFlight.Terminal;
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Status))
-                        lhrLeg.Status = manualFlight.Status;
-                }
-
-                if (!string.IsNullOrWhiteSpace(manualFlight.Status))
-                    existing.Status = manualFlight.Status;
-
-                continue;
-            }
-
-            mergedFlights.Add(CreateSyntheticFlight(manualFlight));
-        }
-
-        return mergedFlights;
-    }
-
-    private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight) => new()
-    {
-        Number = flight.FlightNumber,
-        Status = flight.Status,
-        Direction = "Departure",
-        Airline = new Airline { Name = flight.Airline },
-        Departure = new FlightMovement
-        {
-            Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
-            Gate = flight.Gate,
-            Terminal = flight.Terminal,
-            Status = flight.Status,
-            ScheduledTime = new ScheduledTime
-            {
-                Local = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc = flight.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        },
-        Arrival = new FlightMovement
-        {
-            Airport = new Airport { Iata = flight.Destination, Name = flight.Destination },
-            ScheduledTime = new ScheduledTime
-            {
-                Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc = flight.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        }
-    };
 
     // -------------------------------------------------------------------------
     // Private helpers
