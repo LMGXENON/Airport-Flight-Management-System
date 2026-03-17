@@ -89,6 +89,7 @@ public class FlightSearchService
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     private async Task<List<AeroDataBoxFlight>> MergeManualFlightsAsync(List<AeroDataBoxFlight> apiFlights)
     {
@@ -162,6 +163,8 @@ public class FlightSearchService
     };
 
 >>>>>>> 811ed15 (Refactor and fix bugs)
+=======
+>>>>>>> 554eb19 (refactor flight merge logic, add regression tests, and sanitize env config)
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------

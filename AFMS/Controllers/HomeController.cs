@@ -109,7 +109,6 @@ public class HomeController : Controller
 
         // Fetch all DB flights once — used for MANAGE links and dashboard merge
         var allDbFlights = await _context.Flights.ToListAsync();
-        var manualDbFlights = allDbFlights.Where(f => f.IsManualEntry).ToList();
 
         // Build flight number → DB id lookup for the MANAGE column
         ViewBag.DbFlightIds = allDbFlights
@@ -117,6 +116,7 @@ public class HomeController : Controller
             .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
 
+<<<<<<< HEAD
         // Override API data with values from manually-edited DB flights
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
         {
@@ -140,6 +140,11 @@ public class HomeController : Controller
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
             sortedFlights.Add(CreateSyntheticFlight(dbFlight));
+=======
+        sortedFlights = _manualFlightMergeService
+            .MergeManualFlights(sortedFlights, allDbFlights)
+            .ToList();
+>>>>>>> 554eb19 (refactor flight merge logic, add regression tests, and sanitize env config)
 
         // Re-sort so manual additions land in the right chronological position
         sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
