@@ -37,7 +37,7 @@ public class AeroDataBoxService
             if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiHost))
             {
                 _logger.LogWarning("AeroDataBox API credentials not configured");
-                return new List<AeroDataBoxFlight>(); // Return empty list instead of mock data
+                return []; // Return empty list instead of mock data
             }
 
             if (dateTo < dateFrom)
@@ -82,13 +82,13 @@ public class AeroDataBoxService
                 return DateTime.MaxValue;
             }).ToList();
 
-            _logger.LogInformation($"Total flights fetched: {flights.Count}");
+            _logger.LogInformation("Total flights fetched: {FlightCount}", flights.Count);
             return flights; // Return actual data, even if empty
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching flights from AeroDataBox API");
-            return new List<AeroDataBoxFlight>(); // Return empty list on error
+            return []; // Return empty list on error
         }
     }
 
@@ -104,7 +104,7 @@ public class AeroDataBoxService
         var formattedTo = dateTo.ToString("yyyy-MM-dd'T'HH:mm");
 
         var requestUrl = $"https://{apiHost}/flights/airports/icao/{airportCode}/{formattedFrom}/{formattedTo}?withLeg=true&direction=Both&withCancelled={withCancelled.ToString().ToLowerInvariant()}&withCodeshared=false&withCargo=false&withPrivate=false&withLocation=false";
-        _logger.LogInformation($"API Request URL: {requestUrl}");
+        _logger.LogInformation("API request URL: {RequestUrl}", requestUrl);
 
         var request = new HttpRequestMessage
         {
@@ -122,21 +122,21 @@ public class AeroDataBoxService
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogWarning($"AeroDataBox API returned status code: {response.StatusCode}, Body: {errorContent}");
+            _logger.LogWarning("AeroDataBox API returned status code: {StatusCode}, Body: {ErrorBody}", response.StatusCode, errorContent);
 
             var errorReason = response.StatusCode == HttpStatusCode.TooManyRequests
                 ? "API quota exceeded — you have used your monthly or per-second limit on the BASIC plan. Upgrade at rapidapi.com or wait for your quota to reset."
                 : $"API error ({(int)response.StatusCode} {response.StatusCode})";
             _cache.Set(ApiErrorCacheKey, errorReason, TimeSpan.FromMinutes(5));
 
-            return new List<AeroDataBoxFlight>();
+            return [];
         }
 
         // Clear any previous error on success
         _cache.Remove(ApiErrorCacheKey);
 
         var body = await response.Content.ReadAsStringAsync();
-        _logger.LogInformation($"API Response: {body.Substring(0, Math.Min(500, body.Length))}...");
+        _logger.LogInformation("API response preview: {BodyPreview}...", body[..Math.Min(500, body.Length)]);
 
         var options = new JsonSerializerOptions
         {
@@ -149,14 +149,14 @@ public class AeroDataBoxService
 
         if (data?.Departures != null)
         {
-            _logger.LogInformation($"Fetched {data.Departures.Count} departures from API");
+            _logger.LogInformation("Fetched {DepartureCount} departures from API", data.Departures.Count);
             foreach (var f in data.Departures) f.Direction = "Departure";
             flights.AddRange(data.Departures);
         }
 
         if (data?.Arrivals != null)
         {
-            _logger.LogInformation($"Fetched {data.Arrivals.Count} arrivals from API");
+            _logger.LogInformation("Fetched {ArrivalCount} arrivals from API", data.Arrivals.Count);
             foreach (var f in data.Arrivals) f.Direction = "Arrival";
             flights.AddRange(data.Arrivals);
         }
