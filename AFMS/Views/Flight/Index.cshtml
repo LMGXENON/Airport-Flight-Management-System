@@ -1,7 +1,8 @@
-@model IEnumerable<AFMS.Models.Flight>
+@model AFMS.Models.FlightIndexViewModel
 
 @{
     ViewData["Title"] = "All Flights";
+    var pagination = Model.Pagination;
 }
 
 <!-- Page Header -->
@@ -26,14 +27,14 @@
 <form method="get" action="@Url.Action("Index", "Flight")" style="display:flex; gap:10px; align-items:center; margin-bottom:24px;">
     <input type="text"
            name="search"
-           value="@(ViewBag.Search as string)"
+           value="@Model.Search"
            placeholder="Search by flight number (e.g. BA123)..."
            style="flex:1; max-width:360px; padding:10px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:14px;" />
     <button type="submit"
             style="padding:10px 20px; background:var(--accent-blue); color:white; border:none; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer;">
         Search
     </button>
-    @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+    @if (!string.IsNullOrEmpty(Model.Search))
     {
         <a href="@Url.Action("Index", "Flight")"
            style="padding:10px 16px; color:var(--text-secondary); text-decoration:none; font-size:14px;">
@@ -60,7 +61,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var flight in Model)
+                @foreach (var flight in Model.Flights)
                 {
                     var statusClass = flight.Status?.ToLower().Replace(" ", "") switch
                     {
@@ -94,12 +95,12 @@
             </tbody>
         </table>
 
-        @if (!Model.Any())
+        @if (!Model.Flights.Any())
         {
             <div class="empty-state">
-                @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+                @if (!string.IsNullOrEmpty(Model.Search))
                 {
-                    <p style="font-size: 18px; margin-bottom: 8px;">No flights found for "@ViewBag.Search"</p>
+                    <p style="font-size: 18px; margin-bottom: 8px;">No flights found for "@Model.Search"</p>
                     <p>Try a different flight number or <a href="@Url.Action("Index", "Flight")" style="color:var(--accent-blue)">clear the search</a>.</p>
                 }
                 else
@@ -110,4 +111,79 @@
             </div>
         }
     </div>
+
+    @if (pagination.TotalCount > 0)
+    {
+        <div class="pagination" aria-label="Managed flights pagination">
+            @if (pagination.HasPreviousPage)
+            {
+                <a class="page-btn"
+                   asp-action="Index"
+                   asp-controller="Flight"
+                   asp-route-search="@Model.Search"
+                   asp-route-page="@(pagination.Page - 1)">‹ Prev</a>
+            }
+            else
+            {
+                <button type="button" class="page-btn" disabled>‹ Prev</button>
+            }
+
+            @if (pagination.VisiblePages().First() > 1)
+            {
+                <a class="page-btn"
+                   asp-action="Index"
+                   asp-controller="Flight"
+                   asp-route-search="@Model.Search"
+                   asp-route-page="1">1</a>
+                @if (pagination.VisiblePages().First() > 2)
+                {
+                    <span class="page-ellipsis">…</span>
+                }
+            }
+
+            @foreach (var pageNumber in pagination.VisiblePages())
+            {
+                if (pageNumber == pagination.Page)
+                {
+                    <button type="button" class="page-btn active" aria-current="page" disabled>@pageNumber</button>
+                }
+                else
+                {
+                    <a class="page-btn"
+                       asp-action="Index"
+                       asp-controller="Flight"
+                       asp-route-search="@Model.Search"
+                       asp-route-page="@pageNumber">@pageNumber</a>
+                }
+            }
+
+            @if (pagination.VisiblePages().Last() < pagination.TotalPages)
+            {
+                @if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
+                {
+                    <span class="page-ellipsis">…</span>
+                }
+                <a class="page-btn"
+                   asp-action="Index"
+                   asp-controller="Flight"
+                   asp-route-search="@Model.Search"
+                   asp-route-page="@pagination.TotalPages">@pagination.TotalPages</a>
+            }
+
+            @if (pagination.HasNextPage)
+            {
+                <a class="page-btn"
+                   asp-action="Index"
+                   asp-controller="Flight"
+                   asp-route-search="@Model.Search"
+                   asp-route-page="@(pagination.Page + 1)">Next ›</a>
+            }
+            else
+            {
+                <button type="button" class="page-btn" disabled>Next ›</button>
+            }
+
+            <span class="page-info">Showing @pagination.PageStart-@pagination.PageEnd of @pagination.TotalCount</span>
+        </div>
+    }
 </div>
