@@ -109,7 +109,6 @@ public class HomeController : Controller
 
         // Fetch all DB flights once — used for MANAGE links and dashboard merge
         var allDbFlights = await _context.Flights.ToListAsync();
-        var manualDbFlights = allDbFlights.Where(f => f.IsManualEntry).ToList();
 
         // Build flight number → DB id lookup for the MANAGE column
         ViewBag.DbFlightIds = allDbFlights
@@ -117,48 +116,9 @@ public class HomeController : Controller
             .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
 
-<<<<<<< HEAD
         sortedFlights = _manualFlightMergeService
             .MergeManualFlights(sortedFlights, allDbFlights)
             .ToList();
-=======
-        // Override API data with values from manually-edited DB flights
-        foreach (var dbFlight in manualDbFlights)
-        {
-            var dbFlightNumber = NormalizeFlightNumber(dbFlight.FlightNumber);
-            if (string.IsNullOrWhiteSpace(dbFlightNumber))
-                continue;
-
-            var existing = sortedFlights.FirstOrDefault(f =>
-                string.Equals(NormalizeFlightNumber(f.Number), dbFlightNumber, StringComparison.OrdinalIgnoreCase));
-
-            if (existing != null)
-            {
-                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
-                if (lhrLeg != null)
-                {
-                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
-                    if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
-                }
-                existing.Status = dbFlight.Status;
-            }
-        }
-
-        // Add manually-entered flights that the live API doesn't know about
-        var apiNumbers = sortedFlights
-            .Select(f => NormalizeFlightNumber(f.Number))
-            .Where(flightNumber => !string.IsNullOrWhiteSpace(flightNumber))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var dbFlight in manualDbFlights)
-        {
-            var dbFlightNumber = NormalizeFlightNumber(dbFlight.FlightNumber);
-            if (string.IsNullOrWhiteSpace(dbFlightNumber) || apiNumbers.Contains(dbFlightNumber))
-                continue;
-
-            sortedFlights.Add(CreateSyntheticFlight(dbFlight));
-        }
->>>>>>> 798cf9427149d90968f8791b3be4da1a762baf90
 
         // Re-sort so manual additions land in the right chronological position
         sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
