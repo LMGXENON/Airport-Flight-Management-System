@@ -35,6 +35,7 @@ builder.Services.AddScoped<FlightSyncService>();
 
 // Add advanced-search service
 builder.Services.AddScoped<FlightSearchService>();
+builder.Services.AddScoped<ManualFlightMergeService>();
 
 // Add background service for periodic flight updates
 builder.Services.AddHostedService<FlightUpdateBackgroundService>();

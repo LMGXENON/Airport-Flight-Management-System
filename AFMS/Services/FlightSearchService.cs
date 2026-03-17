@@ -16,15 +16,18 @@ public class FlightSearchService
     };
 
     private readonly AeroDataBoxService _aeroDataBoxService;
+    private readonly ManualFlightMergeService _manualFlightMergeService;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
 
     public FlightSearchService(
         AeroDataBoxService aeroDataBoxService,
+        ManualFlightMergeService manualFlightMergeService,
         IConfiguration configuration,
         ApplicationDbContext context)
     {
         _aeroDataBoxService = aeroDataBoxService;
+        _manualFlightMergeService = manualFlightMergeService;
         _configuration = configuration;
         _context = context;
     }
@@ -61,7 +64,11 @@ public class FlightSearchService
         if (to < from) to = from.AddHours(24);
 
         var apiFlights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, from, to, withCancelled: true);
-        var allFlights = await MergeManualFlightsAsync(apiFlights);
+        var manualFlights = await _context.Flights
+            .AsNoTracking()
+            .Where(f => f.IsManualEntry)
+            .ToListAsync();
+        var allFlights = _manualFlightMergeService.MergeManualFlights(apiFlights, manualFlights);
 
         var filtered = ApplyFilters(allFlights, model);
         var sorted   = ApplySorting(filtered, model);
@@ -81,6 +88,8 @@ public class FlightSearchService
             .ToList();
     }
 
+<<<<<<< HEAD
+=======
     private async Task<List<AeroDataBoxFlight>> MergeManualFlightsAsync(List<AeroDataBoxFlight> apiFlights)
     {
         var mergedFlights = apiFlights.ToList();
@@ -152,6 +161,7 @@ public class FlightSearchService
         }
     };
 
+>>>>>>> 798cf9427149d90968f8791b3be4da1a762baf90
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------

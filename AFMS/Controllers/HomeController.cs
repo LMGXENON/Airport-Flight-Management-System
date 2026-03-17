@@ -58,6 +58,7 @@ public class HomeController : Controller
 
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly FlightSearchService _flightSearchService;
+    private readonly ManualFlightMergeService _manualFlightMergeService;
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
@@ -68,6 +69,7 @@ public class HomeController : Controller
     public HomeController(
         AeroDataBoxService aeroDataBoxService,
         FlightSearchService flightSearchService,
+        ManualFlightMergeService manualFlightMergeService,
         ApplicationDbContext context,
         IConfiguration configuration,
         IMemoryCache cache,
@@ -77,6 +79,7 @@ public class HomeController : Controller
     {
         _aeroDataBoxService  = aeroDataBoxService;
         _flightSearchService = flightSearchService;
+        _manualFlightMergeService = manualFlightMergeService;
         _context             = context;
         _configuration       = configuration;
         _cache               = cache;
@@ -114,6 +117,11 @@ public class HomeController : Controller
             .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
 
+<<<<<<< HEAD
+        sortedFlights = _manualFlightMergeService
+            .MergeManualFlights(sortedFlights, allDbFlights)
+            .ToList();
+=======
         // Override API data with values from manually-edited DB flights
         foreach (var dbFlight in manualDbFlights)
         {
@@ -150,6 +158,7 @@ public class HomeController : Controller
 
             sortedFlights.Add(CreateSyntheticFlight(dbFlight));
         }
+>>>>>>> 798cf9427149d90968f8791b3be4da1a762baf90
 
         // Re-sort so manual additions land in the right chronological position
         sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
@@ -1520,34 +1529,6 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
-    private static AeroDataBoxFlight CreateSyntheticFlight(Flight f) => new()
-    {
-        Number    = f.FlightNumber,
-        Status    = f.Status,
-        Direction = "Departure",
-        Airline   = new Airline { Name = f.Airline },
-        Departure = new FlightMovement
-        {
-            Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
-            Gate     = f.Gate,
-            Terminal = f.Terminal,
-            Status   = f.Status,
-            ScheduledTime = new ScheduledTime
-            {
-                Local = f.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc   = f.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        },
-        Arrival = new FlightMovement
-        {
-            Airport = new Airport { Iata = f.Destination, Name = f.Destination },
-            ScheduledTime = new ScheduledTime
-            {
-                Local = f.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc   = f.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        }
-    };
 }
 
 public class AIQueryRequest
