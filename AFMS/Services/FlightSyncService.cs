@@ -51,25 +51,17 @@ public class FlightSyncService
             {
                 var flightNumber = extFlight.Number ?? "Unknown";
                 var airline = extFlight.Airline?.Name ?? "Unknown Airline";
-                
+
                 // Parse times
-                DateTime departureTime = DateTime.UtcNow;
-                DateTime arrivalTime = DateTime.UtcNow;
-                
+                var now = DateTime.UtcNow;
+                DateTime departureTime = now;
+                DateTime arrivalTime = now;
+
                 var departureLeg = extFlight.Departure;
                 var arrivalLeg = extFlight.Arrival;
-                
-                if (departureLeg?.ScheduledTime?.Utc != null)
-                {
-                    if (DateTime.TryParse(departureLeg.ScheduledTime.Utc, out var parsedDepartureTime))
-                        departureTime = parsedDepartureTime;
-                }
-                
-                if (arrivalLeg?.ScheduledTime?.Utc != null)
-                {
-                    if (DateTime.TryParse(arrivalLeg.ScheduledTime.Utc, out var parsedArrivalTime))
-                        arrivalTime = parsedArrivalTime;
-                }
+
+                departureTime = ParseUtcOrFallback(departureLeg?.ScheduledTime?.Utc, departureTime);
+                arrivalTime = ParseUtcOrFallback(arrivalLeg?.ScheduledTime?.Utc, arrivalTime);
 
                 var destination = extFlight.Direction == "Departure" 
                     ? (arrivalLeg?.Airport?.Iata ?? "Unknown")
@@ -171,5 +163,15 @@ public class FlightSyncService
         {
             _logger.LogError(ex, "Error syncing flights");
         }
+    }
+
+    private static DateTime ParseUtcOrFallback(string? utcValue, DateTime fallback)
+    {
+        if (string.IsNullOrWhiteSpace(utcValue))
+            return fallback;
+
+        return DateTime.TryParse(utcValue, out var parsedUtc)
+            ? parsedUtc
+            : fallback;
     }
 }
