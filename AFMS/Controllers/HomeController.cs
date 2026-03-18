@@ -229,7 +229,11 @@ public class HomeController : Controller
             {
                 var contextJson = JsonSerializer.Serialize(
                     normalizedContext,
-                    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+                    new JsonSerializerOptions
+                    {
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
 
                 messages.Add(new
                 {
@@ -361,7 +365,7 @@ public class HomeController : Controller
                 new { role = "system", content = systemPrompt }
             };
 
-            if (HasAnyAddFlightContextFields(normalizedContext))
+            if (request.AddFlightContext is not null)
             {
                 var contextJson = JsonSerializer.Serialize(
                     normalizedContext,
@@ -684,7 +688,7 @@ public class HomeController : Controller
                 return System.IO.File.ReadAllText(promptPath);
 
             _logger.LogWarning("Add-flight DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
-            return "You fill an Add Flight form for London Heathrow operations. You are NOT a general chatbot. If request is not about creating or editing a flight entry, return JSON with isAddFlightRequest false and message {addFlightOnlyMessage}. For add-flight requests, return only JSON with flightNumber, airline, destination, departureTime, arrivalTime, gate, terminal, and missingRequiredFields. Use datetime-local format yyyy-MM-ddTHH:mm. If today/tomorrow are used, map to {today}/{tomorrow}.";
+            return "You fill an Add Flight form for London Heathrow operations. You are NOT a general chatbot. Use the current add-flight form context, including filledFields and emptyFields, to decide whether the user wants to fill blank fields, change existing fields, or generate plausible missing values. If request is not about creating or editing a flight entry, return JSON with isAddFlightRequest false and message {addFlightOnlyMessage}. For add-flight requests, return only JSON with flightNumber, airline, destination, departureTime, arrivalTime, gate, terminal, and missingRequiredFields. Use datetime-local format yyyy-MM-ddTHH:mm. If today/tomorrow are used, map to {today}/{tomorrow}. If the user asks for random gate, terminal, or date values, generate them.";
         }) ?? string.Empty;
     }
 
@@ -916,10 +920,12 @@ public class HomeController : Controller
             DepartureTime = NormalizeDateTimeForForm(context.DepartureTime),
             ArrivalTime = NormalizeDateTimeForForm(context.ArrivalTime),
             Gate = NormalizeGate(context.Gate),
-            Terminal = NormalizeTerminalForAddForm(context.Terminal)
+            Terminal = NormalizeTerminalForAddForm(context.Terminal),
+            FilledFields = context.FilledFields?.Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? new List<string>(),
+            EmptyFields = context.EmptyFields?.Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? new List<string>()
         };
 
-        return HasAnyAddFlightContextFields(normalized) ? normalized : null;
+        return normalized;
     }
 
     private static AiAddFlightResponse MergeWithAiAddFlightContext(AiAddFlightResponse aiResponse, AiAddFlightContext? context)
@@ -1000,9 +1006,16 @@ public class HomeController : Controller
 
         var lower = query.ToLowerInvariant();
         var wantsAllFields = Regex.IsMatch(lower, @"\b(all|these|required)\s+(fields?|details?)\b", RegexOptions.IgnoreCase)
+            || Regex.IsMatch(lower, @"\b(fill|populate|complete|set|add|generate|auto\s*fill|autofill|randomize|random)\s+(the\s+)?(blank|empty|missing)?\s*(fields?|details?)\b", RegexOptions.IgnoreCase)
             || lower.Contains("enter these fields", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("fill the fields", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("fill the blank fields", StringComparison.OrdinalIgnoreCase)
             || lower.Contains("auto fill", StringComparison.OrdinalIgnoreCase)
-            || lower.Contains("autofill", StringComparison.OrdinalIgnoreCase);
+            || lower.Contains("autofill", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random gate", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random terminal", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random departure", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random arrival", StringComparison.OrdinalIgnoreCase);
 
         bool wantsField(params string[] terms) => wantsAllFields || terms.Any(term => lower.Contains(term, StringComparison.OrdinalIgnoreCase));
 
@@ -1028,7 +1041,12 @@ public class HomeController : Controller
     }
 
     private static bool HasGenerationIntent(string query) =>
-        Regex.IsMatch(query, @"\b(generate|auto\s*fill|autofill|make up|create|enter)\b", RegexOptions.IgnoreCase);
+        Regex.IsMatch(query, @"\b(generate|auto\s*fill|autofill|make up|create|enter|fill|populate|complete|set|randomize|random|choose|pick|change|update|replace)\b", RegexOptions.IgnoreCase)
+        || query.Contains("fill the fields", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("fill the blank fields", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("change the", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("update the", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("replace the", StringComparison.OrdinalIgnoreCase);
 
     private static string GenerateFlightNumber(string? airline)
     {
@@ -1513,6 +1531,8 @@ public class AiAddFlightContext
     public string? ArrivalTime { get; set; }
     public string? Gate { get; set; }
     public string? Terminal { get; set; }
+    public List<string> FilledFields { get; set; } = new();
+    public List<string> EmptyFields { get; set; } = new();
 }
 
 public class DeepSeekResponse
