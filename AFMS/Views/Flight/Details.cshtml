@@ -2,17 +2,9 @@
 
 @{
     ViewData["Title"] = "Flight Details";
-    
-    var statusClass = Model.Status?.ToLower().Replace(" ", "") switch
-    {
-        "ontime"    => "status-ontime",
-        "delayed"   => "status-delayed",
-        "cancelled" => "status-cancelled",
-        "boarding"  => "status-boarding",
-        "departed"  => "status-departed",
-        "arrived"   => "status-arrived",
-        _           => "status-scheduled"
-    };
+
+    var statusClass = FlightStatusCatalog.GetCssClass(Model.Status);
+    var statusLabel = FlightStatusCatalog.GetLabel(Model.Status);
 }
 
 <div class="page-header">
@@ -26,7 +18,7 @@
             <h2 class="details-flight-number">@Model.FlightNumber</h2>
             <p class="details-airline">@Model.Airline</p>
         </div>
-        <span class="status-badge @statusClass">@Model.Status</span>
+        <span class="status-badge @statusClass">@statusLabel</span>
     </div>
 
     <div class="details-grid">

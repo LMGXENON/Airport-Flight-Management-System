@@ -94,6 +94,7 @@ namespace AFMS.Controllers
             if (ModelState.IsValid)
             {
                 flight.IsManualEntry = true;
+                flight.Status = FlightStatusCatalog.Normalize(flight.Status);
                 _context.Flights.Add(flight);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Flight added successfully!";
@@ -116,6 +117,7 @@ namespace AFMS.Controllers
             {
                 return NotFound();
             }
+            flight.Status = FlightStatusCatalog.Normalize(flight.Status);
             ViewBag.Airlines = await GetAirlinesSelectListAsync(flight.Airline);
             return View(flight);
         }
@@ -135,6 +137,7 @@ namespace AFMS.Controllers
                 try
                 {
                     flight.IsManualEntry = true;
+                    flight.Status = FlightStatusCatalog.Normalize(flight.Status);
                     _context.Update(flight);
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Flight updated successfully!";

@@ -25,10 +25,6 @@ public class HomeController : Controller
     [
         "flightNumber", "airline", "destination", "departureTime"
     ];
-    private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Expected", "Boarding", "Departed", "Arrived", "Delayed", "Canceled"
-    };
     private static readonly HashSet<string> SearchClearableFields = new(StringComparer.OrdinalIgnoreCase)
     {
         "flight", "airline", "destination", "departureDate", "arrivalDate",
@@ -149,7 +145,7 @@ public class HomeController : Controller
         var model = BuildSearchModel(
             search, flight, airline, destination,
             departureDate, arrivalDate, terminal, direction,
-            statuses, timeRangeStart, timeRangeEnd,
+            FlightStatusCatalog.NormalizeStatuses(statuses), timeRangeStart, timeRangeEnd,
             sortBy, sortOrder, page);
 
         if (!model.HasSearched)
@@ -233,14 +229,16 @@ public class HomeController : Controller
             {
                 var contextJson = JsonSerializer.Serialize(
                     normalizedContext,
-                    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+                    new JsonSerializerOptions
+                    {
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
 
                 messages.Add(new
                 {
                     role = "user",
-                    content =
-                        "Current Advanced Search filters already selected in the UI. Keep existing filters unless the new message updates or clears them.\n"
-                        + $"Context JSON: {contextJson}"
+                    content = $"Search context: {contextJson}"
                 });
             }
 
@@ -251,7 +249,7 @@ public class HomeController : Controller
                 model,
                 messages,
                 temperature = 0,
-                max_tokens = 300
+                max_tokens = 250
             };
 
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds()));
@@ -369,14 +367,16 @@ public class HomeController : Controller
             {
                 var contextJson = JsonSerializer.Serialize(
                     normalizedContext,
-                    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+                    new JsonSerializerOptions
+                    {
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
 
                 messages.Add(new
                 {
                     role = "user",
-                    content =
-                        "Current Add Flight form values already captured from previous messages. Use this as context and keep these values unless the new message updates them.\n"
-                        + $"Context JSON: {contextJson}"
+                    content = $"Add-flight context: {contextJson}"
                 });
             }
 
@@ -387,7 +387,7 @@ public class HomeController : Controller
                 model,
                 messages,
                 temperature = 0,
-                max_tokens = 360
+                max_tokens = 250
             };
 
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds()));
@@ -639,7 +639,7 @@ public class HomeController : Controller
         var promptTemplate = GetDeepSeekPromptTemplate();
         return promptTemplate
             .Replace("{today}", DateTime.UtcNow.ToString("yyyy-MM-dd"), StringComparison.Ordinal)
-            .Replace("{allowedStatuses}", string.Join(",", AllowedStatuses.Select(status => $"\"{status}\"")), StringComparison.Ordinal)
+            .Replace("{allowedStatuses}", string.Join(",", FlightStatusCatalog.Values.Select(status => $"\"{status}\"")), StringComparison.Ordinal)
             .Replace("{searchOnlyMessage}", SearchOnlyMessage, StringComparison.Ordinal);
     }
 
@@ -669,7 +669,7 @@ public class HomeController : Controller
                 return System.IO.File.ReadAllText(promptPath);
 
             _logger.LogWarning("DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
-            return "You fill Advanced Search filters for a London Heathrow flight search page. You are NOT a general chatbot. If the message is not clearly about searching or filtering flights, return JSON with isSearchRequest false and message {searchOnlyMessage}. If the message is about searching flights, return only valid JSON using known search fields plus clearFields for explicit removals and statuses [{allowedStatuses}]. If the user says today, use {today}.";
+            return "You fill Advanced Search filters for Heathrow. Not a general chatbot. If the message is not about search/filtering flights, return JSON only: {\"isSearchRequest\":false,\"message\":\"{searchOnlyMessage}\"}. Otherwise return JSON only with: isSearchRequest, message, flight, airline, destination, departureDate, arrivalDate, terminal, direction, timeRangeStart, timeRangeEnd, statuses, clearFields. Keep existing values unless changed or cleared. Use clearFields for resets. today => {today}.";
         }) ?? string.Empty;
     }
 
@@ -688,7 +688,7 @@ public class HomeController : Controller
                 return System.IO.File.ReadAllText(promptPath);
 
             _logger.LogWarning("Add-flight DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
-            return "You fill an Add Flight form for London Heathrow operations. You are NOT a general chatbot. If request is not about creating or editing a flight entry, return JSON with isAddFlightRequest false and message {addFlightOnlyMessage}. For add-flight requests, return only JSON with flightNumber, airline, destination, departureTime, arrivalTime, gate, terminal, and missingRequiredFields. Use datetime-local format yyyy-MM-ddTHH:mm. If today/tomorrow are used, map to {today}/{tomorrow}.";
+            return "You fill the Add Flight form for Heathrow. Not a general chatbot. Context JSON contains only fields already filled; any field not present is blank. If the message is not about adding/editing a flight entry, return JSON only: {\"isAddFlightRequest\":false,\"message\":\"{addFlightOnlyMessage}\"}. Otherwise return JSON only with: isAddFlightRequest, message, flightNumber, airline, destination, departureTime, arrivalTime, gate, terminal, arrivalEstimated, gateEstimated, terminalEstimated, missingRequiredFields. Keep existing values unless changed. Generate plausible missing values when asked. today => {today}, tomorrow => {tomorrow}.";
         }) ?? string.Empty;
     }
 
@@ -847,11 +847,7 @@ public class HomeController : Controller
     }
 
     private static List<string> NormalizeSearchStatuses(IEnumerable<string>? statuses) =>
-        (statuses ?? Array.Empty<string>())
-            .Where(s => !string.IsNullOrWhiteSpace(s) && AllowedStatuses.Contains(s))
-            .Select(s => AllowedStatuses.First(x => x.Equals(s, StringComparison.OrdinalIgnoreCase)))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        FlightStatusCatalog.NormalizeStatuses(statuses);
 
     private static List<string> NormalizeSearchClearFields(IEnumerable<string>? clearFields)
     {
@@ -924,10 +920,11 @@ public class HomeController : Controller
             DepartureTime = NormalizeDateTimeForForm(context.DepartureTime),
             ArrivalTime = NormalizeDateTimeForForm(context.ArrivalTime),
             Gate = NormalizeGate(context.Gate),
-            Terminal = NormalizeTerminalForAddForm(context.Terminal)
+            Terminal = NormalizeTerminalForAddForm(context.Terminal),
+            FilledFields = context.FilledFields?.Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? new List<string>()
         };
 
-        return HasAnyAddFlightContextFields(normalized) ? normalized : null;
+        return normalized;
     }
 
     private static AiAddFlightResponse MergeWithAiAddFlightContext(AiAddFlightResponse aiResponse, AiAddFlightContext? context)
@@ -1008,9 +1005,16 @@ public class HomeController : Controller
 
         var lower = query.ToLowerInvariant();
         var wantsAllFields = Regex.IsMatch(lower, @"\b(all|these|required)\s+(fields?|details?)\b", RegexOptions.IgnoreCase)
+            || Regex.IsMatch(lower, @"\b(fill|populate|complete|set|add|generate|auto\s*fill|autofill|randomize|random)\s+(the\s+)?(blank|empty|missing)?\s*(fields?|details?)\b", RegexOptions.IgnoreCase)
             || lower.Contains("enter these fields", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("fill the fields", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("fill the blank fields", StringComparison.OrdinalIgnoreCase)
             || lower.Contains("auto fill", StringComparison.OrdinalIgnoreCase)
-            || lower.Contains("autofill", StringComparison.OrdinalIgnoreCase);
+            || lower.Contains("autofill", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random gate", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random terminal", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random departure", StringComparison.OrdinalIgnoreCase)
+            || lower.Contains("random arrival", StringComparison.OrdinalIgnoreCase);
 
         bool wantsField(params string[] terms) => wantsAllFields || terms.Any(term => lower.Contains(term, StringComparison.OrdinalIgnoreCase));
 
@@ -1036,7 +1040,12 @@ public class HomeController : Controller
     }
 
     private static bool HasGenerationIntent(string query) =>
-        Regex.IsMatch(query, @"\b(generate|auto\s*fill|autofill|make up|create|enter)\b", RegexOptions.IgnoreCase);
+        Regex.IsMatch(query, @"\b(generate|auto\s*fill|autofill|make up|create|enter|fill|populate|complete|set|randomize|random|choose|pick|change|update|replace)\b", RegexOptions.IgnoreCase)
+        || query.Contains("fill the fields", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("fill the blank fields", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("change the", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("update the", StringComparison.OrdinalIgnoreCase)
+        || query.Contains("replace the", StringComparison.OrdinalIgnoreCase);
 
     private static string GenerateFlightNumber(string? airline)
     {
@@ -1521,6 +1530,7 @@ public class AiAddFlightContext
     public string? ArrivalTime { get; set; }
     public string? Gate { get; set; }
     public string? Terminal { get; set; }
+    public List<string> FilledFields { get; set; } = new();
 }
 
 public class DeepSeekResponse

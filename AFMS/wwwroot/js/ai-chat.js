@@ -349,27 +349,38 @@
                 .filter(Boolean);
 
             const directionInput = document.getElementById('directionInput');
-            const context = {
-                flight: readTrimmed('flight'),
-                airline: readTrimmed('airline'),
-                destination: readTrimmed('destination'),
-                departureDate: readTrimmed('departureDate'),
-                arrivalDate: readTrimmed('arrivalDate'),
-                terminal: readTrimmed('terminal'),
-                direction: directionInput ? (directionInput.value || '').trim() : '',
-                statuses,
-                timeRangeStart: readTrimmed('timeRangeStart'),
-                timeRangeEnd: readTrimmed('timeRangeEnd')
-            };
+            const context = {};
 
-            const hasAny = Boolean(
-                context.flight || context.airline || context.destination ||
-                context.departureDate || context.arrivalDate || context.terminal ||
-                context.direction || context.timeRangeStart || context.timeRangeEnd ||
-                context.statuses.length
-            );
+            const flight = readTrimmed('flight');
+            if (flight) context.flight = flight;
 
-            return hasAny ? context : null;
+            const airline = readTrimmed('airline');
+            if (airline) context.airline = airline;
+
+            const destination = readTrimmed('destination');
+            if (destination) context.destination = destination;
+
+            const departureDate = readTrimmed('departureDate');
+            if (departureDate) context.departureDate = departureDate;
+
+            const arrivalDate = readTrimmed('arrivalDate');
+            if (arrivalDate) context.arrivalDate = arrivalDate;
+
+            const terminal = readTrimmed('terminal');
+            if (terminal) context.terminal = terminal;
+
+            const direction = directionInput ? (directionInput.value || '').trim() : '';
+            if (direction) context.direction = direction;
+
+            if (statuses.length) context.statuses = statuses;
+
+            const timeRangeStart = readTrimmed('timeRangeStart');
+            if (timeRangeStart) context.timeRangeStart = timeRangeStart;
+
+            const timeRangeEnd = readTrimmed('timeRangeEnd');
+            if (timeRangeEnd) context.timeRangeEnd = timeRangeEnd;
+
+            return Object.keys(context).length ? context : null;
         }
 
         function getAddFlightContext() {
@@ -380,18 +391,30 @@
                 return el ? (el.value || '').trim() : '';
             };
 
-            const context = {
-                flightNumber: readValue('FlightNumber'),
-                airline: readValue('Airline'),
-                destination: readValue('Destination'),
-                departureTime: readValue('DepartureTime'),
-                arrivalTime: readValue('ArrivalTime'),
-                gate: readValue('Gate'),
-                terminal: readValue('Terminal')
-            };
+            const context = {};
+            const filledFields = [];
 
-            const hasAny = Object.values(context).some(Boolean);
-            return hasAny ? context : null;
+            const fields = [
+                ['flightNumber', 'FlightNumber'],
+                ['airline', 'Airline'],
+                ['destination', 'Destination'],
+                ['departureTime', 'DepartureTime'],
+                ['arrivalTime', 'ArrivalTime'],
+                ['gate', 'Gate'],
+                ['terminal', 'Terminal']
+            ];
+
+            for (const [key, id] of fields) {
+                const value = readValue(id);
+                if (!value) continue;
+                context[key] = value;
+                filledFields.push(key);
+            }
+
+            if (!filledFields.length) return null;
+
+            context.filledFields = filledFields;
+            return context;
         }
 
         async function callAssistant(endpoint, payload) {
@@ -451,18 +474,18 @@
 
             if (err?.status === 400) {
                 return isAddFlight
-                    ? 'I could not map that to add-flight fields. Include flight number, airline, destination, and departure time.'
+                    ? 'I could not map that to add-flight fields. Try saying which blank fields to fill, or which existing value to change.'
                     : 'I could not turn that into search filters. Try naming an airline, destination, date, time, terminal, or status.';
             }
 
             if (err?.status >= 500) {
                 return isAddFlight
-                    ? 'The assistant hit a server problem. Try again in a moment, then review fields manually.'
+                    ? 'The assistant hit a server problem. Try again in a moment, then review the form and resend the fields you want filled.'
                     : 'The assistant hit a server problem. Try again in a moment, or use the filters manually.';
             }
 
             return isAddFlight
-                ? 'I could not process that add-flight request. Try "BA123 British Airways to JFK tomorrow 14:30".'
+                ? 'I could not process that add-flight request. Try "fill the blank fields" or "change the terminal to 2".'
                 : 'I could not process that search request. Try rephrasing it more clearly, for example "arrivals from Doha today after 18:00".';
         }
 
