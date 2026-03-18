@@ -390,8 +390,15 @@
                 terminal: readValue('Terminal')
             };
 
-            const hasAny = Object.values(context).some(Boolean);
-            return hasAny ? context : null;
+            const filledFields = Object.entries(context)
+                .filter(([, value]) => Boolean(value))
+                .map(([field]) => field);
+
+            return {
+                ...context,
+                filledFields,
+                emptyFields: Object.keys(context).filter(field => !filledFields.includes(field))
+            };
         }
 
         async function callAssistant(endpoint, payload) {
@@ -451,18 +458,18 @@
 
             if (err?.status === 400) {
                 return isAddFlight
-                    ? 'I could not map that to add-flight fields. Include flight number, airline, destination, and departure time.'
+                    ? 'I could not map that to add-flight fields. Try saying which blank fields to fill, or which existing value to change.'
                     : 'I could not turn that into search filters. Try naming an airline, destination, date, time, terminal, or status.';
             }
 
             if (err?.status >= 500) {
                 return isAddFlight
-                    ? 'The assistant hit a server problem. Try again in a moment, then review fields manually.'
+                    ? 'The assistant hit a server problem. Try again in a moment, then review the form and resend the fields you want filled.'
                     : 'The assistant hit a server problem. Try again in a moment, or use the filters manually.';
             }
 
             return isAddFlight
-                ? 'I could not process that add-flight request. Try "BA123 British Airways to JFK tomorrow 14:30".'
+                ? 'I could not process that add-flight request. Try "fill the blank fields" or "change the terminal to 2".'
                 : 'I could not process that search request. Try rephrasing it more clearly, for example "arrivals from Doha today after 18:00".';
         }
 
