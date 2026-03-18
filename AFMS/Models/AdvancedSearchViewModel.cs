@@ -52,39 +52,9 @@ public class AdvancedSearchViewModel
 
     // --- Display helpers (moved here from Razor view) ---
 
-    public static string GetStatusClass(string rawStatus) => rawStatus.ToLower() switch
-    {
-        "expected"          => "status-ontime",
-        "enroute"           => "status-departed",
-        "checkin"           => "status-ontime",
-        "boarding"          => "status-boarding",
-        "gateclosed"        => "status-departed",
-        "departed"          => "status-departed",
-        "delayed"           => "status-delayed",
-        "approaching"       => "status-departed",
-        "arrived"           => "status-landed",
-        "canceled"          => "status-cancelled",
-        "canceleduncertain" => "status-cancelled",
-        "diverted"          => "status-cancelled",
-        _                   => "status-ontime"
-    };
+    public static string GetStatusClass(string rawStatus) => FlightStatusCatalog.GetCssClass(rawStatus);
 
-    public static string GetStatusLabel(string rawStatus) => rawStatus.ToLower() switch
-    {
-        "expected"          => "On Time",
-        "enroute"           => "Departed",
-        "checkin"           => "On Time",
-        "boarding"          => "Boarding",
-        "gateclosed"        => "Departed",
-        "departed"          => "Departed",
-        "delayed"           => "Delayed",
-        "approaching"       => "Departed",
-        "arrived"           => "Landed",
-        "canceled"          => "Cancelled",
-        "canceleduncertain" => "Cancelled",
-        "diverted"          => "Cancelled",
-        _                   => "On Time"
-    };
+    public static string GetStatusLabel(string rawStatus) => FlightStatusCatalog.GetLabel(rawStatus);
 
     public static string ConvertToIata(string? code)
     {

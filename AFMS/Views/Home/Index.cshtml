@@ -93,42 +93,10 @@
                     var rawStatus = (movementStatus ?? flight.Status ?? "Unknown").ToLower();
 
                     // Simplified status mapping for user-friendly display
-                    var statusClass = rawStatus switch
-                    {
-                        "expected"          => "status-ontime",
-                        "enroute"           => "status-departed",
-                        "checkin"           => "status-ontime",
-                        "boarding"          => "status-boarding",
-                        "gateclosed"        => "status-departed",
-                        "departed"          => "status-departed",
-                        "delayed"           => "status-delayed",
-                        "approaching"       => "status-departed",
-                        "arrived"           => "status-landed",
-                        "canceled"          => "status-cancelled",
-                        "canceleduncertain" => "status-cancelled",
-                        "diverted"          => "status-cancelled",
-                        "unknown"           => "status-ontime",
-                        _                   => "status-ontime"
-                    };
+                    var statusClass = FlightStatusCatalog.GetCssClass(rawStatus);
 
                     // Simplified status labels
-                    var statusLabel = rawStatus switch
-                    {
-                        "expected"          => "On Time",
-                        "enroute"           => "Departed",
-                        "checkin"           => "On Time",
-                        "boarding"          => "Boarding",
-                        "gateclosed"        => "Departed",
-                        "departed"          => "Departed",
-                        "delayed"           => "Delayed",
-                        "approaching"       => "Departed",
-                        "arrived"           => "Landed",
-                        "canceled"          => "Cancelled",
-                        "canceleduncertain" => "Cancelled",
-                        "diverted"          => "Cancelled",
-                        "unknown"           => "On Time",
-                        _                   => "On Time"
-                    };
+                    var statusLabel = FlightStatusCatalog.GetLabel(rawStatus);
 
                     // Airport codes — fill in LHR for the home leg
                     var depIata = flight.Departure?.Airport?.Iata
@@ -190,14 +158,14 @@
                     {
                         if (DateTime.TryParse(runwayArrUtc, out var actArrTime))
                         {
-                            detailedStatus = $"Landed {actArrTime.ToLocalTime().ToString("HH:mm")}";
+                            detailedStatus = $"Arrived {actArrTime.ToLocalTime().ToString("HH:mm")}";
                         }
                         else
                         {
-                            detailedStatus = "Landed";
+                            detailedStatus = "Arrived";
                         }
-                        statusLabel = "Landed";
-                        statusClass = "status-landed";
+                        statusLabel = FlightStatusCatalog.GetLabel("Arrived");
+                        statusClass = FlightStatusCatalog.GetCssClass("Arrived");
                     }
                     else if (hasActuallyDeparted && isDep)
                     {
@@ -209,8 +177,8 @@
                         {
                             detailedStatus = "Departed";
                         }
-                        statusLabel = "Departed";
-                        statusClass = "status-departed";
+                        statusLabel = FlightStatusCatalog.GetLabel("Departed");
+                        statusClass = FlightStatusCatalog.GetCssClass("Departed");
                     }
                     else if (hasActuallyDeparted && !isDep)
                     {

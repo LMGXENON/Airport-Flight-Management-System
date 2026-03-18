@@ -75,7 +75,7 @@ public class FlightSyncService
                     ? departureLeg?.Terminal ?? "1" 
                     : arrivalLeg?.Terminal ?? "1";
 
-                var status = extFlight.Status ?? "Scheduled";
+                var status = FlightStatusCatalog.Normalize(extFlight.Status);
 
                 // Check if flight exists in database
                 var existingFlight = await context.Flights

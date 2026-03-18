@@ -63,16 +63,8 @@
             <tbody>
                 @foreach (var flight in Model.Flights)
                 {
-                    var statusClass = flight.Status?.ToLower().Replace(" ", "") switch
-                    {
-                        "ontime" => "status-ontime",
-                        "delayed" => "status-delayed",
-                        "cancelled" => "status-cancelled",
-                        "boarding" => "status-boarding",
-                        "departed" => "status-departed",
-                        "arrived" => "status-arrived",
-                        _ => "status-scheduled"
-                    };
+                    var statusClass = FlightStatusCatalog.GetCssClass(flight.Status);
+                    var statusLabel = FlightStatusCatalog.GetLabel(flight.Status);
                     
                     <tr>
                         <td class="flight-number">@flight.FlightNumber</td>
@@ -83,7 +75,7 @@
                         <td>@(flight.Gate ?? "TBD")</td>
                         <td>Terminal @flight.Terminal</td>
                         <td>
-                            <span class="status-badge @statusClass">@flight.Status</span>
+                            <span class="status-badge @statusClass">@statusLabel</span>
                         </td>
                         <td class="actions-cell">
                             <a href="@Url.Action("Details", "Flight", new { id = flight.Id })" class="action-link view">View</a>
