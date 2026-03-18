@@ -275,7 +275,7 @@ public class HomeController : Controller
                 model,
                 messages,
                 temperature = 0,
-                max_tokens = 300
+                max_tokens = 250
             };
 
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds()));
@@ -413,7 +413,7 @@ public class HomeController : Controller
                 model,
                 messages,
                 temperature = 0,
-                max_tokens = 220
+                max_tokens = 250
             };
 
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds()));
