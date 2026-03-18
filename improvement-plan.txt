@@ -1,11 +1,6 @@
 AFMS Improvement Plan
 Date: 2026-03-18
 
-Priority 2 — Remove duplicated flight modal code
-- Keep one shared modal partial and one shared JS implementation.
-- Remove the duplicate modal markup and inline modal functions from Views/Home/Index.cshtml.
-- Reuse Views/Shared/_FlightDetailsModal.cshtml and wwwroot/js/flight-details-modal.js everywhere.
-
 Priority 3 — Move inline styles and inline handlers to CSS/JS
 - Replace inline style attributes in Flight/Index.cshtml, Home/Index.cshtml, Home/AdvancedSearch.cshtml, _AdvancedSearchResults.cshtml, and _Layout.cshtml.
 - Replace onclick handlers with event listeners in shared JS.
