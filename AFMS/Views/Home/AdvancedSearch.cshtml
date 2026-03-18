@@ -222,22 +222,13 @@
                 </label>
                 <div class="status-buttons" id="statusButtons">
                     @{
-                        var statusOptions = new[]
+                        foreach (var status in FlightStatusCatalog.Options)
                         {
-                            ("Expected", "Scheduled"),
-                            ("Boarding", "Boarding"),
-                            ("Departed", "Departed"),
-                            ("Arrived",  "Arrived"),
-                            ("Delayed",  "Delayed"),
-                            ("Canceled", "Cancelled"),
-                        };
-                        foreach (var (val, lbl) in statusOptions)
-                        {
-                            var isActive = Model.Statuses.Contains(val, StringComparer.OrdinalIgnoreCase);
+                            var isActive = Model.Statuses.Contains(status.Value, StringComparer.OrdinalIgnoreCase);
                             <button type="button"
                                     class="status-btn @(isActive ? "active" : "")"
-                                    data-status="@val"
-                                    aria-pressed="@(isActive ? "true" : "false")">@lbl</button>
+                                    data-status="@status.Value"
+                                    aria-pressed="@(isActive ? "true" : "false")">@status.Label</button>
                         }
                     }
                 </div>

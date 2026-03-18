@@ -41,13 +41,10 @@
                 <div class="form-group">
                     <label asp-for="Status" class="form-label">Status</label>
                     <select asp-for="Status" class="form-select">
-                        <option value="Scheduled">Scheduled</option>
-                        <option value="On Time">On Time</option>
-                        <option value="Delayed">Delayed</option>
-                        <option value="Boarding">Boarding</option>
-                        <option value="Departed">Departed</option>
-                        <option value="Arrived">Arrived</option>
-                        <option value="Cancelled">Cancelled</option>
+                        @foreach (var status in FlightStatusCatalog.Options)
+                        {
+                            <option value="@status.Value" selected="@(Model.Status == status.Value ? "selected" : null)">@status.Label</option>
+                        }
                     </select>
                     <span asp-validation-for="Status" class="validation-error"></span>
                 </div>

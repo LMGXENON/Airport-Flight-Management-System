@@ -230,16 +230,16 @@ public class FlightSearchService
         }
 
         // Multi-select status filter
-        var activeStatuses = model.Statuses.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        var activeStatuses = FlightStatusCatalog.NormalizeStatuses(model.Statuses);
 
         if (activeStatuses.Any())
         {
             query = query.Where(f =>
             {
-                var isDep          = f.Direction == "Departure";
+                var isDep = f.Direction == "Departure";
                 var movementStatus = isDep ? f.Departure?.Status : f.Arrival?.Status;
-                var flightStatus   = (movementStatus ?? f.Status ?? "").ToLower();
-                return activeStatuses.Any(s => flightStatus.Equals(s, StringComparison.OrdinalIgnoreCase));
+                var flightStatus = FlightStatusCatalog.Normalize(movementStatus ?? f.Status);
+                return activeStatuses.Contains(flightStatus, StringComparer.OrdinalIgnoreCase);
             });
         }
 

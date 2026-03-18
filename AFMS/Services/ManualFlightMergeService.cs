@@ -16,6 +16,7 @@ public class ManualFlightMergeService
 
         foreach (var manualFlight in manualFlights.Where(f => f.IsManualEntry))
         {
+            var normalizedStatus = FlightStatusCatalog.Normalize(manualFlight.Status);
             var existing = mergedFlights.FirstOrDefault(f =>
                 string.Equals(f.Number?.Trim(), manualFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
 
@@ -28,12 +29,12 @@ public class ManualFlightMergeService
                         lhrLeg.Gate = manualFlight.Gate;
                     if (!string.IsNullOrWhiteSpace(manualFlight.Terminal))
                         lhrLeg.Terminal = manualFlight.Terminal;
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Status))
-                        lhrLeg.Status = manualFlight.Status;
+                    if (!string.IsNullOrWhiteSpace(normalizedStatus))
+                        lhrLeg.Status = normalizedStatus;
                 }
 
-                if (!string.IsNullOrWhiteSpace(manualFlight.Status))
-                    existing.Status = manualFlight.Status;
+                if (!string.IsNullOrWhiteSpace(normalizedStatus))
+                    existing.Status = normalizedStatus;
 
                 continue;
             }
@@ -47,7 +48,7 @@ public class ManualFlightMergeService
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight) => new()
     {
         Number = flight.FlightNumber,
-        Status = flight.Status,
+        Status = FlightStatusCatalog.Normalize(flight.Status),
         Direction = "Departure",
         Airline = new Airline { Name = flight.Airline },
         Departure = new FlightMovement

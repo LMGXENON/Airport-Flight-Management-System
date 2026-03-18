@@ -223,16 +223,17 @@
                     if (hasActuallyArrived)
                     {
                         if (DateTime.TryParse(runwayArrUtc, out var actArrTime))
-                            detailedStatus = $"Landed {actArrTime.ToLocalTime():HH:mm}";
-                        else detailedStatus = "Landed";
-                        statusLabel = "Landed"; statusClass = "status-landed";
+                            detailedStatus = $"Arrived {actArrTime.ToLocalTime():HH:mm}";
+                        else detailedStatus = "Arrived";
+                        statusLabel = "Arrived"; statusClass = "status-arrived";
                     }
                     else if (hasActuallyDeparted && isDep)
                     {
                         if (DateTime.TryParse(runwayDepUtc, out var actDepTime))
                             detailedStatus = $"Departed {actDepTime.ToLocalTime():HH:mm}";
                         else detailedStatus = "Departed";
-                        statusLabel = "Departed"; statusClass = "status-departed";
+                        statusLabel = AFMS.Models.FlightStatusCatalog.GetLabel("Departed");
+                        statusClass = AFMS.Models.FlightStatusCatalog.GetCssClass("Departed");
                     }
                     else if (hasActuallyDeparted && !isDep)
                     {

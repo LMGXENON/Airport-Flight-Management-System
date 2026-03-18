@@ -25,10 +25,6 @@ public class HomeController : Controller
     [
         "flightNumber", "airline", "destination", "departureTime"
     ];
-    private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Expected", "Boarding", "Departed", "Arrived", "Delayed", "Canceled"
-    };
     private static readonly HashSet<string> SearchClearableFields = new(StringComparer.OrdinalIgnoreCase)
     {
         "flight", "airline", "destination", "departureDate", "arrivalDate",
@@ -175,7 +171,7 @@ public class HomeController : Controller
         var model = BuildSearchModel(
             search, flight, airline, destination,
             departureDate, arrivalDate, terminal, direction,
-            statuses, timeRangeStart, timeRangeEnd,
+            FlightStatusCatalog.NormalizeStatuses(statuses), timeRangeStart, timeRangeEnd,
             sortBy, sortOrder, page);
 
         if (!model.HasSearched)
@@ -665,7 +661,7 @@ public class HomeController : Controller
         var promptTemplate = GetDeepSeekPromptTemplate();
         return promptTemplate
             .Replace("{today}", DateTime.UtcNow.ToString("yyyy-MM-dd"), StringComparison.Ordinal)
-            .Replace("{allowedStatuses}", string.Join(",", AllowedStatuses.Select(status => $"\"{status}\"")), StringComparison.Ordinal)
+            .Replace("{allowedStatuses}", string.Join(",", FlightStatusCatalog.Values.Select(status => $"\"{status}\"")), StringComparison.Ordinal)
             .Replace("{searchOnlyMessage}", SearchOnlyMessage, StringComparison.Ordinal);
     }
 
@@ -873,11 +869,7 @@ public class HomeController : Controller
     }
 
     private static List<string> NormalizeSearchStatuses(IEnumerable<string>? statuses) =>
-        (statuses ?? Array.Empty<string>())
-            .Where(s => !string.IsNullOrWhiteSpace(s) && AllowedStatuses.Contains(s))
-            .Select(s => AllowedStatuses.First(x => x.Equals(s, StringComparison.OrdinalIgnoreCase)))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        FlightStatusCatalog.NormalizeStatuses(statuses);
 
     private static List<string> NormalizeSearchClearFields(IEnumerable<string>? clearFields)
     {
