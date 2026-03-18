@@ -349,27 +349,38 @@
                 .filter(Boolean);
 
             const directionInput = document.getElementById('directionInput');
-            const context = {
-                flight: readTrimmed('flight'),
-                airline: readTrimmed('airline'),
-                destination: readTrimmed('destination'),
-                departureDate: readTrimmed('departureDate'),
-                arrivalDate: readTrimmed('arrivalDate'),
-                terminal: readTrimmed('terminal'),
-                direction: directionInput ? (directionInput.value || '').trim() : '',
-                statuses,
-                timeRangeStart: readTrimmed('timeRangeStart'),
-                timeRangeEnd: readTrimmed('timeRangeEnd')
-            };
+            const context = {};
 
-            const hasAny = Boolean(
-                context.flight || context.airline || context.destination ||
-                context.departureDate || context.arrivalDate || context.terminal ||
-                context.direction || context.timeRangeStart || context.timeRangeEnd ||
-                context.statuses.length
-            );
+            const flight = readTrimmed('flight');
+            if (flight) context.flight = flight;
 
-            return hasAny ? context : null;
+            const airline = readTrimmed('airline');
+            if (airline) context.airline = airline;
+
+            const destination = readTrimmed('destination');
+            if (destination) context.destination = destination;
+
+            const departureDate = readTrimmed('departureDate');
+            if (departureDate) context.departureDate = departureDate;
+
+            const arrivalDate = readTrimmed('arrivalDate');
+            if (arrivalDate) context.arrivalDate = arrivalDate;
+
+            const terminal = readTrimmed('terminal');
+            if (terminal) context.terminal = terminal;
+
+            const direction = directionInput ? (directionInput.value || '').trim() : '';
+            if (direction) context.direction = direction;
+
+            if (statuses.length) context.statuses = statuses;
+
+            const timeRangeStart = readTrimmed('timeRangeStart');
+            if (timeRangeStart) context.timeRangeStart = timeRangeStart;
+
+            const timeRangeEnd = readTrimmed('timeRangeEnd');
+            if (timeRangeEnd) context.timeRangeEnd = timeRangeEnd;
+
+            return Object.keys(context).length ? context : null;
         }
 
         function getAddFlightContext() {
@@ -380,25 +391,30 @@
                 return el ? (el.value || '').trim() : '';
             };
 
-            const context = {
-                flightNumber: readValue('FlightNumber'),
-                airline: readValue('Airline'),
-                destination: readValue('Destination'),
-                departureTime: readValue('DepartureTime'),
-                arrivalTime: readValue('ArrivalTime'),
-                gate: readValue('Gate'),
-                terminal: readValue('Terminal')
-            };
+            const context = {};
+            const filledFields = [];
 
-            const filledFields = Object.entries(context)
-                .filter(([, value]) => Boolean(value))
-                .map(([field]) => field);
+            const fields = [
+                ['flightNumber', 'FlightNumber'],
+                ['airline', 'Airline'],
+                ['destination', 'Destination'],
+                ['departureTime', 'DepartureTime'],
+                ['arrivalTime', 'ArrivalTime'],
+                ['gate', 'Gate'],
+                ['terminal', 'Terminal']
+            ];
 
-            return {
-                ...context,
-                filledFields,
-                emptyFields: Object.keys(context).filter(field => !filledFields.includes(field))
-            };
+            for (const [key, id] of fields) {
+                const value = readValue(id);
+                if (!value) continue;
+                context[key] = value;
+                filledFields.push(key);
+            }
+
+            if (!filledFields.length) return null;
+
+            context.filledFields = filledFields;
+            return context;
         }
 
         async function callAssistant(endpoint, payload) {
