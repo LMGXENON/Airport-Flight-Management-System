@@ -238,9 +238,7 @@ public class HomeController : Controller
                 messages.Add(new
                 {
                     role = "user",
-                    content =
-                        "Current Advanced Search filters already selected in the UI. Keep existing filters unless the new message updates or clears them.\n"
-                        + $"Context JSON: {contextJson}"
+                    content = $"Search context: {contextJson}"
                 });
             }
 
@@ -365,18 +363,20 @@ public class HomeController : Controller
                 new { role = "system", content = systemPrompt }
             };
 
-            if (request.AddFlightContext is not null)
+            if (HasAnyAddFlightContextFields(normalizedContext))
             {
                 var contextJson = JsonSerializer.Serialize(
                     normalizedContext,
-                    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+                    new JsonSerializerOptions
+                    {
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
 
                 messages.Add(new
                 {
                     role = "user",
-                    content =
-                        "Current Add Flight form values already captured from previous messages. Use this as context and keep these values unless the new message updates them.\n"
-                        + $"Context JSON: {contextJson}"
+                    content = $"Add-flight context: {contextJson}"
                 });
             }
 
@@ -387,7 +387,7 @@ public class HomeController : Controller
                 model,
                 messages,
                 temperature = 0,
-                max_tokens = 360
+                max_tokens = 220
             };
 
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(GetDeepSeekTimeoutSeconds()));
@@ -669,7 +669,7 @@ public class HomeController : Controller
                 return System.IO.File.ReadAllText(promptPath);
 
             _logger.LogWarning("DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
-            return "You fill Advanced Search filters for a London Heathrow flight search page. You are NOT a general chatbot. If the message is not clearly about searching or filtering flights, return JSON with isSearchRequest false and message {searchOnlyMessage}. If the message is about searching flights, return only valid JSON using known search fields plus clearFields for explicit removals and statuses [{allowedStatuses}]. If the user says today, use {today}.";
+            return "You fill Advanced Search filters for Heathrow. Not a general chatbot. If the message is not about search/filtering flights, return JSON only: {\"isSearchRequest\":false,\"message\":\"{searchOnlyMessage}\"}. Otherwise return JSON only with: isSearchRequest, message, flight, airline, destination, departureDate, arrivalDate, terminal, direction, timeRangeStart, timeRangeEnd, statuses, clearFields. Keep existing values unless changed or cleared. Use clearFields for resets. today => {today}.";
         }) ?? string.Empty;
     }
 
@@ -688,7 +688,7 @@ public class HomeController : Controller
                 return System.IO.File.ReadAllText(promptPath);
 
             _logger.LogWarning("Add-flight DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
-            return "You fill an Add Flight form for London Heathrow operations. You are NOT a general chatbot. Use the current add-flight form context, including filledFields and emptyFields, to decide whether the user wants to fill blank fields, change existing fields, or generate plausible missing values. If request is not about creating or editing a flight entry, return JSON with isAddFlightRequest false and message {addFlightOnlyMessage}. For add-flight requests, return only JSON with flightNumber, airline, destination, departureTime, arrivalTime, gate, terminal, and missingRequiredFields. Use datetime-local format yyyy-MM-ddTHH:mm. If today/tomorrow are used, map to {today}/{tomorrow}. If the user asks for random gate, terminal, or date values, generate them.";
+            return "You fill the Add Flight form for Heathrow. Not a general chatbot. Context JSON contains only fields already filled; any field not present is blank. If the message is not about adding/editing a flight entry, return JSON only: {\"isAddFlightRequest\":false,\"message\":\"{addFlightOnlyMessage}\"}. Otherwise return JSON only with: isAddFlightRequest, message, flightNumber, airline, destination, departureTime, arrivalTime, gate, terminal, arrivalEstimated, gateEstimated, terminalEstimated, missingRequiredFields. Keep existing values unless changed. Generate plausible missing values when asked. today => {today}, tomorrow => {tomorrow}.";
         }) ?? string.Empty;
     }
 
@@ -921,8 +921,7 @@ public class HomeController : Controller
             ArrivalTime = NormalizeDateTimeForForm(context.ArrivalTime),
             Gate = NormalizeGate(context.Gate),
             Terminal = NormalizeTerminalForAddForm(context.Terminal),
-            FilledFields = context.FilledFields?.Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? new List<string>(),
-            EmptyFields = context.EmptyFields?.Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? new List<string>()
+            FilledFields = context.FilledFields?.Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? new List<string>()
         };
 
         return normalized;
@@ -1532,7 +1531,6 @@ public class AiAddFlightContext
     public string? Gate { get; set; }
     public string? Terminal { get; set; }
     public List<string> FilledFields { get; set; } = new();
-    public List<string> EmptyFields { get; set; } = new();
 }
 
 public class DeepSeekResponse
