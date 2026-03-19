@@ -116,15 +116,37 @@ public class HomeController : Controller
 
         // Fetch all DB flights once — used for MANAGE links and dashboard merge
         var allDbFlights = await _context.Flights.ToListAsync();
+        var manualDbFlights = allDbFlights.Where(f => f.IsManualEntry).ToList();
 
         // Build flight number → DB id lookup for the MANAGE column
         ViewBag.DbFlightIds = allDbFlights
-            .GroupBy(f => f.FlightNumber)
-            .ToDictionary(g => g.Key, g => g.First().Id);
+            .Where(f => !string.IsNullOrWhiteSpace(f.FlightNumber))
+            .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
+            .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
 
-        sortedFlights = _manualFlightMergeService
-            .MergeManualFlights(sortedFlights, allDbFlights)
-            .ToList();
+        // Override API data with values from manually-edited DB flights
+        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
+        {
+            var existing = sortedFlights.FirstOrDefault(f =>
+                string.Equals(f.Number?.Trim(), dbFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
+                if (lhrLeg != null)
+                {
+                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
+                    if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
+                }
+                existing.Status = dbFlight.Status;
+            }
+        }
+
+        // Add manually-entered flights that the live API doesn't know about
+        var apiNumbers = sortedFlights
+            .Select(f => f.Number?.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
+            sortedFlights.Add(CreateSyntheticFlight(dbFlight));
 
         // Re-sort so manual additions land in the right chronological position
         sortedFlights = sortedFlights

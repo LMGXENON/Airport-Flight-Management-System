@@ -61,12 +61,14 @@ public class FlightSyncService
                 
                 if (departureLeg?.ScheduledTime?.Utc != null)
                 {
-                    DateTime.TryParse(departureLeg.ScheduledTime.Utc, out departureTime);
+                    if (DateTime.TryParse(departureLeg.ScheduledTime.Utc, out var parsedDepartureTime))
+                        departureTime = parsedDepartureTime;
                 }
                 
                 if (arrivalLeg?.ScheduledTime?.Utc != null)
                 {
-                    DateTime.TryParse(arrivalLeg.ScheduledTime.Utc, out arrivalTime);
+                    if (DateTime.TryParse(arrivalLeg.ScheduledTime.Utc, out var parsedArrivalTime))
+                        arrivalTime = parsedArrivalTime;
                 }
 
                 var destination = extFlight.Direction == "Departure" 
@@ -151,19 +153,19 @@ public class FlightSyncService
             // Notify connected clients about updates
             if (updatedFlights.Any())
             {
-                _logger.LogInformation($"Sending {updatedFlights.Count} flight updates to clients");
+                _logger.LogInformation("Sending {UpdatedFlightCount} flight updates to clients", updatedFlights.Count);
                 await _hubContext.Clients.Group("FlightUpdates")
                     .SendAsync("FlightUpdated", updatedFlights);
             }
 
             if (newFlights.Any())
             {
-                _logger.LogInformation($"Sending {newFlights.Count} new flights to clients");
+                _logger.LogInformation("Sending {NewFlightCount} new flights to clients", newFlights.Count);
                 await _hubContext.Clients.Group("FlightUpdates")
                     .SendAsync("FlightAdded", newFlights);
             }
 
-            _logger.LogInformation($"Flight sync complete: {updatedFlights.Count} updated, {newFlights.Count} new");
+            _logger.LogInformation("Flight sync complete: {UpdatedFlightCount} updated, {NewFlightCount} new", updatedFlights.Count, newFlights.Count);
         }
         catch (Exception ex)
         {

@@ -88,6 +88,80 @@ public class FlightSearchService
             .ToList();
     }
 
+<<<<<<< HEAD
+=======
+    private async Task<List<AeroDataBoxFlight>> MergeManualFlightsAsync(List<AeroDataBoxFlight> apiFlights)
+    {
+        var mergedFlights = apiFlights.ToList();
+        var manualFlights = await _context.Flights
+            .AsNoTracking()
+            .Where(f => f.IsManualEntry)
+            .ToListAsync();
+
+        foreach (var manualFlight in manualFlights)
+        {
+            var manualFlightNumber = Normalize(manualFlight.FlightNumber);
+            if (string.IsNullOrWhiteSpace(manualFlightNumber))
+                continue;
+
+            var existing = mergedFlights.FirstOrDefault(f =>
+                string.Equals(Normalize(f.Number), manualFlightNumber, StringComparison.OrdinalIgnoreCase));
+
+            if (existing != null)
+            {
+                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
+                if (lhrLeg != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(manualFlight.Gate))
+                        lhrLeg.Gate = manualFlight.Gate;
+                    if (!string.IsNullOrWhiteSpace(manualFlight.Terminal))
+                        lhrLeg.Terminal = manualFlight.Terminal;
+                    if (!string.IsNullOrWhiteSpace(manualFlight.Status))
+                        lhrLeg.Status = manualFlight.Status;
+                }
+
+                if (!string.IsNullOrWhiteSpace(manualFlight.Status))
+                    existing.Status = manualFlight.Status;
+
+                continue;
+            }
+
+            mergedFlights.Add(CreateSyntheticFlight(manualFlight));
+        }
+
+        return mergedFlights;
+    }
+
+    private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight) => new()
+    {
+        Number = flight.FlightNumber,
+        Status = flight.Status,
+        Direction = "Departure",
+        Airline = new Airline { Name = flight.Airline },
+        Departure = new FlightMovement
+        {
+            Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
+            Gate = flight.Gate,
+            Terminal = flight.Terminal,
+            Status = flight.Status,
+            ScheduledTime = new ScheduledTime
+            {
+                Local = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                Utc = flight.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+            }
+        },
+        Arrival = new FlightMovement
+        {
+            Airport = new Airport { Iata = flight.Destination, Name = flight.Destination },
+            ScheduledTime = new ScheduledTime
+            {
+                Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                Utc = flight.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+            }
+        }
+    };
+
+>>>>>>> 811ed15 (Refactor and fix bugs)
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
