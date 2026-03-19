@@ -135,7 +135,7 @@ public class HomeController : Controller
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
             sortedFlights.Add(CreateSyntheticFlight(dbFlight));
-=======
+
         sortedFlights = _manualFlightMergeService
             .MergeManualFlights(sortedFlights, allDbFlights)
             .ToList();
@@ -149,6 +149,34 @@ public class HomeController : Controller
             ViewBag.ApiError = _cache.Get<string>(AFMS.Services.AeroDataBoxService.ApiErrorCacheKey);
 
         return View(sortedFlights);
+    }
+
+    private static AeroDataBoxFlight CreateSyntheticFlight(Flight dbFlight)
+    {
+        // Convert a manually-entered Flight from the database into an AeroDataBoxFlight
+        // so it can be displayed alongside API flights with a consistent structure
+        var scheduledTime = new ScheduledTime
+        {
+            Local = dbFlight.DepartureTime.ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture)
+        };
+
+        var departure = new FlightMovement
+        {
+            Airport = new Airport { Iata = "LHR" },
+            ScheduledTime = scheduledTime,
+            Terminal = dbFlight.Terminal,
+            Gate = dbFlight.Gate,
+            Status = dbFlight.Status
+        };
+
+        return new AeroDataBoxFlight
+        {
+            Number = dbFlight.FlightNumber,
+            Status = dbFlight.Status,
+            Departure = departure,
+            Direction = "Departure",
+            Airline = new Airline { Name = dbFlight.Airline }
+        };
     }
 
     public async Task<IActionResult> AdvancedSearch(
