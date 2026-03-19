@@ -112,7 +112,6 @@ public class HomeController : Controller
             .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
 
-<<<<<<< HEAD
         // Override API data with values from manually-edited DB flights
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
         {
@@ -140,7 +139,7 @@ public class HomeController : Controller
         sortedFlights = _manualFlightMergeService
             .MergeManualFlights(sortedFlights, allDbFlights)
             .ToList();
->>>>>>> 554eb19 (refactor flight merge logic, add regression tests, and sanitize env config)
+
 
         // Re-sort so manual additions land in the right chronological position
         sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
