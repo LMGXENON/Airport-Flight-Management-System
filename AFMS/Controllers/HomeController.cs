@@ -112,9 +112,34 @@ public class HomeController : Controller
             .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
 
+        // Override API data with values from manually-edited DB flights
+        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
+        {
+            var existing = sortedFlights.FirstOrDefault(f =>
+                string.Equals(f.Number?.Trim(), dbFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
+                if (lhrLeg != null)
+                {
+                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
+                    if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
+                }
+                existing.Status = dbFlight.Status;
+            }
+        }
+
+        // Add manually-entered flights that the live API doesn't know about
+        var apiNumbers = sortedFlights
+            .Select(f => f.Number?.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
+            sortedFlights.Add(CreateSyntheticFlight(dbFlight));
+=======
         sortedFlights = _manualFlightMergeService
             .MergeManualFlights(sortedFlights, allDbFlights)
             .ToList();
+
 
         // Re-sort so manual additions land in the right chronological position
         sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
