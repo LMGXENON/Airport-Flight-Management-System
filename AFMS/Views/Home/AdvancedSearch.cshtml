@@ -215,7 +215,7 @@
 
         <!-- Row 4: Status Buttons (multi-select) -->
         <div class="form-row">
-            <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="form-group form-group--full-width">
                 <label class="form-label">
                     Flight Status
                     <span class="form-label-hint">(select multiple)</span>
@@ -276,7 +276,7 @@
 </div>
 
 <!-- Loading Spinner -->
-<div class="search-loading" id="searchLoading" style="display:none;">
+<div class="search-loading" id="searchLoading" hidden>
     <div class="spinner"></div>
     <span>Searching flights…</span>
 </div>
@@ -490,7 +490,7 @@
         async function fetchResults(params) {
             const container = document.getElementById('results-container');
             clearValidationState();
-            document.getElementById('searchLoading').style.display = 'flex';
+            document.getElementById('searchLoading').hidden = false;
             container.style.opacity = '0.35';
 
             try {
@@ -511,7 +511,7 @@
                 console.error('Search failed:', err);
                 container.style.opacity = '1';
             } finally {
-                document.getElementById('searchLoading').style.display = 'none';
+                document.getElementById('searchLoading').hidden = true;
             }
         }
 

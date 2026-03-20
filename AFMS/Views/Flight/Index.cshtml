@@ -6,38 +6,38 @@
 }
 
 <!-- Page Header -->
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+<div class="page-header page-header--split">
     <div>
         <h1 class="page-title">Managed Flights</h1>
         <p class="page-subtitle">Search, edit or remove flights. Changes appear live on the dashboard.</p>
     </div>
-    <a href="@Url.Action("Add", "Flight")" class="btn-primary" style="padding: 12px 24px; background: var(--accent-blue); color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
+    <a href="@Url.Action("Add", "Flight")" class="btn-primary flight-add-btn">
         + Add New Flight
     </a>
 </div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div style="background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px;">
+    <div class="flight-success-banner">
         @TempData["SuccessMessage"]
     </div>
 }
 
 <!-- Flight Number Search -->
-<form method="get" action="@Url.Action("Index", "Flight")" style="display:flex; gap:10px; align-items:center; margin-bottom:24px;">
+<form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form">
     <input type="text"
            name="search"
            value="@Model.Search"
            placeholder="Search by flight number (e.g. BA123)..."
-           style="flex:1; max-width:360px; padding:10px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:14px;" />
+           class="flight-search-input" />
     <button type="submit"
-            style="padding:10px 20px; background:var(--accent-blue); color:white; border:none; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer;">
+            class="flight-search-submit">
         Search
     </button>
     @if (!string.IsNullOrEmpty(Model.Search))
     {
         <a href="@Url.Action("Index", "Flight")"
-           style="padding:10px 16px; color:var(--text-secondary); text-decoration:none; font-size:14px;">
+           class="flight-search-clear">
             Clear
         </a>
     }
@@ -92,12 +92,12 @@
             <div class="empty-state">
                 @if (!string.IsNullOrEmpty(Model.Search))
                 {
-                    <p style="font-size: 18px; margin-bottom: 8px;">No flights found for "@Model.Search"</p>
-                    <p>Try a different flight number or <a href="@Url.Action("Index", "Flight")" style="color:var(--accent-blue)">clear the search</a>.</p>
+                    <p class="empty-state-title">No flights found for "@Model.Search"</p>
+                    <p>Try a different flight number or <a href="@Url.Action("Index", "Flight")" class="empty-state-link">clear the search</a>.</p>
                 }
                 else
                 {
-                    <p style="font-size: 18px; margin-bottom: 8px;">No flights found</p>
+                    <p class="empty-state-title">No flights found</p>
                     <p>Click "Add New Flight" to create your first flight.</p>
                 }
             </div>

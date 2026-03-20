@@ -244,7 +244,7 @@
                         <td>@(flight.Airline?.Name ?? "-")</td>
                         <td class="aircraft-col">@aircraftInfo</td>
                         <td class="status-col"><span class="status-badge @statusClass">@detailedStatus</span></td>
-                        <td class="manage-col" onclick="event.stopPropagation()">
+                        <td class="manage-col">
                             @{
                                 var dbIds = ViewBag.DbFlightIds as Dictionary<string, int>;
                                 var fNum  = flight.Number ?? "";
@@ -266,15 +266,15 @@
             @if (ViewBag.ApiError != null)
             {
                 <div class="empty-state">
-                    <p style="font-size: 16px; font-weight: 600; color: var(--danger); margin-bottom: 8px;">Live data unavailable</p>
-                    <p style="color: var(--text-secondary);">@ViewBag.ApiError</p>
+                    <p class="empty-state-title empty-state-title--danger">Live data unavailable</p>
+                    <p class="empty-state-muted">@ViewBag.ApiError</p>
                 </div>
             }
             else
             {
                 <div class="empty-state">
-                    <p style="font-size: 16px; margin-bottom: 8px;">No live flight data available</p>
-                    <p style="color: var(--text-secondary);">The API did not return flights for the current time window.</p>
+                    <p class="empty-state-title">No live flight data available</p>
+                    <p class="empty-state-muted">The API did not return flights for the current time window.</p>
                 </div>
             }
         }
