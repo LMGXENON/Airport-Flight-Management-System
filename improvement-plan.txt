@@ -1,11 +1,6 @@
 AFMS Improvement Plan
 Date: 2026-03-18
 
-Priority 3 — Move inline styles and inline handlers to CSS/JS
-- Replace inline style attributes in Flight/Index.cshtml, Home/Index.cshtml, Home/AdvancedSearch.cshtml, _AdvancedSearchResults.cshtml, and _Layout.cshtml.
-- Replace onclick handlers with event listeners in shared JS.
-- Keep the visual changes minor; this is a maintainability cleanup.
-
 Priority 4 — Remove dead or unnecessary code
 - Delete unused helpers in AdvancedSearchViewModel if they are still not referenced: HasMoreResults, NextSortOrder(), SortIndicator().
 - Remove unused using System.Diagnostics; from Controllers/HomeController.cs.

@@ -42,7 +42,6 @@ public class AdvancedSearchViewModel
     public string? UsedAirportCode { get; set; }
     public List<AeroDataBoxFlight> Results { get; set; } = new();
     public int TotalCount { get; set; }
-    public bool HasMoreResults => TotalCount > Page * PageSize;
     public PaginationState Pagination => new()
     {
         Page = Page,
@@ -76,18 +75,5 @@ public class AdvancedSearchViewModel
         if (string.IsNullOrWhiteSpace(value)) return null;
         return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt)
             ? dt : null;
-    }
-
-    /// <summary>Returns the next sort order when toggling the given column.</summary>
-    public string NextSortOrder(string column) =>
-        SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true && SortOrder == "asc"
-            ? "desc"
-            : "asc";
-
-    /// <summary>Returns a CSS class indicating current sort direction for a column header.</summary>
-    public string SortIndicator(string column)
-    {
-        if (!SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true) return "";
-        return SortOrder == "desc" ? "sort-desc" : "sort-asc";
     }
 }
