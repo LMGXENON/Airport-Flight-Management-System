@@ -3,6 +3,7 @@
 @{
     var activeFilters = new List<(string Label, string Value)>();
     var pagination = Model.Pagination;
+    var visiblePages = pagination.VisiblePages().ToList();
 
     if (!string.IsNullOrWhiteSpace(Model.Flight))
         activeFilters.Add(("Flight", Model.Flight));
@@ -35,7 +36,7 @@
     if (Model.Statuses.Any())
         activeFilters.Add(("Status", string.Join(", ", Model.Statuses)));
 
-    string BuildPageUrl(int pageNumber)
+    List<KeyValuePair<string, string?>> BuildBaseQueryItems()
     {
         var queryItems = new List<KeyValuePair<string, string?>>();
 
@@ -65,6 +66,12 @@
             queryItems.Add(new KeyValuePair<string, string?>("statuses", status));
         }
 
+        return queryItems;
+    }
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var queryItems = BuildBaseQueryItems();
         queryItems.Add(new KeyValuePair<string, string?>("page", pageNumber.ToString()));
 
         return $"{Url.Action("AdvancedSearch", "Home")}{Microsoft.AspNetCore.Http.QueryString.Create(queryItems)}";
@@ -294,16 +301,16 @@
                 <button type="button" class="page-btn" disabled>‹ Prev</button>
             }
 
-            @if (pagination.VisiblePages().First() > 1)
+            @if (visiblePages.First() > 1)
             {
                 <a class="page-btn pagination-link" href="@BuildPageUrl(1)" data-page="1">1</a>
-                @if (pagination.VisiblePages().First() > 2)
+                @if (visiblePages.First() > 2)
                 {
                     <span class="page-ellipsis">…</span>
                 }
             }
 
-            @foreach (var pageNumber in pagination.VisiblePages())
+            @foreach (var pageNumber in visiblePages)
             {
                 if (pageNumber == pagination.Page)
                 {
@@ -317,9 +324,9 @@
                 }
             }
 
-            @if (pagination.VisiblePages().Last() < pagination.TotalPages)
+            @if (visiblePages.Last() < pagination.TotalPages)
             {
-                @if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
+                @if (visiblePages.Last() < pagination.TotalPages - 1)
                 {
                     <span class="page-ellipsis">…</span>
                 }

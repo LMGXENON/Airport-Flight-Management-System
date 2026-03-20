@@ -1,11 +1,6 @@
 AFMS Improvement Plan
 Date: 2026-03-18
 
-Priority 6 — Clean up small UI data issues
-- Remove duplicate airport datalist options and normalize naming in Views/Home/AdvancedSearch.cshtml.
-- Standardize status labels and button text across the add/edit forms and tables.
-- Keep the UI tweaks small and consistent.
-
 Priority 7 — Trim repeated pagination/render logic
 - Materialize pagination pages once per render where the same sequence is reused.
 - Consolidate URL building for advanced search results if possible.
