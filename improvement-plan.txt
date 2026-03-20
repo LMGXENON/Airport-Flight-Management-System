@@ -1,11 +1,6 @@
 AFMS Improvement Plan
 Date: 2026-03-18
 
-Priority 7 — Trim repeated pagination/render logic
-- Materialize pagination pages once per render where the same sequence is reused.
-- Consolidate URL building for advanced search results if possible.
-- This is a small cleanup, not a functional change.
-
 Priority 8 — Revisit startup schema patch
 - Replace the raw ALTER TABLE startup patch in Program.cs with a migration-based approach or a clearer startup migration step.
 - Keep this lower priority because the app already builds and runs.
