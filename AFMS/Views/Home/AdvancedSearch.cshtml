@@ -129,7 +129,6 @@
                     <option value="MUC">Munich (MUC)</option>
                     <option value="NBO">Nairobi (NBO)</option>
                     <option value="NRT">Tokyo Narita (NRT)</option>
-                    <option value="ORD">Chicago O'Hare (ORD)</option>
                     <option value="PEK">Beijing Capital (PEK)</option>
                     <option value="PHL">Philadelphia (PHL)</option>
                     <option value="PKX">Beijing Daxing (PKX)</option>
@@ -138,7 +137,6 @@
                     <option value="SIN">Singapore Changi (SIN)</option>
                     <option value="SYD">Sydney (SYD)</option>
                     <option value="TLV">Tel Aviv Ben Gurion (TLV)</option>
-                    <option value="TOR">Toronto Pearson (YYZ)</option>
                     <option value="VIE">Vienna (VIE)</option>
                     <option value="YUL">Montreal Trudeau (YUL)</option>
                     <option value="YYZ">Toronto Pearson (YYZ)</option>
@@ -215,7 +213,7 @@
 
         <!-- Row 4: Status Buttons (multi-select) -->
         <div class="form-row">
-            <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="form-group form-group--full-width">
                 <label class="form-label">
                     Flight Status
                     <span class="form-label-hint">(select multiple)</span>
@@ -276,7 +274,7 @@
 </div>
 
 <!-- Loading Spinner -->
-<div class="search-loading" id="searchLoading" style="display:none;">
+<div class="search-loading" id="searchLoading" hidden>
     <div class="spinner"></div>
     <span>Searching flights…</span>
 </div>
@@ -490,7 +488,7 @@
         async function fetchResults(params) {
             const container = document.getElementById('results-container');
             clearValidationState();
-            document.getElementById('searchLoading').style.display = 'flex';
+            document.getElementById('searchLoading').hidden = false;
             container.style.opacity = '0.35';
 
             try {
@@ -511,7 +509,7 @@
                 console.error('Search failed:', err);
                 container.style.opacity = '1';
             } finally {
-                document.getElementById('searchLoading').style.display = 'none';
+                document.getElementById('searchLoading').hidden = true;
             }
         }
 

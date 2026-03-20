@@ -3,6 +3,7 @@
 @{
     var activeFilters = new List<(string Label, string Value)>();
     var pagination = Model.Pagination;
+    var visiblePages = pagination.VisiblePages().ToList();
 
     if (!string.IsNullOrWhiteSpace(Model.Flight))
         activeFilters.Add(("Flight", Model.Flight));
@@ -35,7 +36,7 @@
     if (Model.Statuses.Any())
         activeFilters.Add(("Status", string.Join(", ", Model.Statuses)));
 
-    string BuildPageUrl(int pageNumber)
+    List<KeyValuePair<string, string?>> BuildBaseQueryItems()
     {
         var queryItems = new List<KeyValuePair<string, string?>>();
 
@@ -65,6 +66,12 @@
             queryItems.Add(new KeyValuePair<string, string?>("statuses", status));
         }
 
+        return queryItems;
+    }
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var queryItems = BuildBaseQueryItems();
         queryItems.Add(new KeyValuePair<string, string?>("page", pageNumber.ToString()));
 
         return $"{Url.Action("AdvancedSearch", "Home")}{Microsoft.AspNetCore.Http.QueryString.Create(queryItems)}";
@@ -122,7 +129,7 @@
     else if (!Model.Results.Any())
     {
         <div class="empty-state">
-            <p style="font-size: 18px; margin-bottom: 8px;">No flights matched your filters</p>
+            <p class="empty-state-title">No flights matched your filters</p>
             <p>Try a different airport code, broader dates, or fewer filters.</p>
         </div>
     }
@@ -183,25 +190,21 @@
                     var statusLabel = AFMS.Models.AdvancedSearchViewModel.GetStatusLabel(rawStatus);
 
                     var depIata = flight.Departure?.Airport?.Iata
-                        ?? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(flight.Departure?.Airport?.Icao ?? "");
+                        ?? FlightFormattingHelpers.ConvertToIata(flight.Departure?.Airport?.Icao ?? "");
                     var arrIata = flight.Arrival?.Airport?.Iata
-                        ?? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(flight.Arrival?.Airport?.Icao ?? "");
+                        ?? FlightFormattingHelpers.ConvertToIata(flight.Arrival?.Airport?.Icao ?? "");
 
                     if (string.IsNullOrWhiteSpace(depIata))
-                        depIata = isDep ? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
+                        depIata = isDep ? FlightFormattingHelpers.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
                     if (string.IsNullOrWhiteSpace(arrIata))
-                        arrIata = !isDep ? AFMS.Models.AdvancedSearchViewModel.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
+                        arrIata = !isDep ? FlightFormattingHelpers.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
 
                     var depCity = flight.Departure?.Airport?.MunicipalityName ?? flight.Departure?.Airport?.ShortName ?? depIata;
                     var arrCity = flight.Arrival?.Airport?.MunicipalityName   ?? flight.Arrival?.Airport?.ShortName   ?? arrIata;
 
-                    var departureTime = "-";
-                    if (DateTime.TryParse(flight.Departure?.ScheduledTime?.Local, out var depParsed))
-                        departureTime = depParsed.ToString("ddd dd MMM HH:mm");
+                    var departureTime = FlightFormattingHelpers.FormatLocalDateTime(flight.Departure?.ScheduledTime?.Local, "ddd dd MMM HH:mm");
 
-                    var arrivalTime = "-";
-                    if (DateTime.TryParse(flight.Arrival?.ScheduledTime?.Local, out var arrParsed))
-                        arrivalTime = arrParsed.ToString("ddd dd MMM HH:mm");
+                    var arrivalTime = FlightFormattingHelpers.FormatLocalDateTime(flight.Arrival?.ScheduledTime?.Local, "ddd dd MMM HH:mm");
 
                     var lhrLeg  = isDep ? flight.Departure : flight.Arrival;
                     var gate     = !string.IsNullOrWhiteSpace(lhrLeg?.Gate)     ? lhrLeg!.Gate     : "-";
@@ -232,8 +235,8 @@
                         if (DateTime.TryParse(runwayDepUtc, out var actDepTime))
                             detailedStatus = $"Departed {actDepTime.ToLocalTime():HH:mm}";
                         else detailedStatus = "Departed";
-                        statusLabel = AFMS.Models.FlightStatusCatalog.GetLabel("Departed");
-                        statusClass = AFMS.Models.FlightStatusCatalog.GetCssClass("Departed");
+                        statusLabel = FlightFormattingHelpers.GetStatusLabel("Departed");
+                        statusClass = FlightFormattingHelpers.GetStatusClass("Departed");
                     }
                     else if (hasActuallyDeparted && !isDep)
                     {
@@ -246,8 +249,8 @@
 
                     var typeLabel = isDep ? "DEP" : "ARR";
                     var typeClass = isDep ? "type-dep" : "type-arr";
-                    var displayDepTime = departureTime.Split(' ').Last();
-                    var displayArrTime = arrivalTime.Split(' ').Last();
+                    var displayDepTime = FlightFormattingHelpers.FormatLocalTime(flight.Departure?.ScheduledTime?.Local);
+                    var displayArrTime = FlightFormattingHelpers.FormatLocalTime(flight.Arrival?.ScheduledTime?.Local);
 
                     <tr class="flight-row"
                         data-direction="@flight.Direction"
@@ -298,16 +301,16 @@
                 <button type="button" class="page-btn" disabled>‹ Prev</button>
             }
 
-            @if (pagination.VisiblePages().First() > 1)
+            @if (visiblePages.First() > 1)
             {
                 <a class="page-btn pagination-link" href="@BuildPageUrl(1)" data-page="1">1</a>
-                @if (pagination.VisiblePages().First() > 2)
+                @if (visiblePages.First() > 2)
                 {
                     <span class="page-ellipsis">…</span>
                 }
             }
 
-            @foreach (var pageNumber in pagination.VisiblePages())
+            @foreach (var pageNumber in visiblePages)
             {
                 if (pageNumber == pagination.Page)
                 {
@@ -321,9 +324,9 @@
                 }
             }
 
-            @if (pagination.VisiblePages().Last() < pagination.TotalPages)
+            @if (visiblePages.Last() < pagination.TotalPages)
             {
-                @if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
+                @if (visiblePages.Last() < pagination.TotalPages - 1)
                 {
                     <span class="page-ellipsis">…</span>
                 }

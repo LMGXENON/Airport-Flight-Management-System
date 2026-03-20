@@ -7,10 +7,15 @@
 
 let progressRefreshTimer = null;
 let activeFlightProgressData = null;
+let flightRowHandlersAttached = false;
+let modalHandlersAttached = false;
 
 function closeFlightModal() {
     stopFlightProgressRefresh();
-    document.getElementById('flightModal').classList.remove('active');
+    const modal = document.getElementById('flightModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 function stopFlightProgressRefresh() {
@@ -30,10 +35,42 @@ function startFlightProgressRefresh() {
 }
 
 function attachFlightRowHandlers() {
-    document.querySelectorAll('.flight-row').forEach(row => {
-        row.onclick = function () { openFlightModal(this); };
-        row.style.cursor = 'pointer';
+    if (flightRowHandlersAttached) {
+        return;
+    }
+
+    flightRowHandlersAttached = true;
+
+    document.addEventListener('click', event => {
+        const row = event.target.closest('.flight-row');
+        if (!row || event.target.closest('.manage-col')) {
+            return;
+        }
+
+        openFlightModal(row);
     });
+}
+
+function attachModalHandlers() {
+    if (modalHandlersAttached) {
+        return;
+    }
+
+    modalHandlersAttached = true;
+
+    const modal = document.getElementById('flightModal');
+    if (modal) {
+        const closeButton = modal.querySelector('.modal-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', closeFlightModal);
+        }
+
+        modal.addEventListener('click', event => {
+            if (event.target === modal) {
+                closeFlightModal();
+            }
+        });
+    }
 }
 
 function openFlightModal(row) {
@@ -227,11 +264,6 @@ function calculateFlightProgress(flightData) {
 
 // Close modal when clicking the backdrop
 document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('flightModal');
-    if (modal) {
-        modal.addEventListener('click', e => {
-            if (e.target === modal) closeFlightModal();
-        });
-    }
+    attachModalHandlers();
     attachFlightRowHandlers();
 });

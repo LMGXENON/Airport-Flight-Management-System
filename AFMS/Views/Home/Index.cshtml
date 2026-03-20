@@ -93,10 +93,10 @@
                     var rawStatus = (movementStatus ?? flight.Status ?? "Unknown").ToLower();
 
                     // Simplified status mapping for user-friendly display
-                    var statusClass = FlightStatusCatalog.GetCssClass(rawStatus);
+                    var statusClass = FlightFormattingHelpers.GetStatusClass(rawStatus);
 
                     // Simplified status labels
-                    var statusLabel = FlightStatusCatalog.GetLabel(rawStatus);
+                    var statusLabel = FlightFormattingHelpers.GetStatusLabel(rawStatus);
 
                     // Airport codes — fill in LHR for the home leg
                     var depIata = flight.Departure?.Airport?.Iata
@@ -105,14 +105,10 @@
                         ?? (!isDep ? "LHR" : (flight.Arrival?.Airport?.Name ?? "-"));
 
                     // Departure date/time with day name
-                    var departureTime = "-";
-                    if (DateTime.TryParse(flight.Departure?.ScheduledTime?.Local, out var depParsed))
-                        departureTime = depParsed.ToString("ddd dd MMM HH:mm");
+                        var departureTime = FlightFormattingHelpers.FormatLocalDateTime(flight.Departure?.ScheduledTime?.Local, "ddd dd MMM HH:mm");
 
                     // Arrival date/time with day name
-                    var arrivalTime = "-";
-                    if (DateTime.TryParse(flight.Arrival?.ScheduledTime?.Local, out var arrParsed))
-                        arrivalTime = arrParsed.ToString("ddd dd MMM HH:mm");
+                        var arrivalTime = FlightFormattingHelpers.FormatLocalDateTime(flight.Arrival?.ScheduledTime?.Local, "ddd dd MMM HH:mm");
 
                     // Gate / Terminal from the LHR leg
                     var gate = "-";
@@ -164,8 +160,8 @@
                         {
                             detailedStatus = "Arrived";
                         }
-                        statusLabel = FlightStatusCatalog.GetLabel("Arrived");
-                        statusClass = FlightStatusCatalog.GetCssClass("Arrived");
+                        statusLabel = FlightFormattingHelpers.GetStatusLabel("Arrived");
+                        statusClass = FlightFormattingHelpers.GetStatusClass("Arrived");
                     }
                     else if (hasActuallyDeparted && isDep)
                     {
@@ -177,8 +173,8 @@
                         {
                             detailedStatus = "Departed";
                         }
-                        statusLabel = FlightStatusCatalog.GetLabel("Departed");
-                        statusClass = FlightStatusCatalog.GetCssClass("Departed");
+                        statusLabel = FlightFormattingHelpers.GetStatusLabel("Departed");
+                        statusClass = FlightFormattingHelpers.GetStatusClass("Departed");
                     }
                     else if (hasActuallyDeparted && !isDep)
                     {
@@ -201,8 +197,12 @@
                     }
                     
                     // Use consistent time for display and sorting (the LHR leg time)
-                    var displayTime = isDep ? depParsed.ToString("HH:mm") : arrParsed.ToString("HH:mm");
-                    var sortTime = isDep ? depParsed : arrParsed;
+                    var displayTime = isDep
+                        ? FlightFormattingHelpers.FormatLocalTime(flight.Departure?.ScheduledTime?.Local)
+                        : FlightFormattingHelpers.FormatLocalTime(flight.Arrival?.ScheduledTime?.Local);
+                    var sortTime = FlightFormattingHelpers.ParseLocalDate(isDep
+                        ? flight.Departure?.ScheduledTime?.Local
+                        : flight.Arrival?.ScheduledTime?.Local) ?? DateTime.MaxValue;
                     var dateHeader = sortTime.ToString("dddd, MMM dd");
                     
                     // Show date header if date changed
@@ -244,7 +244,7 @@
                         <td>@(flight.Airline?.Name ?? "-")</td>
                         <td class="aircraft-col">@aircraftInfo</td>
                         <td class="status-col"><span class="status-badge @statusClass">@detailedStatus</span></td>
-                        <td class="manage-col" onclick="event.stopPropagation()">
+                        <td class="manage-col">
                             @{
                                 var dbIds = ViewBag.DbFlightIds as Dictionary<string, int>;
                                 var fNum  = flight.Number ?? "";
@@ -266,15 +266,15 @@
             @if (ViewBag.ApiError != null)
             {
                 <div class="empty-state">
-                    <p style="font-size: 16px; font-weight: 600; color: var(--danger); margin-bottom: 8px;">Live data unavailable</p>
-                    <p style="color: var(--text-secondary);">@ViewBag.ApiError</p>
+                    <p class="empty-state-title empty-state-title--danger">Live data unavailable</p>
+                    <p class="empty-state-muted">@ViewBag.ApiError</p>
                 </div>
             }
             else
             {
                 <div class="empty-state">
-                    <p style="font-size: 16px; margin-bottom: 8px;">No live flight data available</p>
-                    <p style="color: var(--text-secondary);">The API did not return flights for the current time window.</p>
+                    <p class="empty-state-title">No live flight data available</p>
+                    <p class="empty-state-muted">The API did not return flights for the current time window.</p>
                 </div>
             }
         }

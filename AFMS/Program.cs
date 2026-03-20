@@ -2,7 +2,6 @@ using AFMS.BackgroundServices;
 using AFMS.Data;
 using AFMS.Hubs;
 using AFMS.Services;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,15 +48,7 @@ using (var scope = app.Services.CreateScope())
     var startupLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
     dbContext.Database.EnsureCreated();
 
-    // Add IsManualEntry column to existing databases that pre-date this field
-    try
-    {
-        dbContext.Database.ExecuteSqlRaw("ALTER TABLE Flights ADD COLUMN IsManualEntry INTEGER NOT NULL DEFAULT 0");
-    }
-    catch (SqliteException ex) when (ex.Message.Contains("duplicate column name: IsManualEntry", StringComparison.OrdinalIgnoreCase))
-    {
-        startupLogger.LogDebug("IsManualEntry column already exists; skipping startup schema patch.");
-    }
+    ApplyStartupSchemaUpdates(dbContext, startupLogger);
 
     startupLogger.LogInformation("Database initialized successfully.");
 }
@@ -180,3 +171,47 @@ static string? GetDotEnvAlias(string key) => key switch
     "DEEPSEEK_PROMPT_FILE" => "DeepSeek:PromptFile",
     _ => null
 };
+
+static void ApplyStartupSchemaUpdates(ApplicationDbContext dbContext, ILogger startupLogger)
+{
+    if (dbContext.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
+    {
+        dbContext.Database.OpenConnection();
+    }
+
+    try
+    {
+        if (!SqliteColumnExists(dbContext, "Flights", "IsManualEntry"))
+        {
+            dbContext.Database.ExecuteSqlRaw("ALTER TABLE Flights ADD COLUMN IsManualEntry INTEGER NOT NULL DEFAULT 0");
+            startupLogger.LogInformation("Added missing IsManualEntry column to Flights table.");
+        }
+        else
+        {
+            startupLogger.LogDebug("IsManualEntry column already exists; skipping startup schema update.");
+        }
+    }
+    finally
+    {
+        dbContext.Database.CloseConnection();
+    }
+}
+
+static bool SqliteColumnExists(ApplicationDbContext dbContext, string tableName, string columnName)
+{
+    var connection = dbContext.Database.GetDbConnection();
+    using var command = connection.CreateCommand();
+    command.CommandText = $"PRAGMA table_info('{tableName.Replace("'", "''")}')";
+
+    using var reader = command.ExecuteReader();
+    while (reader.Read())
+    {
+        var existingColumnName = reader.GetString(1);
+        if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}

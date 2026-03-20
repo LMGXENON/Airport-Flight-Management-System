@@ -130,6 +130,10 @@
     background: var(--bg-card);
 }
 
+.form-group--full-width {
+    grid-column: 1 / -1;
+}
+
 /* Form Groups */
 .form-group {
     display: flex;

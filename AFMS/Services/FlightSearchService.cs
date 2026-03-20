@@ -138,7 +138,7 @@ public class FlightSearchService
             var d = model.DepartureDate.Value.Date;
             query = query.Where(f =>
             {
-                var v = AdvancedSearchViewModel.ParseLocalDate(f.Departure?.ScheduledTime?.Local);
+                var v = FlightFormattingHelpers.ParseLocalDate(f.Departure?.ScheduledTime?.Local);
                 return v.HasValue && v.Value.Date == d;
             });
         }
@@ -149,7 +149,7 @@ public class FlightSearchService
             var d = model.ArrivalDate.Value.Date;
             query = query.Where(f =>
             {
-                var v = AdvancedSearchViewModel.ParseLocalDate(f.Arrival?.ScheduledTime?.Local);
+                var v = FlightFormattingHelpers.ParseLocalDate(f.Arrival?.ScheduledTime?.Local);
                 return v.HasValue && v.Value.Date == d;
             });
         }
@@ -174,7 +174,7 @@ public class FlightSearchService
             query = query.Where(f =>
             {
                 var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
-                var dt  = AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local);
+                var dt  = FlightFormattingHelpers.ParseLocalDate(leg?.ScheduledTime?.Local);
                 return dt.HasValue && dt.Value.TimeOfDay >= tStart;
             });
         }
@@ -184,7 +184,7 @@ public class FlightSearchService
             query = query.Where(f =>
             {
                 var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
-                var dt  = AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local);
+                var dt  = FlightFormattingHelpers.ParseLocalDate(leg?.ScheduledTime?.Local);
                 return dt.HasValue && dt.Value.TimeOfDay <= tEnd;
             });
         }
@@ -201,12 +201,12 @@ public class FlightSearchService
             "flight"  => desc ? flights.OrderByDescending(f => f.Number)       : flights.OrderBy(f => f.Number),
             "airline" => desc ? flights.OrderByDescending(f => f.Airline?.Name) : flights.OrderBy(f => f.Airline?.Name),
             "arrival" => desc
-                ? flights.OrderByDescending(f => AdvancedSearchViewModel.ParseLocalDate(f.Arrival?.ScheduledTime?.Local) ?? DateTime.MaxValue)
-                : flights.OrderBy(f => AdvancedSearchViewModel.ParseLocalDate(f.Arrival?.ScheduledTime?.Local) ?? DateTime.MaxValue),
+                ? flights.OrderByDescending(f => FlightFormattingHelpers.ParseLocalDate(f.Arrival?.ScheduledTime?.Local) ?? DateTime.MaxValue)
+                : flights.OrderBy(f => FlightFormattingHelpers.ParseLocalDate(f.Arrival?.ScheduledTime?.Local) ?? DateTime.MaxValue),
             "status"  => desc ? flights.OrderByDescending(f => f.Status) : flights.OrderBy(f => f.Status),
             _ => desc  // default: sort by departure time
-                ? flights.OrderByDescending(f => AdvancedSearchViewModel.ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
-                : flights.OrderBy(f => AdvancedSearchViewModel.ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
+                ? flights.OrderByDescending(f => FlightFormattingHelpers.ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
+                : flights.OrderBy(f => FlightFormattingHelpers.ParseLocalDate(f.Departure?.ScheduledTime?.Local) ?? DateTime.MaxValue)
         };
 
         return ordered.ThenBy(f => f.Number).ToList();

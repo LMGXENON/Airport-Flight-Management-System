@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AFMS.Models;
 
 public class AdvancedSearchViewModel
@@ -42,7 +40,6 @@ public class AdvancedSearchViewModel
     public string? UsedAirportCode { get; set; }
     public List<AeroDataBoxFlight> Results { get; set; } = new();
     public int TotalCount { get; set; }
-    public bool HasMoreResults => TotalCount > Page * PageSize;
     public PaginationState Pagination => new()
     {
         Page = Page,
@@ -52,42 +49,11 @@ public class AdvancedSearchViewModel
 
     // --- Display helpers (moved here from Razor view) ---
 
-    public static string GetStatusClass(string rawStatus) => FlightStatusCatalog.GetCssClass(rawStatus);
+    public static string GetStatusClass(string rawStatus) => FlightFormattingHelpers.GetStatusClass(rawStatus);
 
-    public static string GetStatusLabel(string rawStatus) => FlightStatusCatalog.GetLabel(rawStatus);
+    public static string GetStatusLabel(string rawStatus) => FlightFormattingHelpers.GetStatusLabel(rawStatus);
 
-    public static string ConvertToIata(string? code)
-    {
-        if (string.IsNullOrWhiteSpace(code)) return "";
-        return code.ToUpper() switch
-        {
-            "EGLL" => "LHR",
-            "KJFK" => "JFK",
-            "KLAX" => "LAX",
-            "OMDB" => "DXB",
-            "EDDF" => "FRA",
-            "RJTT" => "HND",
-            _ => code
-        };
-    }
+    public static string ConvertToIata(string? code) => FlightFormattingHelpers.ConvertToIata(code);
 
-    public static DateTime? ParseLocalDate(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value)) return null;
-        return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt)
-            ? dt : null;
-    }
-
-    /// <summary>Returns the next sort order when toggling the given column.</summary>
-    public string NextSortOrder(string column) =>
-        SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true && SortOrder == "asc"
-            ? "desc"
-            : "asc";
-
-    /// <summary>Returns a CSS class indicating current sort direction for a column header.</summary>
-    public string SortIndicator(string column)
-    {
-        if (!SortBy?.Equals(column, StringComparison.OrdinalIgnoreCase) == true) return "";
-        return SortOrder == "desc" ? "sort-desc" : "sort-asc";
-    }
+    public static DateTime? ParseLocalDate(string? value) => FlightFormattingHelpers.ParseLocalDate(value);
 }
