@@ -63,8 +63,8 @@
             <tbody>
                 @foreach (var flight in Model.Flights)
                 {
-                    var statusClass = FlightStatusCatalog.GetCssClass(flight.Status);
-                    var statusLabel = FlightStatusCatalog.GetLabel(flight.Status);
+                    var statusClass = FlightFormattingHelpers.GetStatusClass(flight.Status);
+                    var statusLabel = FlightFormattingHelpers.GetStatusLabel(flight.Status);
                     
                     <tr>
                         <td class="flight-number">@flight.FlightNumber</td>

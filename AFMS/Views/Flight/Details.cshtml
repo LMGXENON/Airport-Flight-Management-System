@@ -3,8 +3,8 @@
 @{
     ViewData["Title"] = "Flight Details";
 
-    var statusClass = FlightStatusCatalog.GetCssClass(Model.Status);
-    var statusLabel = FlightStatusCatalog.GetLabel(Model.Status);
+    var statusClass = FlightFormattingHelpers.GetStatusClass(Model.Status);
+    var statusLabel = FlightFormattingHelpers.GetStatusLabel(Model.Status);
 }
 
 <div class="page-header">
@@ -28,11 +28,11 @@
         </div>
         <div class="detail-item">
             <p class="detail-label">Departure Time</p>
-            <p class="detail-value">@Model.DepartureTime.ToString("ddd dd MMM, HH:mm")</p>
+            <p class="detail-value">@FlightFormattingHelpers.FormatDateTime(Model.DepartureTime, "ddd dd MMM, HH:mm")</p>
         </div>
         <div class="detail-item">
             <p class="detail-label">Arrival Time</p>
-            <p class="detail-value">@Model.ArrivalTime.ToString("ddd dd MMM, HH:mm")</p>
+            <p class="detail-value">@FlightFormattingHelpers.FormatDateTime(Model.ArrivalTime, "ddd dd MMM, HH:mm")</p>
         </div>
         <div class="detail-item">
             <p class="detail-label">Gate</p>

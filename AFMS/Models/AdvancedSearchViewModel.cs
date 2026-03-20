@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AFMS.Models;
 
 public class AdvancedSearchViewModel
@@ -51,29 +49,11 @@ public class AdvancedSearchViewModel
 
     // --- Display helpers (moved here from Razor view) ---
 
-    public static string GetStatusClass(string rawStatus) => FlightStatusCatalog.GetCssClass(rawStatus);
+    public static string GetStatusClass(string rawStatus) => FlightFormattingHelpers.GetStatusClass(rawStatus);
 
-    public static string GetStatusLabel(string rawStatus) => FlightStatusCatalog.GetLabel(rawStatus);
+    public static string GetStatusLabel(string rawStatus) => FlightFormattingHelpers.GetStatusLabel(rawStatus);
 
-    public static string ConvertToIata(string? code)
-    {
-        if (string.IsNullOrWhiteSpace(code)) return "";
-        return code.ToUpper() switch
-        {
-            "EGLL" => "LHR",
-            "KJFK" => "JFK",
-            "KLAX" => "LAX",
-            "OMDB" => "DXB",
-            "EDDF" => "FRA",
-            "RJTT" => "HND",
-            _ => code
-        };
-    }
+    public static string ConvertToIata(string? code) => FlightFormattingHelpers.ConvertToIata(code);
 
-    public static DateTime? ParseLocalDate(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value)) return null;
-        return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt)
-            ? dt : null;
-    }
+    public static DateTime? ParseLocalDate(string? value) => FlightFormattingHelpers.ParseLocalDate(value);
 }

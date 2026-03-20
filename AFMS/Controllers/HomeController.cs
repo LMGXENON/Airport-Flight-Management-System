@@ -1205,7 +1205,7 @@ public class HomeController : Controller
             return cleaned.ToUpperInvariant();
 
         if (Regex.IsMatch(cleaned, @"^[A-Za-z]{4}$"))
-            return AdvancedSearchViewModel.ConvertToIata(cleaned.ToUpperInvariant());
+            return FlightFormattingHelpers.ConvertToIata(cleaned.ToUpperInvariant());
 
         return cleaned;
     }
@@ -1367,7 +1367,7 @@ public class HomeController : Controller
             .OrderBy(f =>
             {
                 var leg = f.Direction == "Departure" ? f.Departure : f.Arrival;
-                return AdvancedSearchViewModel.ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
+                return FlightFormattingHelpers.ParseLocalDate(leg?.ScheduledTime?.Local) ?? DateTime.MaxValue;
             })
             .ThenBy(f => f.Number)
             .ToList();
@@ -1379,7 +1379,7 @@ public class HomeController : Controller
 
         cleaned = cleaned.ToUpperInvariant();
         return cleaned.Length == 4
-            ? AdvancedSearchViewModel.ConvertToIata(cleaned)
+            ? FlightFormattingHelpers.ConvertToIata(cleaned)
             : cleaned;
     }
 

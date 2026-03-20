@@ -1,11 +1,6 @@
 AFMS Improvement Plan
 Date: 2026-03-18
 
-Priority 4 — Remove dead or unnecessary code
-- Delete unused helpers in AdvancedSearchViewModel if they are still not referenced: HasMoreResults, NextSortOrder(), SortIndicator().
-- Remove unused using System.Diagnostics; from Controllers/HomeController.cs.
-- Audit other helper methods and properties for no-longer-used members before the next refactor.
-
 Priority 5 — Deduplicate search/filter helpers
 - Extract shared helpers for status class/label mapping, airport code conversion, and date formatting.
 - Reuse the helpers from HomeController, FlightSearchService, AdvancedSearchViewModel, and the Razor views.
