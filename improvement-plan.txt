@@ -1,11 +1,6 @@
 AFMS Improvement Plan
 Date: 2026-03-18
 
-Priority 5 — Deduplicate search/filter helpers
-- Extract shared helpers for status class/label mapping, airport code conversion, and date formatting.
-- Reuse the helpers from HomeController, FlightSearchService, AdvancedSearchViewModel, and the Razor views.
-- This should reduce drift between dashboard, advanced search, and AI-assisted flows.
-
 Priority 6 — Clean up small UI data issues
 - Remove duplicate airport datalist options and normalize naming in Views/Home/AdvancedSearch.cshtml.
 - Standardize status labels and button text across the add/edit forms and tables.
@@ -20,6 +15,3 @@ Priority 8 — Revisit startup schema patch
 - Replace the raw ALTER TABLE startup patch in Program.cs with a migration-based approach or a clearer startup migration step.
 - Keep this lower priority because the app already builds and runs.
 
-Notes
-- The solution builds cleanly.
-- No obvious app-specific TODO/debug/test leftovers were found in first-party code; most such comments are in vendor libraries under wwwroot/lib.
