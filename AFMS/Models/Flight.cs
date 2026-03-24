@@ -1,8 +1,10 @@
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace AFMS.Models
 {
+    [Index(nameof(FlightNumber), nameof(DepartureTime))]
     public class Flight : IValidatableObject
     {
         public int Id { get; set; }

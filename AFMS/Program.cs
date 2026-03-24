@@ -271,6 +271,16 @@ static void ApplyStartupSchemaUpdates(ApplicationDbContext dbContext, ILogger st
         {
             startupLogger.LogDebug("AircraftType column already exists; skipping startup schema update.");
         }
+
+        if (!SqliteIndexExists(dbContext, "IX_Flights_FlightNumber_DepartureTime"))
+        {
+            dbContext.Database.ExecuteSqlRaw("CREATE INDEX IX_Flights_FlightNumber_DepartureTime ON Flights (FlightNumber, DepartureTime)");
+            startupLogger.LogInformation("Added composite index IX_Flights_FlightNumber_DepartureTime to Flights table.");
+        }
+        else
+        {
+            startupLogger.LogDebug("IX_Flights_FlightNumber_DepartureTime already exists; skipping startup schema update.");
+        }
     }
     finally
     {
@@ -295,4 +305,19 @@ static bool SqliteColumnExists(ApplicationDbContext dbContext, string tableName,
     }
 
     return false;
+}
+
+static bool SqliteIndexExists(ApplicationDbContext dbContext, string indexName)
+{
+    var connection = dbContext.Database.GetDbConnection();
+    using var command = connection.CreateCommand();
+    command.CommandText = "SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = $name LIMIT 1";
+
+    var parameter = command.CreateParameter();
+    parameter.ParameterName = "$name";
+    parameter.Value = indexName;
+    command.Parameters.Add(parameter);
+
+    using var reader = command.ExecuteReader();
+    return reader.Read();
 }
