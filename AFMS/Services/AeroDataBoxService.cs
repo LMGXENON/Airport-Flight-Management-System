@@ -44,10 +44,10 @@ public class AeroDataBoxService
             {
                 (dateFrom, dateTo) = (dateTo, dateFrom);
             }
-            var flights = new List<AeroDataBoxFlight>();
 
             var maxWindow = TimeSpan.FromHours(12);
             var currentFrom = dateFrom;
+            var fetchTasks = new List<Task<List<AeroDataBoxFlight>>>();
 
             while (currentFrom <= dateTo)
             {
@@ -57,15 +57,13 @@ public class AeroDataBoxService
                     currentTo = dateTo;
                 }
 
-                var windowFlights = await FetchAirportFlightsWindowAsync(
+                fetchTasks.Add(FetchAirportFlightsWindowAsync(
                     airportCode,
                     currentFrom,
                     currentTo,
                     withCancelled,
                     apiKey,
-                    apiHost);
-
-                flights.AddRange(windowFlights);
+                    apiHost));
 
                 if (currentTo >= dateTo)
                 {
@@ -74,6 +72,9 @@ public class AeroDataBoxService
 
                 currentFrom = currentTo.AddMinutes(1);
             }
+
+            var fetchedWindows = await Task.WhenAll(fetchTasks);
+            var flights = fetchedWindows.SelectMany(window => window).ToList();
 
             // Sort by scheduled time to interleave departures and arrivals chronologically
             flights = flights.OrderBy(f => {
