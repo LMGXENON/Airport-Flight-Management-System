@@ -1,0 +1,256 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    YOUR TESTER ROLE - VISUAL SUMMARY                           ║
+║                                                                                ║
+║                      📅 March 24, 2026 - April 10, 2026                        ║
+║                          ⏱️ 17 Days Until Deadline                              ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         🎯 YOUR PRIMARY MISSION                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│           TEST 44 TEST CASES → FIND BUGS → REPORT BUGS → VERIFY FIXES       │
+│                                                                              │
+│                     Your Testing = Code Quality = Better Marks              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    📋 DOCUMENTS YOU CREATED FOR YOUR ROLE                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1. ⭐ WHAT_YOU_GOTTA_DO.md (READ THIS FIRST!)                             │
+│     └─ Complete breakdown of everything you need to know                    │
+│                                                                              │
+│  2. 🎓 TESTER_ROLE_GUIDE.md (Comprehensive guide)                          │
+│     └─ Your responsibilities, timeline, documentation                       │
+│                                                                              │
+│  3. 🧪 SPECIFIC_TEST_CASES.md (The actual tests)                           │
+│     └─ 44 detailed test cases with expected results                         │
+│                                                                              │
+│  4. ⚡ TESTER_QUICK_REFERENCE.md (Quick checklist)                         │
+│     └─ One-page reference you'll use while testing                          │
+│                                                                              │
+│  5. 📅 TESTER_IMMEDIATE_ACTION_PLAN.md (Weekly schedule)                   │
+│     └─ Week-by-week breakdown of what to do                                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    🚀 YOUR IMMEDIATE ACTION (TODAY)                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ☐ Read TESTER_QUICK_REFERENCE.md (30 minutes)                             │
+│  ☐ Read WHAT_YOU_GOTTA_DO.md (30 minutes)                                  │
+│  ☐ Start application (5 minutes)                                            │
+│  ☐ Run test TC-001 (10 minutes) - Create valid flight                      │
+│  ☐ Run test TC-007 (10 minutes) - CRITICAL! Arrival before departure       │
+│  ☐ Run test TC-008 (10 minutes) - CRITICAL! Flight > 24 hours              │
+│  ☐ Create file: My_Test_Results.md (10 minutes)                            │
+│  ☐ Document results (10 minutes)                                            │
+│  ☐ Report to team (5 minutes)                                               │
+│                                                                              │
+│  Total Time: ~2 hours                                                        │
+│  By End of Today: You'll know if app works or has major issues             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    ⚠️ CRITICAL TESTS (TEST THESE FIRST!)                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  TEST: TC-007 - Arrival Before Departure                                    │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ Create flight where:                                                 │  │
+│  │ - Departure: 14:00 (2 PM)                                            │  │
+│  │ - Arrival: 10:00 (10 AM) ← EARLIER!                                │  │
+│  │                                                                      │  │
+│  │ What Should Happen: ❌ REJECTED with error message                 │  │
+│  │ What Probably Happens: ✅ ACCEPTED (= BUG!)                        │  │
+│  │ Severity: 🔴 CRITICAL                                               │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│  TEST: TC-008 - Flight Duration > 24 Hours                                  │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ Create flight that lasts 25 hours:                                   │  │
+│  │ - Departure: March 25 10:00                                          │  │
+│  │ - Arrival: March 26 14:00 ← 25 hours later                         │  │
+│  │                                                                      │  │
+│  │ What Should Happen: ❌ REJECTED (max 24 hours)                     │  │
+│  │ What Probably Happens: ✅ ACCEPTED (= BUG!)                        │  │
+│  │ Severity: 🔴 CRITICAL                                               │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│  🛑 DO NOT CONTINUE PAST TC-008 UNTIL THESE ARE FIXED!                    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    📅 YOUR TESTING TIMELINE                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  WEEK 1: March 25-28  ─ TEST FEATURES 1-5 (30 tests)                       │
+│  ├─ Mon-Tue: Create Flight tests (TC-001 to TC-012)                         │
+│  ├─ Wed-Thu: View, Edit, Delete tests (TC-013 to TC-030)                   │
+│  └─ Deliverable: Test results with bugs found                              │
+│                                                                              │
+│  WEEK 2: March 29-Apr 5  ─ TEST FEATURES 6-7 + VERIFY FIXES (14 tests)     │
+│  ├─ Mon-Wed: Search, Database, Data Structure tests                        │
+│  ├─ Thu-Fri: Verify all bug fixes, no regressions                          │
+│  └─ Deliverable: All tests complete, bugs verified as fixed                │
+│                                                                              │
+│  WEEK 3: Apr 6-10  ─ FINAL VERIFICATION                                    │
+│  ├─ Mon-Tue: Final regression test (re-run all tests)                      │
+│  ├─ Wed-Thu: Final checks, sign-off document                               │
+│  └─ Deliverable: "✅ SYSTEM READY FOR SUBMISSION"                          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    🧪 THE 44 TEST CASES BREAKDOWN                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ✈️ CREATE FLIGHT TESTS:    12 tests  (TC-001 to TC-012)                   │
+│     └─ Valid data, missing fields, time validation, edge cases             │
+│                                                                              │
+│  👁️ VIEW DETAILS TESTS:     5 tests   (TC-013 to TC-017)                   │
+│     └─ Valid IDs, invalid IDs, edge cases                                  │
+│                                                                              │
+│  ✏️ EDIT FLIGHT TESTS:      7 tests   (TC-018 to TC-024)                   │
+│     └─ Single field, multiple fields, validation, invalid IDs              │
+│                                                                              │
+│  🗑️ DELETE FLIGHT TESTS:    6 tests   (TC-025 to TC-030)                   │
+│     └─ Confirmation, deletion, cancellation, invalid IDs                   │
+│                                                                              │
+│  🔍 SEARCH/FILTER TESTS:    5 tests   (TC-031 to TC-035)                   │
+│     └─ Search by number, by status, by terminal, filter combos            │
+│                                                                              │
+│  💾 DATABASE TESTS:         4 tests   (TC-036 to TC-039)                   │
+│     └─ Data persistence, updates, deletions, concurrent access             │
+│                                                                              │
+│  🌳 DATA STRUCTURE TESTS:   5 tests   (TC-040 to TC-044)                   │
+│     └─ Insert, search, delete, duplicates, performance (when implemented)  │
+│                                                                              │
+│  TOTAL:                    44 tests                                         │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    📊 HOW TO TRACK YOUR PROGRESS                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Create file: My_Test_Results.md                                            │
+│                                                                              │
+│  | Test ID | Description | Status | Date | Issues |                       │
+│  |---------|-------------|--------|------|--------|                       │
+│  | TC-001 | Create flight | ✅ | Mar 25 | None |                          │
+│  | TC-007 | Arrival < Dep | ❌ | Mar 25 | No validation! |               │
+│  | TC-008 | >24hrs flight | ❌ | Mar 25 | No validation! |               │
+│  |  ...    |     ...      |  ...   | ...  |  ...   |                      │
+│                                                                              │
+│  Update DAILY with results                                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    🐛 WHEN YOU FIND A BUG                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1️⃣ IDENTIFY THE BUG                                                        │
+│     What happened that shouldn't have?                                      │
+│                                                                              │
+│  2️⃣ REPRODUCE IT                                                            │
+│     Do it again to make sure it's real                                      │
+│                                                                              │
+│  3️⃣ DOCUMENT IT                                                             │
+│     Write down: Steps, Expected, Actual                                     │
+│                                                                              │
+│  4️⃣ REPORT IT                                                               │
+│     Tell your group: "TC-007 FAILED: No validation for arrival time"       │
+│                                                                              │
+│  5️⃣ WAIT FOR FIX                                                            │
+│     Developers will code a fix                                              │
+│                                                                              │
+│  6️⃣ VERIFY FIX                                                              │
+│     Test again to confirm it's fixed                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    💬 DAILY STATUS MESSAGES                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Send to group chat EVERY DAY:                                              │
+│                                                                              │
+│  "✅ MARCH 25 TESTING STATUS:                                              │
+│   • Tests Completed: 6/44                                                   │
+│   • Passed: 4, Failed: 2                                                    │
+│   • Critical Issues: 2 (time validation missing)                            │
+│   • Next: Wait for validation fixes                                         │
+│   • Blockers: YES - need fixes before continuing"                          │
+│                                                                              │
+│  Keep it SHORT and CLEAR                                                    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    ✨ YOUR SUCCESS CHECKLIST                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  By April 10, check off:                                                    │
+│                                                                              │
+│  ☐ All 44 test cases executed                                              │
+│  ☐ All results documented in My_Test_Results.md                            │
+│  ☐ All bugs found and reported                                             │
+│  ☐ All critical bugs verified as FIXED                                     │
+│  ☐ Final regression test completed                                         │
+│  ☐ No regressions (no new bugs from fixes)                                 │
+│  ☐ Test section written for PDF report                                     │
+│  ☐ Signed off: "✅ SYSTEM READY FOR SUBMISSION"                            │
+│                                                                              │
+│  If all checked: YOU'VE DONE YOUR JOB! 🎉                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    🎯 REMEMBER: YOUR ROLE MATTERS                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Testing = 25% of Final Grade                                               │
+│                                                                              │
+│  ❌ Bad testing → Bugs not found → Lower marks                             │
+│  ✅ Good testing → Bugs found & fixed → Higher marks                       │
+│                                                                              │
+│  Your team depends on you to ensure quality.                                │
+│  Your grade depends on how well you test.                                   │
+│                                                                              │
+│  BE THOROUGH. BE SYSTEMATIC. BE HELPFUL.                                    │
+│                                                                              │
+│  YOU'VE GOT THIS! 💪                                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    📖 READING ORDER                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1. THIS FILE (right now) - 5 minutes                                       │
+│  2. TESTER_QUICK_REFERENCE.md - 10 minutes                                 │
+│  3. WHAT_YOU_GOTTA_DO.md - 30 minutes                                      │
+│  4. SPECIFIC_TEST_CASES.md - reference while testing                        │
+│  5. TESTER_ROLE_GUIDE.md - as needed                                       │
+│  6. TESTER_IMMEDIATE_ACTION_PLAN.md - reference schedule                   │
+│                                                                              │
+│  Total Reading Time: ~1 hour                                                │
+│  Then: START TESTING                                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║                    🚀 READY TO BEGIN YOUR TESTING?                           ║
+║                                                                                ║
+║                      Open TESTER_QUICK_REFERENCE.md                          ║
+║                             START NOW!                                        ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
