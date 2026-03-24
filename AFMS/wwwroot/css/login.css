@@ -4,8 +4,8 @@
     background:
         radial-gradient(circle at 20% 20%, rgba(65, 105, 225, 0.2), transparent 45%),
         radial-gradient(circle at 80% 10%, rgba(72, 187, 120, 0.15), transparent 40%),
-        var(--bg-primary);
-    color: var(--text-primary);
+        var(--bg-primary, #0a0e1a);
+    color: var(--text-primary, #ffffff);
     font-family: inherit;
 }
 
@@ -17,62 +17,29 @@
     padding: 24px;
 }
 
-.login-card {
-    width: min(460px, 100%);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 28px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+.login-panel {
+    width: min(520px, 100%);
 }
 
-.login-card .form-input,
-.login-card .form-select {
-    background-color: var(--bg-secondary);
-    border-color: var(--border-color);
-}
-
-.login-card .btn {
-    font-size: 14px;
-}
-
-.login-brand {
+.login-page-header {
     text-align: center;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .login-logo {
-    width: 64px;
-    height: 64px;
+    width: 72px;
+    height: 72px;
     object-fit: contain;
-    margin-bottom: 10px;
-}
-
-.login-brand h1 {
-    font-size: 24px;
-    margin: 0;
-}
-
-.login-brand p {
-    margin: 8px 0 0;
-    color: var(--text-secondary);
-    font-size: 14px;
+    margin-bottom: 12px;
 }
 
 .login-form {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-}
-
-.login-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    gap: 12px;
 }
 
 .login-submit {
-    margin-top: 10px;
     width: 100%;
 }
 
@@ -95,11 +62,7 @@
 }
 
 @media (max-width: 640px) {
-    .login-card {
-        padding: 22px;
-    }
-
-    .login-brand h1 {
-        font-size: 20px;
+    .login-shell {
+        padding: 16px;
     }
 }

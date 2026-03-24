@@ -121,12 +121,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Serve static assets (CSS/JS/images) before auth so the login page can be styled.
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.MapStaticAssets().AllowAnonymous();
 
 // Map SignalR hub
 app.MapHub<FlightHub>("/flightHub");
