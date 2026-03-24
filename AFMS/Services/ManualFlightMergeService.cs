@@ -36,6 +36,12 @@ public class ManualFlightMergeService
                 if (!string.IsNullOrWhiteSpace(normalizedStatus))
                     existing.Status = normalizedStatus;
 
+                if (!string.IsNullOrWhiteSpace(manualFlight.AircraftType))
+                {
+                    existing.Aircraft ??= new Aircraft();
+                    existing.Aircraft.Model = manualFlight.AircraftType;
+                }
+
                 continue;
             }
 
@@ -51,6 +57,9 @@ public class ManualFlightMergeService
         Status = FlightStatusCatalog.Normalize(flight.Status),
         Direction = "Departure",
         Airline = new Airline { Name = flight.Airline },
+        Aircraft = string.IsNullOrWhiteSpace(flight.AircraftType)
+            ? null
+            : new Aircraft { Model = flight.AircraftType },
         Departure = new FlightMovement
         {
             Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },

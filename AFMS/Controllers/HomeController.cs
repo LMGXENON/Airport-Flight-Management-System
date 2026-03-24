@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -13,6 +14,7 @@ using AFMS.Services;
 
 namespace AFMS.Controllers;
 
+[Authorize]
 public class HomeController : Controller
 {
     private const string LondonTimeZoneId = "Europe/London";
@@ -598,6 +600,43 @@ public class HomeController : Controller
             && model.DepartureDate.Value.Date > model.ArrivalDate.Value.Date)
         {
             model.ValidationErrors.Add("Departure date cannot be after arrival date.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(model.Flight))
+        {
+            var flight = model.Flight.Trim();
+            if (flight.Length > 10)
+                model.ValidationErrors.Add("Flight number cannot exceed 10 characters.");
+            if (!Regex.IsMatch(flight, @"^[A-Za-z0-9-]+$"))
+                model.ValidationErrors.Add("Flight number can only include letters, numbers, and hyphen.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(model.Airline) && model.Airline.Trim().Length > 100)
+            model.ValidationErrors.Add("Airline cannot exceed 100 characters.");
+
+        if (!string.IsNullOrWhiteSpace(model.Destination) && model.Destination.Trim().Length > 100)
+            model.ValidationErrors.Add("Destination cannot exceed 100 characters.");
+
+        if (!string.IsNullOrWhiteSpace(model.Terminal)
+            && !new[] { "1", "2", "3", "4", "5" }.Contains(model.Terminal.Trim(), StringComparer.OrdinalIgnoreCase))
+        {
+            model.ValidationErrors.Add("Terminal must be between 1 and 5.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(model.Direction)
+            && !new[] { "Departure", "Arrival" }.Contains(model.Direction.Trim(), StringComparer.OrdinalIgnoreCase))
+        {
+            model.ValidationErrors.Add("Direction must be Departure or Arrival.");
+        }
+
+        if (model.Statuses.Any())
+        {
+            var invalidStatuses = model.Statuses
+                .Where(status => !FlightStatusCatalog.Values.Contains(status, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            if (invalidStatuses.Any())
+                model.ValidationErrors.Add("One or more selected statuses are invalid.");
         }
     }
 

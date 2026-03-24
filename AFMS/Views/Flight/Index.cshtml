@@ -52,6 +52,7 @@
                     <th>Flight #</th>
                     <th>Airline</th>
                     <th>Destination</th>
+                    <th>Aircraft</th>
                     <th>Departure</th>
                     <th>Arrival</th>
                     <th>Gate</th>
@@ -70,6 +71,7 @@
                         <td class="flight-number">@flight.FlightNumber</td>
                         <td>@flight.Airline</td>
                         <td>@flight.Destination</td>
+                        <td>@(string.IsNullOrWhiteSpace(flight.AircraftType) ? "-" : flight.AircraftType)</td>
                         <td>@flight.DepartureTime.ToString("MMM dd, HH:mm")</td>
                         <td>@flight.ArrivalTime.ToString("MMM dd, HH:mm")</td>
                         <td>@(flight.Gate ?? "TBD")</td>

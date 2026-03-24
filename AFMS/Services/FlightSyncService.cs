@@ -75,6 +75,8 @@ public class FlightSyncService
                     ? departureLeg?.Terminal ?? "1" 
                     : arrivalLeg?.Terminal ?? "1";
 
+                var aircraftType = extFlight.Aircraft?.Model;
+
                 var status = FlightStatusCatalog.Normalize(extFlight.Status);
 
                 // Check if flight exists in database
@@ -115,6 +117,13 @@ public class FlightSyncService
                         hasChanged = true;
                     }
 
+                    if (!string.IsNullOrWhiteSpace(aircraftType) &&
+                        !string.Equals(existingFlight.AircraftType, aircraftType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        existingFlight.AircraftType = aircraftType;
+                        hasChanged = true;
+                    }
+
                     if (hasChanged)
                     {
                         updatedFlights.Add(existingFlight);
@@ -132,6 +141,7 @@ public class FlightSyncService
                         ArrivalTime = arrivalTime,
                         Gate = gate,
                         Terminal = terminal,
+                        AircraftType = aircraftType,
                         Status = status
                     };
 

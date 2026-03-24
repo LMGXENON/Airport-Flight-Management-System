@@ -153,6 +153,7 @@
                             <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
                         }
                     </th>
+                    <th>Aircraft</th>
                     <th>Type</th>
                     <th>Route</th>
                     <th class="sortable-th" data-col="departure">
@@ -251,6 +252,11 @@
                     var typeClass = isDep ? "type-dep" : "type-arr";
                     var displayDepTime = FlightFormattingHelpers.FormatLocalTime(flight.Departure?.ScheduledTime?.Local);
                     var displayArrTime = FlightFormattingHelpers.FormatLocalTime(flight.Arrival?.ScheduledTime?.Local);
+                    var aircraftInfo = !string.IsNullOrWhiteSpace(flight.Aircraft?.Model)
+                        ? (!string.IsNullOrWhiteSpace(flight.Aircraft?.Reg)
+                            ? $"{flight.Aircraft.Model} ({flight.Aircraft.Reg})"
+                            : flight.Aircraft!.Model!)
+                        : "-";
 
                     <tr class="flight-row"
                         data-direction="@flight.Direction"
@@ -264,6 +270,7 @@
                         data-arr-time="@arrivalTime"
                         data-dep-utc="@depUtc"
                         data-arr-utc="@arrUtc"
+                        data-aircraft="@aircraftInfo"
                         data-runway-dep-utc="@runwayDepUtc"
                         data-runway-arr-utc="@runwayArrUtc"
                         data-revised-dep-utc="@revisedDepUtc"
@@ -277,6 +284,7 @@
                         data-status-label="@detailedStatus">
                         <td class="flight-number">@flight.Number</td>
                         <td>@(flight.Airline?.Name ?? "-")</td>
+                        <td>@aircraftInfo</td>
                         <td><span class="type-badge @typeClass">@typeLabel</span></td>
                         <td>@depIata → @arrIata</td>
                         <td class="mono">@displayDepTime</td>

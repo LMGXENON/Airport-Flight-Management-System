@@ -27,6 +27,10 @@
             <p class="detail-value">@Model.Destination</p>
         </div>
         <div class="detail-item">
+            <p class="detail-label">Aircraft Type</p>
+            <p class="detail-value">@(string.IsNullOrWhiteSpace(Model.AircraftType) ? "TBD" : Model.AircraftType)</p>
+        </div>
+        <div class="detail-item">
             <p class="detail-label">Departure Time</p>
             <p class="detail-value">@FlightFormattingHelpers.FormatDateTime(Model.DepartureTime, "ddd dd MMM, HH:mm")</p>
         </div>

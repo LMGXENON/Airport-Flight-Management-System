@@ -1,11 +1,13 @@
 using AFMS.Data;
 using AFMS.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace AFMS.Controllers
 {
+    [Authorize]
     public class FlightController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -83,6 +85,7 @@ namespace AFMS.Controllers
                 Terminal = "1"
             };
             ViewBag.Airlines = await GetAirlinesSelectListAsync();
+            ViewBag.AircraftModels = GetAircraftModelsSelectList(flight.AircraftType);
             return View(flight);
         }
 
@@ -101,6 +104,7 @@ namespace AFMS.Controllers
                 return RedirectToAction("Index", "Home");
             }
             ViewBag.Airlines = await GetAirlinesSelectListAsync(flight.Airline);
+            ViewBag.AircraftModels = GetAircraftModelsSelectList(flight.AircraftType);
             return View(flight);
         }
 
@@ -119,6 +123,7 @@ namespace AFMS.Controllers
             }
             flight.Status = FlightStatusCatalog.Normalize(flight.Status);
             ViewBag.Airlines = await GetAirlinesSelectListAsync(flight.Airline);
+            ViewBag.AircraftModels = GetAircraftModelsSelectList(flight.AircraftType);
             return View(flight);
         }
 
@@ -153,6 +158,7 @@ namespace AFMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewBag.Airlines = await GetAirlinesSelectListAsync(flight.Airline);
+            ViewBag.AircraftModels = GetAircraftModelsSelectList(flight.AircraftType);
             return View(flight);
         }
 
@@ -230,6 +236,42 @@ namespace AFMS.Controllers
                 .ToList();
 
             return new SelectList(combined, selectedValue);
+        }
+
+        private static SelectList GetAircraftModelsSelectList(string? selectedValue = null)
+        {
+            var aircraftModels = new[]
+            {
+                "Airbus A220-100", "Airbus A220-300", "Airbus A300", "Airbus A310",
+                "Airbus A318", "Airbus A319", "Airbus A320", "Airbus A320neo",
+                "Airbus A321", "Airbus A321neo", "Airbus A330-200", "Airbus A330-300",
+                "Airbus A330-800neo", "Airbus A330-900neo", "Airbus A340-300", "Airbus A340-600",
+                "Airbus A350-900", "Airbus A350-1000", "Airbus A380-800",
+                "ATR 42", "ATR 72",
+                "Boeing 717", "Boeing 727", "Boeing 737-700", "Boeing 737-800",
+                "Boeing 737-900", "Boeing 737 MAX 8", "Boeing 737 MAX 9", "Boeing 747-400",
+                "Boeing 747-8", "Boeing 757-200", "Boeing 757-300", "Boeing 767-300",
+                "Boeing 767-400", "Boeing 777-200", "Boeing 777-300", "Boeing 777-300ER",
+                "Boeing 777-8", "Boeing 777-9", "Boeing 787-8", "Boeing 787-9", "Boeing 787-10",
+                "Bombardier CRJ-200", "Bombardier CRJ-700", "Bombardier CRJ-900", "Bombardier CRJ-1000",
+                "De Havilland Dash 8 Q400", "Douglas DC-10", "Douglas MD-11", "Embraer E170",
+                "Embraer E175", "Embraer E190", "Embraer E195", "Embraer E190-E2", "Embraer E195-E2",
+                "Fokker 70", "Fokker 100", "Ilyushin Il-76", "Lockheed L-1011", "Saab 340", "Saab 2000"
+            };
+
+            var items = aircraftModels
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(model => model)
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(selectedValue) &&
+                !items.Contains(selectedValue, StringComparer.OrdinalIgnoreCase))
+            {
+                items.Add(selectedValue);
+                items = items.OrderBy(model => model).ToList();
+            }
+
+            return new SelectList(items, selectedValue);
         }
     }
 }

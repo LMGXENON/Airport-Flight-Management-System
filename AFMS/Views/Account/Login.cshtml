@@ -1,0 +1,53 @@
+@model AFMS.Models.LoginViewModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Admin Login";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AFMS</title>
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/add-flight.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+</head>
+<body class="login-body">
+    <main class="login-shell">
+        <div class="login-card">
+            <div class="login-brand">
+                <img src="~/images/AFMS logo.png" alt="AFMS Logo" class="login-logo" />
+                <h1>AFMS Admin Login</h1>
+                <p>Sign in to access dashboard, flight management, and advanced search.</p>
+            </div>
+
+            <form asp-action="Login" asp-controller="Account" method="post" class="login-form" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                <div class="login-field">
+                    <label asp-for="Username" class="form-label">Username</label>
+                    <input asp-for="Username" class="form-input" autocomplete="username" maxlength="50" />
+                    <span asp-validation-for="Username" class="validation-error"></span>
+                </div>
+
+                <div class="login-field">
+                    <label asp-for="Password" class="form-label">Password</label>
+                    <input asp-for="Password" type="password" class="form-input" autocomplete="current-password" maxlength="100" />
+                    <span asp-validation-for="Password" class="validation-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary login-submit">Login</button>
+            </form>
+        </div>
+    </main>
+
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>
