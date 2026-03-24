@@ -26,6 +26,16 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
+.login-card .form-input,
+.login-card .form-select {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+.login-card .btn {
+    font-size: 14px;
+}
+
 .login-brand {
     text-align: center;
     margin-bottom: 22px;
@@ -82,4 +92,14 @@
 .validation-error {
     font-size: 12px;
     color: #ff9c9c;
+}
+
+@media (max-width: 640px) {
+    .login-card {
+        padding: 22px;
+    }
+
+    .login-brand h1 {
+        font-size: 20px;
+    }
 }
