@@ -119,6 +119,13 @@ body {
     border-top: 1px solid var(--border-color);
 }
 
+.user-session-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
 .user-info {
     display: flex;
     flex-direction: column;
@@ -136,6 +143,18 @@ body {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
+}
+
+.logout-form {
+    margin: 0;
+}
+
+.logout-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.2;
+    min-width: 72px;
 }
 
 /* Main Content */

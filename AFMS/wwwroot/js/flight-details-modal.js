@@ -87,6 +87,7 @@ function openFlightModal(row) {
     const arrTime         = row.getAttribute('data-arr-time');
     const depUtc          = row.getAttribute('data-dep-utc');
     const arrUtc          = row.getAttribute('data-arr-utc');
+    const aircraft        = row.getAttribute('data-aircraft');
     const runwayDepUtc    = row.getAttribute('data-runway-dep-utc');
     const runwayArrUtc    = row.getAttribute('data-runway-arr-utc');
     const revisedDepUtc   = row.getAttribute('data-revised-dep-utc');
@@ -103,6 +104,7 @@ function openFlightModal(row) {
 
     document.getElementById('modalAirline').textContent      = airline;
     document.getElementById('modalFlightNumber').textContent = flightNumber;
+    document.getElementById('modalAircraft').textContent     = `Aircraft: ${aircraft && aircraft !== '-' ? aircraft : 'Unknown'}`;
     document.getElementById('modalRoute').textContent        = `${depIata} to ${arrIata}`;
 
     const statusBanner = document.getElementById('modalStatusBanner');

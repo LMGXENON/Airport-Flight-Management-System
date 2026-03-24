@@ -43,9 +43,13 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user-info">
-                    <span class="user-label">Logged in as</span>
-                    <span class="user-name">Admin User</span>
+                <span class="user-label">Logged in as</span>
+                <div class="user-session-row">
+                    <span class="user-name">@(User.Identity?.Name ?? "Admin")</span>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger logout-btn">Logout</button>
+                    </form>
                 </div>
             </div>
         </aside>
@@ -61,7 +65,7 @@
                         <span class="time-value" id="currentTime">00:00:00</span>
                     </div>
                     <div class="user-avatar">
-                        <button class="avatar-btn">A</button>
+                        <button class="avatar-btn">@((User.Identity?.Name ?? "A")[0].ToString().ToUpperInvariant())</button>
                     </div>
                 </div>
             </header>

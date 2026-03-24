@@ -2,7 +2,11 @@ using AFMS.BackgroundServices;
 using AFMS.Data;
 using AFMS.Hubs;
 using AFMS.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +14,61 @@ AddDotEnvConfiguration(builder);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+var jwtSecret = builder.Configuration["Auth:JwtSecret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new InvalidOperationException("Auth:JwtSecret must be configured.");
+}
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1),
+            ValidIssuer = builder.Configuration["Auth:Issuer"],
+            ValidAudience = builder.Configuration["Auth:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.TryGetValue("afms_auth_token", out var token)
+                    && !string.IsNullOrWhiteSpace(token))
+                {
+                    context.Token = token;
+                }
+
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/Account/Login"))
+                {
+                    return Task.CompletedTask;
+                }
+
+                context.HandleResponse();
+                context.Response.Redirect($"/Account/Login?returnUrl={Uri.EscapeDataString(context.Request.Path + context.Request.QueryString)}");
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // Add SignalR for real-time updates
 builder.Services.AddSignalR();
@@ -62,11 +121,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Serve static assets (CSS/JS/images) before auth so the login page can be styled.
+app.UseStaticFiles();
+
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.MapStaticAssets().AllowAnonymous();
 
 // Map SignalR hub
 app.MapHub<FlightHub>("/flightHub");
@@ -112,7 +176,8 @@ static void AddDotEnvConfiguration(WebApplicationBuilder builder)
     [
         "AERODATABOX_API_KEY", "AERODATABOX_API_HOST", "DEFAULT_AIRPORT",
         "DEEPSEEK_API_KEY", "DEEPSEEK_API_ENDPOINT", "DEEPSEEK_MODEL",
-        "DEEPSEEK_TIMEOUT_SECONDS", "DEEPSEEK_MAX_REQUESTS_PER_MINUTE", "DEEPSEEK_PROMPT_FILE"
+        "DEEPSEEK_TIMEOUT_SECONDS", "DEEPSEEK_MAX_REQUESTS_PER_MINUTE", "DEEPSEEK_PROMPT_FILE",
+        "AUTH_ADMIN_USERNAME", "AUTH_ADMIN_PASSWORD", "AUTH_JWT_SECRET", "AUTH_ISSUER", "AUTH_AUDIENCE", "AUTH_TOKEN_EXPIRY_HOURS"
     ];
 
     foreach (var envVar in knownEnvVars)
@@ -169,6 +234,12 @@ static string? GetDotEnvAlias(string key) => key switch
     "DEEPSEEK_TIMEOUT_SECONDS" => "DeepSeek:TimeoutSeconds",
     "DEEPSEEK_MAX_REQUESTS_PER_MINUTE" => "DeepSeek:MaxRequestsPerMinute",
     "DEEPSEEK_PROMPT_FILE" => "DeepSeek:PromptFile",
+    "AUTH_ADMIN_USERNAME" => "Auth:AdminUsername",
+    "AUTH_ADMIN_PASSWORD" => "Auth:AdminPassword",
+    "AUTH_JWT_SECRET" => "Auth:JwtSecret",
+    "AUTH_ISSUER" => "Auth:Issuer",
+    "AUTH_AUDIENCE" => "Auth:Audience",
+    "AUTH_TOKEN_EXPIRY_HOURS" => "Auth:TokenExpiryHours",
     _ => null
 };
 
@@ -189,6 +260,16 @@ static void ApplyStartupSchemaUpdates(ApplicationDbContext dbContext, ILogger st
         else
         {
             startupLogger.LogDebug("IsManualEntry column already exists; skipping startup schema update.");
+        }
+
+        if (!SqliteColumnExists(dbContext, "Flights", "AircraftType"))
+        {
+            dbContext.Database.ExecuteSqlRaw("ALTER TABLE Flights ADD COLUMN AircraftType TEXT NULL");
+            startupLogger.LogInformation("Added missing AircraftType column to Flights table.");
+        }
+        else
+        {
+            startupLogger.LogDebug("AircraftType column already exists; skipping startup schema update.");
         }
     }
     finally

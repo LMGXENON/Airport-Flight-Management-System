@@ -22,7 +22,7 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label asp-for="FlightNumber" class="form-label">Flight Number</label>
-                    <input asp-for="FlightNumber" class="form-input" placeholder="e.g. BA123" />
+                    <input asp-for="FlightNumber" class="form-input" placeholder="e.g. BA123" maxlength="10" pattern="[A-Za-z0-9-]+" />
                     <span asp-validation-for="FlightNumber" class="validation-error"></span>
                 </div>
                 <div class="form-group">
@@ -34,8 +34,15 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="Destination" class="form-label">Destination</label>
-                    <input asp-for="Destination" class="form-input" placeholder="e.g. LAX or Los Angeles" />
+                    <input asp-for="Destination" class="form-input" placeholder="e.g. LAX or Los Angeles" maxlength="100" />
                     <span asp-validation-for="Destination" class="validation-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="AircraftType" class="form-label">Aircraft Type</label>
+                    <select asp-for="AircraftType" asp-items="ViewBag.AircraftModels" class="form-select">
+                        <option value="">— Select Aircraft Model —</option>
+                    </select>
+                    <span asp-validation-for="AircraftType" class="validation-error"></span>
                 </div>
             </div>
         </div>
@@ -61,7 +68,7 @@
             <div class="form-grid two-columns">
                 <div class="form-group">
                     <label asp-for="Gate" class="form-label">Gate</label>
-                    <input asp-for="Gate" class="form-input" placeholder="e.g. B12" />
+                    <input asp-for="Gate" class="form-input" placeholder="e.g. B12" maxlength="10" pattern="[A-Za-z0-9-]*" />
                     <span asp-validation-for="Gate" class="validation-error"></span>
                 </div>
                 <div class="form-group">
