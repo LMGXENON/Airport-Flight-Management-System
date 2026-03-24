@@ -91,6 +91,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add flight sync service
 builder.Services.AddScoped<FlightSyncService>();
 
+// Add flight details service
+builder.Services.AddScoped<FlightDetailsService>();
+
 // Add advanced-search service
 builder.Services.AddScoped<FlightSearchService>();
 builder.Services.AddScoped<ManualFlightMergeService>();

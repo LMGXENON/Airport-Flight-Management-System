@@ -1,5 +1,6 @@
 using AFMS.Data;
 using AFMS.Models;
+using AFMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,10 +12,12 @@ namespace AFMS.Controllers
     public class FlightController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly FlightDetailsService _detailsService;
 
-        public FlightController(ApplicationDbContext context)
+        public FlightController(ApplicationDbContext context, FlightDetailsService detailsService)
         {
             _context = context;
+            _detailsService = detailsService;
         }
 
         // GET: Flight/Index - List all flights, optionally filtered by flight number
@@ -71,7 +74,8 @@ namespace AFMS.Controllers
                 return NotFound();
             }
 
-            return View(flight);
+            var viewModel = FlightDetailsViewModel.FromFlight(flight, _detailsService);
+            return View(viewModel);
         }
 
         // GET: Flight/Add
