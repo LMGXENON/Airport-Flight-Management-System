@@ -80,9 +80,13 @@ public class FlightSyncService
                 var status = FlightStatusCatalog.Normalize(extFlight.Status);
 
                 // Check if flight exists in database
+                var departureDateStart = departureTime.Date;
+                var departureDateEnd = departureDateStart.AddDays(1);
+
                 var existingFlight = await context.Flights
-                    .FirstOrDefaultAsync(f => f.FlightNumber == flightNumber && 
-                                            f.DepartureTime.Date == departureTime.Date);
+                    .FirstOrDefaultAsync(f => f.FlightNumber == flightNumber &&
+                                            f.DepartureTime >= departureDateStart &&
+                                            f.DepartureTime < departureDateEnd);
 
                 if (existingFlight != null)
                 {

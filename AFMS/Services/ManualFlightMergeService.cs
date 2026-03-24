@@ -13,12 +13,24 @@ public class ManualFlightMergeService
         IEnumerable<Flight> manualFlights)
     {
         var mergedFlights = apiFlights.ToList();
+        var flightsByNumber = mergedFlights
+            .Select(flight => new { Flight = flight, Key = NormalizeFlightNumberKey(flight.Number) })
+            .Where(item => item.Key != null)
+            .GroupBy(item => item.Key!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First().Flight, StringComparer.OrdinalIgnoreCase);
 
         foreach (var manualFlight in manualFlights.Where(f => f.IsManualEntry))
         {
             var normalizedStatus = FlightStatusCatalog.Normalize(manualFlight.Status);
-            var existing = mergedFlights.FirstOrDefault(f =>
-                string.Equals(f.Number?.Trim(), manualFlight.FlightNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+            var flightNumberKey = NormalizeFlightNumberKey(manualFlight.FlightNumber);
+
+            if (flightNumberKey == null)
+            {
+                mergedFlights.Add(CreateSyntheticFlight(manualFlight));
+                continue;
+            }
+
+            flightsByNumber.TryGetValue(flightNumberKey, out var existing);
 
             if (existing != null)
             {
@@ -45,10 +57,25 @@ public class ManualFlightMergeService
                 continue;
             }
 
-            mergedFlights.Add(CreateSyntheticFlight(manualFlight));
+            var syntheticFlight = CreateSyntheticFlight(manualFlight);
+            mergedFlights.Add(syntheticFlight);
+
+            var syntheticKey = NormalizeFlightNumberKey(syntheticFlight.Number);
+            if (syntheticKey != null && !flightsByNumber.ContainsKey(syntheticKey))
+            {
+                flightsByNumber[syntheticKey] = syntheticFlight;
+            }
         }
 
         return mergedFlights;
+    }
+
+    private static string? NormalizeFlightNumberKey(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        return value.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
     }
 
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight) => new()
