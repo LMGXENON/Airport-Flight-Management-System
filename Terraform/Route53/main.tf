@@ -1,5 +1,5 @@
 resource "aws_route53_record" "alb_alias" {
-  zone_id = "Z0404500D627T0ENSBZN"
+  zone_id = "Z058936924T76L0WJJPGE"
   type    = "A"
   name    = "tm"
   alias {
@@ -22,7 +22,7 @@ resource "aws_route53_record" "acm_cert_validation" {
     }
 
   }
-  zone_id = "Z0404500D627T0ENSBZN"
+  zone_id = "Z058936924T76L0WJJPGE"
   name    = each.value.name
   type    = each.value.type
   ttl     = 60
