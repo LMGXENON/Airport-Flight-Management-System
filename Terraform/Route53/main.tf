@@ -8,7 +8,7 @@ resource "aws_route53_record" "alb_alias" {
     evaluate_target_health = false
   }
 }
-resource "aws_acm_certificate" "cert" {
+resource "aws_acm_certificate" "acm_cert" {
   domain_name       = "afmscorp.net"
   validation_method = "DNS"
 }
