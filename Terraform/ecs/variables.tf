@@ -35,5 +35,5 @@ variable "execution_role_arn" {
 
 variable "alb_sg_id" {
   description = "Security group ID of the ALB"
-  type = string
+  type        = string
 }
