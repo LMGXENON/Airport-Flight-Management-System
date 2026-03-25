@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "afms-task" {
 }
 resource "aws_ecs_service" "afms-service" {
   name             = "afms-service"
-  cluster          = aws_ecs_cluster.afms-cluster.id
+  cluster          = aws_ecs_cluster.afms_cluster.id
   task_definition  = aws_ecs_task_definition.afms-task.arn
   desired_count    = 2
   launch_type      = "FARGATE"
@@ -66,5 +66,9 @@ resource "aws_ecs_service" "afms-service" {
     rollback = true
   }
 
+
+}
+output "aws_ecs_task_definition_arn" {
+  value = aws_ecs_task_definition.gatus-task.arn
 
 }
