@@ -64,3 +64,21 @@ resource "aws_nat_gateway" "ngw" {
 
 }
 
+resource "aws_security_group_rule" "allow_all_local" {
+  type              = "ingress"
+  security_group_id = var.ecs_sg_id
+  cidr_blocks       = [aws_vpc.afms_vpc.cidr_block]
+  from_port         = 0
+  to_port           = 0
+  protocol          = -1
+
+}
+resource "aws_security_group_rule" "all_ecs_out" {
+  type              = "egress"
+  security_group_id = var.ecs_sg_id
+  from_port         = 0
+  to_port           = 0
+  protocol          = -1
+  cidr_blocks       = ["0.0.0.0/0"]
+
+}
