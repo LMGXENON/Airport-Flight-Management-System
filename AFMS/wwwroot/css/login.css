@@ -45,6 +45,8 @@
     height: 72px;
     object-fit: contain;
     margin-bottom: 12px;
+    filter: drop-shadow(0 0 6px rgba(85, 183, 255, 0.35)) drop-shadow(0 0 16px rgba(47, 121, 255, 0.25));
+    transition: filter 0.22s ease;
 }
 
 .login-form {
