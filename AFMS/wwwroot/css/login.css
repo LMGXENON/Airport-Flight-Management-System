@@ -81,6 +81,22 @@
 
 .login-submit {
     width: 100%;
+    background: linear-gradient(135deg, #2f79ff 0%, #55b7ff 100%);
+    color: #ffffff;
+    border: 1px solid rgba(146, 202, 255, 0.38);
+    box-shadow: 0 8px 20px rgba(47, 121, 255, 0.28);
+    transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.login-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(47, 121, 255, 0.34), 0 0 16px rgba(85, 183, 255, 0.35);
+    filter: brightness(1.03);
+}
+
+.login-submit:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(146, 202, 255, 0.3), 0 12px 24px rgba(47, 121, 255, 0.32);
 }
 
 .validation-summary {
