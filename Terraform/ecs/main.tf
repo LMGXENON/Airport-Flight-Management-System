@@ -58,7 +58,7 @@ resource "aws_ecs_service" "afms-service" {
   network_configuration {
     assign_public_ip = false
     subnets          = var.private_subnet_ids
-    security_groups  = [var.ecs_sg_id]
+    security_groups  = [aws_security_group.ecs_sg.id]
   }
 
   deployment_circuit_breaker {
@@ -76,11 +76,10 @@ resource "aws_security_group" "ecs_sg" {
 resource "aws_security_group_rule" "ecs_in_from_alb" {
   type                     = "ingress"
   security_group_id        = aws_security_group.ecs_sg.id
-  source_security_group_id = aws_security_group.alb_sg.id
+  source_security_group_id = var.alb_sg_id
   from_port                = var.afms_port
   to_port                  = var.afms_port
   protocol                 = "tcp"
-
 }
 output "aws_ecs_task_definition_arn" {
   value = aws_ecs_task_definition.afms-task.arn

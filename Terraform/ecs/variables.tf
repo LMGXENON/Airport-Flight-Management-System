@@ -11,10 +11,6 @@ variable "target_group_arn" {
 
 }
 
-variable "ecs_sg_id" {
-  description = "security group for alb"
-  type        = string
-}
 
 variable "afms_image" {
   type = string
@@ -31,9 +27,13 @@ variable "afms_port" {
 
 variable "region" {
   default = "eu-west-2"
-
 }
+
 variable "execution_role_arn" {
   type = string
+}
 
+variable "alb_sg_id" {
+  description = "Security group ID of the ALB"
+  type = string
 }
