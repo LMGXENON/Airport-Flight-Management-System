@@ -19,7 +19,6 @@
 *.vspscc
 *.vssscc
 *.terraform
-Terraform/bootstrap/.terraform.tfstate
 *.hcl
 *.DS_store
 *.env
