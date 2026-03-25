@@ -75,3 +75,7 @@ resource "aws_security_group_rule" "allow_all_http_in_alb" {
   protocol          = "tcp"
 
 }
+output "alb_sg_id" {
+  value = aws_security_group.alb_sg.id
+}
+
