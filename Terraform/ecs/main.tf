@@ -51,7 +51,7 @@ resource "aws_ecs_service" "afms-service" {
 
   load_balancer {
     target_group_arn = var.target_group_arn
-    container_name   = "gatus"
+    container_name   = "afms"
     container_port   = 8080
   }
 
