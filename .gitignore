@@ -19,7 +19,7 @@
 *.vspscc
 *.vssscc
 *.terraform
-*.terraform.tfstate
+*.terraform/
 *.hcl
 *.DS_store
 *.env
