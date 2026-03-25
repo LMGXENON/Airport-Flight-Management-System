@@ -500,6 +500,10 @@
     font-size: 14px;
 }
 
+.search-loading[hidden] {
+    display: none !important;
+}
+
 .spinner {
     width: 22px;
     height: 22px;
