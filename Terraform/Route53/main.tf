@@ -9,7 +9,7 @@ resource "aws_route53_record" "alb_alias" {
   }
 }
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "AFMS.com"
+  domain_name       = "afmscorp.net"
   validation_method = "DNS"
 }
 resource "aws_route53_record" "acm_cert_validation" {
