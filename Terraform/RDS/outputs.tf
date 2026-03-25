@@ -24,19 +24,12 @@ output "db_username" {
   sensitive   = true
 }
 
-output "db_password" {
-  description = "Master password for database (store securely)"
-  value       = var.db_password
-  sensitive   = true
-}
-
 output "rds_security_group_id" {
   description = "RDS security group ID"
   value       = aws_security_group.rds_sg.id
 }
 
 output "connection_string_dotnet" {
-  description = ".NET EntityFramework connection string (PostgreSQL)"
-  value       = "Server=${aws_db_instance.afms_db.address};Port=${aws_db_instance.afms_db.port};Database=${aws_db_instance.afms_db.db_name};User Id=${aws_db_instance.afms_db.username};Password=${var.db_password};SSL Mode=Disable;"
-  sensitive   = true
+  description = ".NET EntityFramework connection string template (inject password via secret manager/env var)"
+  value       = "Server=${aws_db_instance.afms_db.address};Port=${aws_db_instance.afms_db.port};Database=${aws_db_instance.afms_db.db_name};User Id=${aws_db_instance.afms_db.username};Password=<SET_FROM_SECRET>;SSL Mode=Require;Trust Server Certificate=true;"
 }
