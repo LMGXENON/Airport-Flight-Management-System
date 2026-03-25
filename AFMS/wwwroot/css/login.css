@@ -37,7 +37,8 @@
 .login-page-header .page-subtitle {
     font-size: 0.95rem;
     font-family: "Segoe UI", "Trebuchet MS", sans-serif;
-    opacity: 0.62;
+    font-weight: 500;
+    color: rgba(235, 243, 255, 0.88);
 }
 
 .login-logo {
