@@ -18,7 +18,7 @@
 }
 
 .login-panel {
-    width: min(520px, 100%);
+    width: min(420px, 100%);
 }
 
 .login-page-header {
@@ -45,6 +45,7 @@
     box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(16px) saturate(135%);
     -webkit-backdrop-filter: blur(16px) saturate(135%);
+    padding: 34px 28px;
 }
 
 .login-submit {
