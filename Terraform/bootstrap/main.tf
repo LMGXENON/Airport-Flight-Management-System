@@ -50,3 +50,6 @@ resource "aws_ecr_lifecycle_policy" "repo_policy" {
     }]
   })
 }
+output "afms_repo_url" {
+  value = aws_ecr_repository.afms_repo.repository_url
+}
