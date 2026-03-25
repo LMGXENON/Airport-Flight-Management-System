@@ -1,3 +1,3 @@
 output "certificate_arn" {
-  value = aws_acm_certificate.acm_cert.arn
+  value = try(aws_acm_certificate_validation.acm_validate[0].certificate_arn, null)
 }
