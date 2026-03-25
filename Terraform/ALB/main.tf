@@ -3,12 +3,12 @@ resource "aws_lb" "afms_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = aws_subnet.public[*].id
+  subnets            = var.public_subnet_ids
 
 }
 resource "aws_security_group" "alb_sg" {
   name   = "alb"
-  vpc_id = aws_vpc.afms_vpc.id
+  vpc_id = var.vpc_id
 
 
 }
@@ -59,13 +59,6 @@ resource "aws_lb_listener" "HTTPS" {
   }
 
 }
-resource "aws_security_group" "alb_sg" {
-  name   = "alb"
-  vpc_id = var.vpc_id
-
-
-
-}
 resource "aws_security_group_rule" "allow_all_http_in_alb" {
   type              = "ingress"
   security_group_id = aws_security_group.alb_sg.id
@@ -84,16 +77,19 @@ resource "aws_security_group_rule" "allow_all_https_in_alb" {
   protocol          = "tcp"
 
 }
-resource "aws_security_group_rule" "alb_out_to_ecs" {
-  type                     = "egress"
-  source_security_group_id = aws_security_group.ecs_sg.id
-  security_group_id        = aws_security_group.alb_sg.id
-  from_port                = var.gatus_port
-  to_port                  = var.gatus_port
-  protocol                 = "tcp"
-
-}
 output "alb_sg_id" {
   value = aws_security_group.alb_sg.id
+}
+
+output "target_group_arn" {
+  value = aws_lb_target_group.afms_tg.arn
+}
+
+output "alb_dns_name" {
+  value = aws_lb.afms_alb.dns_name
+}
+
+output "alb_zone_id" {
+  value = aws_lb.afms_alb.zone_id
 }
 
