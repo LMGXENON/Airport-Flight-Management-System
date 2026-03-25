@@ -26,6 +26,20 @@
     margin-bottom: 20px;
 }
 
+.login-page-header .page-title {
+    font-size: clamp(2rem, 4.5vw, 2.4rem);
+    font-family: Bahnschrift, "Segoe UI", "Trebuchet MS", sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin-bottom: 10px;
+}
+
+.login-page-header .page-subtitle {
+    font-size: 0.95rem;
+    font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+    opacity: 0.62;
+}
+
 .login-logo {
     width: 72px;
     height: 72px;
