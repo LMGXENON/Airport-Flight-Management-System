@@ -19,6 +19,8 @@
 *.vspscc
 *.vssscc
 *.terraform
+*.tfstate
+*.tfstate.backup
 *.hcl
 *.DS_store
 *.env
