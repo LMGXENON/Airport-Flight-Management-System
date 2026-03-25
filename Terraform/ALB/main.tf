@@ -66,3 +66,12 @@ resource "aws_security_group" "alb_sg" {
 
 
 }
+resource "aws_security_group_rule" "allow_all_http_in_alb" {
+  type              = "ingress"
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_blocks       = var.cidr_blocks_all
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+
+}
