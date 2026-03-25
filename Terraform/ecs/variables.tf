@@ -1,3 +1,6 @@
+variable "vpc_id" {
+  type = string
+}
 variable "private_subnet_ids" {
   type = list(string)
 }
@@ -19,6 +22,10 @@ variable "afms_image" {
 
 variable "afms_image_tag" {
   type = string
+
+}
+variable "afms_port" {
+  default = 8080
 
 }
 
