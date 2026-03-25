@@ -76,11 +76,11 @@
 }
 
 .login-form.form-card {
-    background: rgba(16, 22, 34, 0.42);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(16px) saturate(135%);
-    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 30%, rgba(17, 28, 46, 0.34) 100%);
+    border: 1px solid rgba(205, 225, 255, 0.34);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.42), 0 0 24px rgba(100, 170, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+    backdrop-filter: blur(20px) saturate(165%);
+    -webkit-backdrop-filter: blur(20px) saturate(165%);
     padding: 34px 28px;
     transform: translateY(-6px);
 }
