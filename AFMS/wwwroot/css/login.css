@@ -1,7 +1,9 @@
 .login-body {
     margin: 0;
     min-height: 100vh;
-    background: var(--bg-primary, #0a0e1a);
+    background:
+        linear-gradient(rgba(10, 14, 26, 0.65), rgba(10, 14, 26, 0.65)),
+        url('/images/airport-terminal_1417-1456.avif') center/cover no-repeat fixed;
     color: var(--text-primary, #ffffff);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
