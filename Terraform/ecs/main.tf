@@ -38,3 +38,33 @@ resource "aws_ecs_task_definition" "afms-task" {
 
 
 }
+resource "aws_ecs_service" "afms-service" {
+  name             = "afms-service"
+  cluster          = aws_ecs_cluster.afms-cluster.id
+  task_definition  = aws_ecs_task_definition.afms-task.arn
+  desired_count    = 2
+  launch_type      = "FARGATE"
+  platform_version = "LATEST"
+  propagate_tags   = "SERVICE"
+
+  health_check_grace_period_seconds = 60
+
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = "gatus"
+    container_port   = 8080
+  }
+
+  network_configuration {
+    assign_public_ip = false
+    subnets          = var.private_subnet_ids
+    security_groups  = [var.ecs_sg_id]
+  }
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
+
+}
