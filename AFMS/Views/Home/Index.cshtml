@@ -3,8 +3,18 @@
 @{
     ViewData["Title"] = "Dashboard";
 
+    var apiUnavailable = ViewBag.ApiError != null;
     var totalDepartures = Model.Count(f => f.Direction == "Departure");
     var totalArrivals = Model.Count(f => f.Direction == "Arrival");
+    var totalAirlines = Model.Select(f => f.Airline?.Name).Where(n => n != null).Distinct().Count();
+
+    var totalFlightsDisplay = apiUnavailable ? "--" : Model.Count.ToString();
+    var departuresDisplay = apiUnavailable ? "--" : totalDepartures.ToString();
+    var arrivalsDisplay = apiUnavailable ? "--" : totalArrivals.ToString();
+    var airlinesDisplay = apiUnavailable ? "--" : totalAirlines.ToString();
+
+    var statBadgeText = apiUnavailable ? "Unavailable" : "Live Data";
+    var statBadgeClass = apiUnavailable ? "neutral" : "positive";
 }
 
 <!-- Page Header -->
@@ -18,33 +28,33 @@
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-label">Total Flights</div>
-            <div class="stat-value">@Model.Count</div>
+            <div class="stat-value">@totalFlightsDisplay</div>
         </div>
-        <div class="stat-badge positive">Live Data</div>
+        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-label">Departures</div>
-            <div class="stat-value">@totalDepartures</div>
+            <div class="stat-value">@departuresDisplay</div>
         </div>
-        <div class="stat-badge positive">Live Data</div>
+        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-label">Arrivals</div>
-            <div class="stat-value">@totalArrivals</div>
+            <div class="stat-value">@arrivalsDisplay</div>
         </div>
-        <div class="stat-badge positive">Live Data</div>
+        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-label">Airlines</div>
-            <div class="stat-value">@Model.Select(f => f.Airline?.Name).Where(n => n != null).Distinct().Count()</div>
+            <div class="stat-value">@airlinesDisplay</div>
         </div>
-        <div class="stat-badge positive">Live Data</div>
+        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
     </div>
 </div>
 

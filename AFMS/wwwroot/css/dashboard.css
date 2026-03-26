@@ -391,6 +391,11 @@ body {
     color: var(--success);
 }
 
+.stat-badge.neutral {
+    background-color: rgba(136, 145, 178, 0.2);
+    color: var(--text-secondary);
+}
+
 /* Flights Section */
 .flights-section {
     background-color: var(--bg-card);
