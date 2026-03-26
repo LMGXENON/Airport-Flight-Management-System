@@ -96,7 +96,7 @@
 
         @if (!Model.Flights.Any())
         {
-            <div class="empty-state">
+            <div class="empty-state" aria-live="polite">
                 @if (!string.IsNullOrEmpty(Model.Search))
                 {
                     <p class="empty-state-title">No flights found for "@Model.Search"</p>
