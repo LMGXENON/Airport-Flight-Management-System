@@ -24,7 +24,7 @@
 }
 
 <!-- Flight Number Search -->
-<form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form">
+<form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form" aria-label="Search flights by flight number">
     <input type="text"
            name="search"
            value="@Model.Search"
