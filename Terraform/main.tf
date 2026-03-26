@@ -19,6 +19,11 @@ module "ecs" {
   afms_image_tag     = "latest"
   region             = "eu-west-2"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+  rds_endpoint       = module.RDS.rds_endpoint
+  rds_db_name        = module.RDS.rds_db_name
+  rds_username       = module.RDS.rds_username
+  rds_password       = var.rds_password
+  rds_port           = module.RDS.rds_port
 
 }
 

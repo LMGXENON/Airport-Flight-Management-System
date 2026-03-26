@@ -24,6 +24,13 @@ resource "aws_ecs_task_definition" "afms-task" {
         protocol      = "tcp"
       }]
 
+      environment = [
+        {
+          name  = "ConnectionStrings__DefaultConnection"
+          value = "Host=${trimprefix(var.rds_endpoint, "afms-db:")}:${var.rds_port};Database=${var.rds_db_name};Username=${var.rds_username};Password=${var.rds_password};SSL Mode=Require;"
+        }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {

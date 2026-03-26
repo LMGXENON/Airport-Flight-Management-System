@@ -65,3 +65,19 @@ resource "aws_db_instance" "afms_db" {
     Name = "afms-database"
   }
 }
+
+output "rds_endpoint" {
+  value = aws_db_instance.afms_db.endpoint
+}
+
+output "rds_db_name" {
+  value = aws_db_instance.afms_db.db_name
+}
+
+output "rds_username" {
+  value = aws_db_instance.afms_db.username
+}
+
+output "rds_port" {
+  value = aws_db_instance.afms_db.port
+}
