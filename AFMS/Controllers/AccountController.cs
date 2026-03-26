@@ -31,7 +31,6 @@ public class AccountController : Controller
 
     [HttpPost]
     [AllowAnonymous]
-    [ValidateAntiForgeryToken]
     public IActionResult Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
@@ -54,23 +53,17 @@ public class AccountController : Controller
         {
             HttpOnly = true,
             Secure = Request.IsHttps,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddHours(GetTokenExpiryHours()),
             Path = "/"
         });
 
-        var redirectUrl = model.ReturnUrl;
-        if (string.IsNullOrWhiteSpace(redirectUrl) || !Url.IsLocalUrl(redirectUrl))
-        {
-            redirectUrl = Url.Action("Index", "Home") ?? "/Home/Index";
-        }
-
-        return Redirect(redirectUrl);
+        var redirectUrl = ResolvePostLoginRedirect(model.ReturnUrl);
+        return LocalRedirect(redirectUrl);
     }
 
     [Authorize]
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public IActionResult Logout()
     {
         Response.Cookies.Delete("afms_auth_token");
@@ -109,6 +102,26 @@ public class AccountController : Controller
     {
         var configured = _configuration.GetValue<int?>("Auth:TokenExpiryHours") ?? 8;
         return Math.Clamp(configured, 1, 24);
+    }
+
+    private string ResolvePostLoginRedirect(string? returnUrl)
+    {
+        const string defaultUrl = "/Home/Index";
+
+        if (string.IsNullOrWhiteSpace(returnUrl))
+            return defaultUrl;
+
+        var candidate = returnUrl.Trim();
+        if (candidate.Length > 512)
+            return defaultUrl;
+
+        if (!Url.IsLocalUrl(candidate))
+            return defaultUrl;
+
+        if (candidate.StartsWith("/Account/Login", StringComparison.OrdinalIgnoreCase))
+            return defaultUrl;
+
+        return candidate;
     }
 }
 
