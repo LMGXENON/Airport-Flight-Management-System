@@ -266,7 +266,11 @@ public class HomeController : Controller
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 _logger.LogError("DeepSeek API key is not configured.");
-                return StatusCode(500, new { error = "DeepSeek API key not configured" });
+                return Ok(new AiSearchFiltersResponse
+                {
+                    IsSearchRequest = false,
+                    Message = "AI key is not configured in this environment. Please use manual filters for now."
+                });
             }
 
             var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
@@ -338,7 +342,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid outer JSON for client {ClientKey}.", clientKey);
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI service returned an invalid response." });
+                return Ok(new AiSearchFiltersResponse
+                {
+                    IsSearchRequest = false,
+                    Message = "AI returned an invalid response format. Please try again or use manual filters."
+                });
             }
 
             var content = jsonResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? "{}";
@@ -353,7 +361,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid search JSON for client {ClientKey}. Payload: {Payload}", clientKey, Truncate(content, 300));
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not turn that request into search filters. Please try again." });
+                return Ok(new AiSearchFiltersResponse
+                {
+                    IsSearchRequest = false,
+                    Message = "AI could not convert that request into filters. Please rephrase or use manual filters."
+                });
             }
 
             var mergedParams = MergeWithAiSearchContext(parsedParams, normalizedContext, request.Query);
@@ -412,7 +424,11 @@ public class HomeController : Controller
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 _logger.LogError("DeepSeek API key is not configured.");
-                return StatusCode(500, new { error = "DeepSeek API key not configured" });
+                return Ok(new AiAddFlightResponse
+                {
+                    IsAddFlightRequest = false,
+                    Message = "AI key is not configured in this environment. Please fill the form manually for now."
+                });
             }
 
             var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
@@ -484,7 +500,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid outer JSON for add-flight request (client {ClientKey}).", clientKey);
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI service returned an invalid response." });
+                return Ok(new AiAddFlightResponse
+                {
+                    IsAddFlightRequest = false,
+                    Message = "AI returned an invalid response format. Please try again or fill fields manually."
+                });
             }
 
             var content = jsonResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? "{}";
@@ -498,7 +518,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid add-flight JSON for client {ClientKey}. Payload: {Payload}", clientKey, Truncate(content, 300));
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not parse that into add-flight fields. Please try again." });
+                return Ok(new AiAddFlightResponse
+                {
+                    IsAddFlightRequest = false,
+                    Message = "AI could not parse that into add-flight fields. Please rephrase or continue manually."
+                });
             }
 
             var mergedParams = MergeWithAiAddFlightContext(parsedParams, normalizedContext);

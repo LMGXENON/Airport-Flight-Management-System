@@ -2,6 +2,31 @@ data "aws_caller_identity" "current" {}
 
 locals {
   afms_ecr_image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.eu-west-2.amazonaws.com/afms-repo"
+
+  env_file_path    = "${path.root}/../AFMS/.env"
+  env_file_content = fileexists(local.env_file_path) ? file(local.env_file_path) : ""
+
+  deepseek_api_key_from_env                 = trim(try(regexall("(?m)^DEEPSEEK_API_KEY\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  deepseek_api_endpoint_from_env            = trim(try(regexall("(?m)^DEEPSEEK_API_ENDPOINT\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  deepseek_model_from_env                   = trim(try(regexall("(?m)^DEEPSEEK_MODEL\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  deepseek_timeout_seconds_from_env         = try(tonumber(trim(try(regexall("(?m)^DEEPSEEK_TIMEOUT_SECONDS\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")), null)
+  deepseek_max_requests_per_minute_from_env = try(tonumber(trim(try(regexall("(?m)^DEEPSEEK_MAX_REQUESTS_PER_MINUTE\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")), null)
+  deepseek_prompt_file_from_env             = trim(try(regexall("(?m)^DEEPSEEK_PROMPT_FILE\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+
+  aerodatabox_api_key_from_env  = trim(try(regexall("(?m)^AERODATABOX_API_KEY\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  aerodatabox_api_host_from_env = trim(try(regexall("(?m)^AERODATABOX_API_HOST\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  default_airport_from_env      = trim(try(regexall("(?m)^DEFAULT_AIRPORT\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+
+  deepseek_api_key_effective                 = local.deepseek_api_key_from_env != "" ? local.deepseek_api_key_from_env : var.deepseek_api_key
+  deepseek_api_endpoint_effective            = local.deepseek_api_endpoint_from_env != "" ? local.deepseek_api_endpoint_from_env : var.deepseek_api_endpoint
+  deepseek_model_effective                   = local.deepseek_model_from_env != "" ? local.deepseek_model_from_env : var.deepseek_model
+  deepseek_timeout_seconds_effective         = local.deepseek_timeout_seconds_from_env != null ? local.deepseek_timeout_seconds_from_env : var.deepseek_timeout_seconds
+  deepseek_max_requests_per_minute_effective = local.deepseek_max_requests_per_minute_from_env != null ? local.deepseek_max_requests_per_minute_from_env : var.deepseek_max_requests_per_minute
+  deepseek_prompt_file_effective             = local.deepseek_prompt_file_from_env != "" ? local.deepseek_prompt_file_from_env : "Prompts/DeepSeekFlightSearchPrompt.txt"
+
+  aerodatabox_api_key_effective  = local.aerodatabox_api_key_from_env
+  aerodatabox_api_host_effective = local.aerodatabox_api_host_from_env != "" ? local.aerodatabox_api_host_from_env : "aerodatabox.p.rapidapi.com"
+  default_airport_effective      = local.default_airport_from_env != "" ? local.default_airport_from_env : "EGLL"
 }
 
 module "vpc" {
@@ -23,11 +48,15 @@ module "ecs" {
   rds_username                     = module.RDS.rds_username
   rds_password                     = var.rds_password
   rds_port                         = module.RDS.rds_port
-  deepseek_api_key                 = var.deepseek_api_key
-  deepseek_api_endpoint            = var.deepseek_api_endpoint
-  deepseek_model                   = var.deepseek_model
-  deepseek_timeout_seconds         = var.deepseek_timeout_seconds
-  deepseek_max_requests_per_minute = var.deepseek_max_requests_per_minute
+  deepseek_api_key                 = local.deepseek_api_key_effective
+  deepseek_api_endpoint            = local.deepseek_api_endpoint_effective
+  deepseek_model                   = local.deepseek_model_effective
+  deepseek_timeout_seconds         = local.deepseek_timeout_seconds_effective
+  deepseek_max_requests_per_minute = local.deepseek_max_requests_per_minute_effective
+  deepseek_prompt_file             = local.deepseek_prompt_file_effective
+  aerodatabox_api_key              = local.aerodatabox_api_key_effective
+  aerodatabox_api_host             = local.aerodatabox_api_host_effective
+  default_airport                  = local.default_airport_effective
 }
 
 module "RDS" {
