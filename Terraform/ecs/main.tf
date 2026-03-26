@@ -48,6 +48,22 @@ resource "aws_ecs_task_definition" "afms-task" {
         {
           name  = "DEEPSEEK_MAX_REQUESTS_PER_MINUTE"
           value = tostring(var.deepseek_max_requests_per_minute)
+        },
+        {
+          name  = "DEEPSEEK_PROMPT_FILE"
+          value = var.deepseek_prompt_file
+        },
+        {
+          name  = "AERODATABOX_API_KEY"
+          value = var.aerodatabox_api_key
+        },
+        {
+          name  = "AERODATABOX_API_HOST"
+          value = var.aerodatabox_api_host
+        },
+        {
+          name  = "DEFAULT_AIRPORT"
+          value = var.default_airport
         }
       ]
 

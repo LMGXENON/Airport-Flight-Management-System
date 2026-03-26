@@ -94,3 +94,28 @@ variable "deepseek_max_requests_per_minute" {
   type        = number
   default     = 5
 }
+
+variable "deepseek_prompt_file" {
+  description = "DeepSeek prompt file path"
+  type        = string
+  default     = "Prompts/DeepSeekFlightSearchPrompt.txt"
+}
+
+variable "aerodatabox_api_key" {
+  description = "AeroDataBox API key"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "aerodatabox_api_host" {
+  description = "AeroDataBox API host"
+  type        = string
+  default     = "aerodatabox.p.rapidapi.com"
+}
+
+variable "default_airport" {
+  description = "Default airport ICAO code"
+  type        = string
+  default     = "EGLL"
+}
