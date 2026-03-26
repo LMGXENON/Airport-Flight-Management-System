@@ -14,6 +14,36 @@ updateClock();
 
 // Form submission handlers to prevent double-submission and provide feedback
 (function () {
+    // Reset Search button logic for Advanced Search form
+    document.addEventListener('DOMContentLoaded', function () {
+        var resetBtn = document.getElementById('resetSearchBtn');
+        var searchForm = document.getElementById('searchForm');
+        if (resetBtn && searchForm) {
+            resetBtn.addEventListener('click', function () {
+                // Clear all input fields
+                searchForm.reset();
+                // Clear datalist-backed fields manually
+                var inputs = searchForm.querySelectorAll('input[type="text"], input[type="date"], input[type="time"]');
+                inputs.forEach(function (input) { input.value = ''; });
+                // Clear selects
+                var selects = searchForm.querySelectorAll('select');
+                selects.forEach(function (select) { select.selectedIndex = 0; });
+                // Clear hidden fields
+                var hiddens = searchForm.querySelectorAll('input[type="hidden"]');
+                hiddens.forEach(function (hidden) { if (hidden.name !== 'search') hidden.value = ''; });
+                // Remove all status filter selections
+                var statusBtns = document.querySelectorAll('.status-btn.active');
+                statusBtns.forEach(function (btn) { btn.classList.remove('active'); btn.setAttribute('aria-pressed', 'false'); });
+                var statusInputs = searchForm.querySelectorAll('.status-hidden-input');
+                statusInputs.forEach(function (input) { input.remove(); });
+                // Reset direction toggle
+                var directionBtns = document.querySelectorAll('.direction-btn');
+                directionBtns.forEach(function (btn) { btn.classList.remove('active'); btn.setAttribute('aria-pressed', 'false'); });
+                var directionInput = document.getElementById('directionInput');
+                if (directionInput) directionInput.value = '';
+            });
+        }
+    });
     document.addEventListener('submit', function (e) {
         var form = e.target;
         var submitBtn = form.querySelector('button[type="submit"]');
