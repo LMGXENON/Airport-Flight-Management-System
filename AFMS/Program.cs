@@ -265,6 +265,12 @@ static string? GetDotEnvAlias(string key) => key switch
 
 static void ApplyStartupSchemaUpdates(ApplicationDbContext dbContext, ILogger startupLogger)
 {
+    if (!dbContext.Database.IsSqlite())
+    {
+        startupLogger.LogInformation("Skipping SQLite-specific startup schema updates for provider {ProviderName}.", dbContext.Database.ProviderName);
+        return;
+    }
+
     if (dbContext.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
     {
         dbContext.Database.OpenConnection();
