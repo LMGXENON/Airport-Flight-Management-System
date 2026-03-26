@@ -24,6 +24,49 @@ resource "aws_ecs_task_definition" "afms-task" {
         protocol      = "tcp"
       }]
 
+      environment = [
+        {
+          name  = "ConnectionStrings__DefaultConnection"
+          value = "Host=${split(":", var.rds_endpoint)[0]};Port=${var.rds_port};Database=${var.rds_db_name};Username=${var.rds_username};Password=${var.rds_password};SSL Mode=Require;"
+        },
+        {
+          name  = "DEEPSEEK_API_KEY"
+          value = var.deepseek_api_key
+        },
+        {
+          name  = "DEEPSEEK_API_ENDPOINT"
+          value = var.deepseek_api_endpoint
+        },
+        {
+          name  = "DEEPSEEK_MODEL"
+          value = var.deepseek_model
+        },
+        {
+          name  = "DEEPSEEK_TIMEOUT_SECONDS"
+          value = tostring(var.deepseek_timeout_seconds)
+        },
+        {
+          name  = "DEEPSEEK_MAX_REQUESTS_PER_MINUTE"
+          value = tostring(var.deepseek_max_requests_per_minute)
+        },
+        {
+          name  = "DEEPSEEK_PROMPT_FILE"
+          value = var.deepseek_prompt_file
+        },
+        {
+          name  = "AERODATABOX_API_KEY"
+          value = var.aerodatabox_api_key
+        },
+        {
+          name  = "AERODATABOX_API_HOST"
+          value = var.aerodatabox_api_host
+        },
+        {
+          name  = "DEFAULT_AIRPORT"
+          value = var.default_airport
+        }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -47,7 +90,7 @@ resource "aws_ecs_service" "afms-service" {
   platform_version = "LATEST"
   propagate_tags   = "SERVICE"
 
-  health_check_grace_period_seconds = 60
+  health_check_grace_period_seconds = 180
 
   load_balancer {
     target_group_arn = var.target_group_arn
@@ -58,7 +101,7 @@ resource "aws_ecs_service" "afms-service" {
   network_configuration {
     assign_public_ip = false
     subnets          = var.private_subnet_ids
-    security_groups  = [var.ecs_sg_id]
+    security_groups  = [aws_security_group.ecs_sg.id]
   }
 
   deployment_circuit_breaker {
@@ -76,12 +119,52 @@ resource "aws_security_group" "ecs_sg" {
 resource "aws_security_group_rule" "ecs_in_from_alb" {
   type                     = "ingress"
   security_group_id        = aws_security_group.ecs_sg.id
-  source_security_group_id = aws_security_group.alb_sg.id
+  source_security_group_id = var.alb_sg_id
   from_port                = var.afms_port
   to_port                  = var.afms_port
   protocol                 = "tcp"
-
 }
+
+resource "aws_security_group_rule" "ecs_out_to_ecr" {
+  type              = "egress"
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow HTTPS to ECR and other services"
+}
+
+resource "aws_security_group_rule" "ecs_out_to_rds" {
+  type              = "egress"
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/16"]
+  description       = "Allow PostgreSQL to RDS"
+}
+
+resource "aws_security_group_rule" "ecs_out_dns_udp" {
+  type              = "egress"
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port         = 53
+  to_port           = 53
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow DNS UDP queries"
+}
+
+resource "aws_security_group_rule" "ecs_out_dns_tcp" {
+  type              = "egress"
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port         = 53
+  to_port           = 53
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow DNS TCP queries"
+}
+
 output "aws_ecs_task_definition_arn" {
   value = aws_ecs_task_definition.afms-task.arn
 

@@ -4,6 +4,7 @@ using AFMS.Hubs;
 using AFMS.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -13,7 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 AddDotEnvConfiguration(builder);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<AFMS.Filters.GlobalExceptionFilter>();
+});
 
 var jwtSecret = builder.Configuration["Auth:JwtSecret"];
 if (string.IsNullOrWhiteSpace(jwtSecret))
@@ -86,7 +90,19 @@ builder.Services.AddHttpClient("DeepSeek", client =>
 
 // Add database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    
+    // Use PostgreSQL if connection string contains "Host=" (PostgreSQL), otherwise use SQLite
+    if (connectionString?.Contains("Host=") == true)
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+});
 
 // Add flight sync service
 builder.Services.AddScoped<FlightSyncService>();
@@ -98,6 +114,13 @@ builder.Services.AddScoped<ManualFlightMergeService>();
 // Add background service for periodic flight updates
 builder.Services.AddHostedService<FlightUpdateBackgroundService>();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
 // Ensure database is created and apply migrations
@@ -105,11 +128,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var startupLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
-    dbContext.Database.EnsureCreated();
-
-    ApplyStartupSchemaUpdates(dbContext, startupLogger);
-
-    startupLogger.LogInformation("Database initialized successfully.");
+    InitializeDatabaseWithRetry(dbContext, startupLogger);
 }
 
 // Configure the HTTP request pipeline.
@@ -119,6 +138,8 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 
@@ -131,6 +152,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets().AllowAnonymous();
+
+app.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 
 // Map SignalR hub
 app.MapHub<FlightHub>("/flightHub");
@@ -245,6 +268,12 @@ static string? GetDotEnvAlias(string key) => key switch
 
 static void ApplyStartupSchemaUpdates(ApplicationDbContext dbContext, ILogger startupLogger)
 {
+    if (!dbContext.Database.IsSqlite())
+    {
+        startupLogger.LogInformation("Skipping SQLite-specific startup schema updates for provider {ProviderName}.", dbContext.Database.ProviderName);
+        return;
+    }
+
     if (dbContext.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
     {
         dbContext.Database.OpenConnection();
@@ -285,6 +314,34 @@ static void ApplyStartupSchemaUpdates(ApplicationDbContext dbContext, ILogger st
     finally
     {
         dbContext.Database.CloseConnection();
+    }
+}
+
+static void InitializeDatabaseWithRetry(ApplicationDbContext dbContext, ILogger startupLogger)
+{
+    const int maxAttempts = 5;
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            dbContext.Database.EnsureCreated();
+            ApplyStartupSchemaUpdates(dbContext, startupLogger);
+            startupLogger.LogInformation("Database initialized successfully.");
+            return;
+        }
+        catch (Exception ex)
+        {
+            startupLogger.LogError(ex, "Database initialization failed on attempt {Attempt}/{MaxAttempts}", attempt, maxAttempts);
+
+            if (attempt == maxAttempts)
+            {
+                startupLogger.LogWarning("Continuing startup without confirmed database initialization to keep container alive.");
+                return;
+            }
+
+            Thread.Sleep(TimeSpan.FromSeconds(attempt * 3));
+        }
     }
 }
 

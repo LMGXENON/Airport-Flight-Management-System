@@ -21,7 +21,6 @@
 *.terraform
 *.tfstate
 *.tfstate.backup
-*.hcl
 *.DS_store
 *.env
 *.env.example
