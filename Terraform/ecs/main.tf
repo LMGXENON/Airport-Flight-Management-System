@@ -54,7 +54,7 @@ resource "aws_ecs_service" "afms-service" {
   platform_version = "LATEST"
   propagate_tags   = "SERVICE"
 
-  health_check_grace_period_seconds = 60
+  health_check_grace_period_seconds = 180
 
   load_balancer {
     target_group_arn = var.target_group_arn
@@ -107,6 +107,26 @@ resource "aws_security_group_rule" "ecs_out_to_rds" {
   protocol          = "tcp"
   cidr_blocks       = ["10.0.0.0/16"]
   description       = "Allow PostgreSQL to RDS"
+}
+
+resource "aws_security_group_rule" "ecs_out_dns_udp" {
+  type              = "egress"
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port         = 53
+  to_port           = 53
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow DNS UDP queries"
+}
+
+resource "aws_security_group_rule" "ecs_out_dns_tcp" {
+  type              = "egress"
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port         = 53
+  to_port           = 53
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow DNS TCP queries"
 }
 
 output "aws_ecs_task_definition_arn" {
