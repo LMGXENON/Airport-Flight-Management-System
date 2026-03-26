@@ -70,6 +70,31 @@ updateClock();
     });
 })();
 
+// Show loading spinner for flights table during fetches
+document.addEventListener('DOMContentLoaded', function () {
+    var flightsSection = document.querySelector('.flights-section');
+    var spinner = document.getElementById('flightsLoadingSpinner');
+    if (flightsSection && spinner) {
+        // Show spinner on search form submit
+        var searchForm = document.querySelector('.flight-search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', function () {
+                spinner.style.display = 'flex';
+            });
+        }
+        // Show spinner on pagination link click
+        var pagination = document.querySelector('.pagination');
+        if (pagination) {
+            pagination.addEventListener('click', function (e) {
+                var target = e.target;
+                if (target.tagName === 'A' && target.classList.contains('page-btn')) {
+                    spinner.style.display = 'flex';
+                }
+            });
+        }
+    }
+});
+
 // Sidebar toggle for mobile
 (function () {
     var sidebar = document.getElementById('sidebar');

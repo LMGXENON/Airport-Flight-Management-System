@@ -44,7 +44,12 @@
 </form>
 
 <!-- Flights Section -->
-<div class="flights-section">
+<div class="flights-section" style="position: relative;">
+    <!-- Loading Spinner Overlay -->
+    <div id="flightsLoadingSpinner" class="loading-spinner-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <span class="loading-spinner-label">Loading flights…</span>
+    </div>
     <div class="table-wrapper">
         <table class="flights-table">
             <thead>
