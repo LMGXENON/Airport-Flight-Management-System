@@ -304,6 +304,12 @@ body {
     align-items: center;
     justify-content: center;
     border: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.flight-add-btn:hover {
+    background: #4169e1;
+    color: #fff;
 }
 
 .flight-search-form {
