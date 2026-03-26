@@ -1,0 +1,96 @@
+﻿using AFMS.Models;
+using AFMS.Services;
+
+namespace AFMS.Tests;
+
+public class ManualFlightMergeServiceTests
+{
+    private readonly ManualFlightMergeService _service = new();
+
+    [Fact]
+    public void MergeManualFlights_OverridesExistingApiFlightFields()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "BA123",
+                Status = "Expected",
+                Direction = "Departure",
+                Aircraft = new Aircraft { Model = "Airbus A320" },
+                Departure = new FlightMovement
+                {
+                    Gate = "A01",
+                    Terminal = "2",
+                    Status = "Expected",
+                    ScheduledTime = new ScheduledTime { Local = "2026-03-17T10:00:00+00:00" }
+                },
+                Arrival = new FlightMovement
+                {
+                    ScheduledTime = new ScheduledTime { Local = "2026-03-17T12:00:00+00:00" }
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "BA123",
+                Airline = "British Airways",
+                Destination = "MAD",
+                Gate = "B22",
+                Terminal = "5",
+                AircraftType = "Boeing 777-300ER",
+                Status = "Delayed",
+                DepartureTime = DateTime.Parse("2026-03-17T10:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-17T12:00:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("B22", flight.Departure?.Gate);
+        Assert.Equal("5", flight.Departure?.Terminal);
+        Assert.Equal("Delayed", flight.Departure?.Status);
+        Assert.Equal("Boeing 777-300ER", flight.Aircraft?.Model);
+    }
+
+    [Fact]
+    public void MergeManualFlights_AddsSyntheticFlightWhenApiDoesNotContainManualFlight()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "VS450",
+                Airline = "Virgin Atlantic",
+                Destination = "JFK",
+                Gate = "C07",
+                Terminal = "3",
+                AircraftType = "Airbus A350-1000",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-03-18T08:30:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-18T16:00:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var synthetic = Assert.Single(merged);
+        Assert.Equal("VS450", synthetic.Number);
+        Assert.Equal("Departure", synthetic.Direction);
+        Assert.Equal("Virgin Atlantic", synthetic.Airline?.Name);
+        Assert.Equal("C07", synthetic.Departure?.Gate);
+        Assert.Equal("3", synthetic.Departure?.Terminal);
+        Assert.Equal("LHR", synthetic.Departure?.Airport?.Iata);
+        Assert.Equal("JFK", synthetic.Arrival?.Airport?.Iata);
+        Assert.Equal("Airbus A350-1000", synthetic.Aircraft?.Model);
+    }
+}

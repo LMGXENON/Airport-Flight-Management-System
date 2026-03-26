@@ -14,7 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 AddDotEnvConfiguration(builder);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<AFMS.Filters.GlobalExceptionFilter>();
+});
 
 var jwtSecret = builder.Configuration["Auth:JwtSecret"];
 if (string.IsNullOrWhiteSpace(jwtSecret))
