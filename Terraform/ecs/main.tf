@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "afms-task" {
       environment = [
         {
           name  = "ConnectionStrings__DefaultConnection"
-          value = "Host=${trimprefix(var.rds_endpoint, "afms-db:")}:${var.rds_port};Database=${var.rds_db_name};Username=${var.rds_username};Password=${var.rds_password};SSL Mode=Require;"
+          value = "Host=${split(":", var.rds_endpoint)[0]};Port=${var.rds_port};Database=${var.rds_db_name};Username=${var.rds_username};Password=${var.rds_password};SSL Mode=Require;"
         }
       ]
 

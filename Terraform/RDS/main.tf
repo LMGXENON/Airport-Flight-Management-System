@@ -51,13 +51,13 @@ resource "aws_db_instance" "afms_db" {
   vpc_security_group_ids          = [aws_security_group.rds_sg.id]
   parameter_group_name            = "default.postgres${split(".", var.engine_version)[0]}"
   publicly_accessible             = false
-  skip_final_snapshot             = false
-  final_snapshot_identifier       = "afms-db-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
+  skip_final_snapshot             = var.skip_final_snapshot
+  final_snapshot_identifier       = var.skip_final_snapshot ? null : "afms-db-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
   backup_retention_period         = var.backup_retention_period
   backup_window                   = "03:00-04:00"
   maintenance_window              = "sun:04:00-sun:05:00"
   multi_az                        = var.multi_az
-  deletion_protection             = true
+  deletion_protection             = var.deletion_protection
   copy_tags_to_snapshot           = true
   enabled_cloudwatch_logs_exports = ["postgresql"]
 

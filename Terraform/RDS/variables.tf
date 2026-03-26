@@ -61,3 +61,15 @@ variable "multi_az" {
   type        = bool
   default     = true
 }
+
+variable "deletion_protection" {
+  description = "Enable RDS deletion protection"
+  type        = bool
+  default     = false
+}
+
+variable "skip_final_snapshot" {
+  description = "Skip final snapshot when destroying RDS"
+  type        = bool
+  default     = true
+}
