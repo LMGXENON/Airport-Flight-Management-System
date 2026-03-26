@@ -8,10 +8,10 @@ terraform {
 
   }
   backend "s3" {
-    bucket       = "afms-state"
-    key          = "terraform.tfstate"
-    region       = "eu-west-2"
-    encrypt      = true
+    bucket  = "afms-state"
+    key     = "terraform.tfstate"
+    region  = "eu-west-2"
+    encrypt = true
 
   }
 
