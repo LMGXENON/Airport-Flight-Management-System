@@ -116,8 +116,8 @@
     {
         <nav class="pagination" aria-label="Managed flights pagination">
             @if (pagination.HasPreviousPage)
-            {
-                <a class="page-btn"
+            }
+        </nav>
                    asp-action="Index"
                    asp-controller="Flight"
                    asp-route-search="@Model.Search"
