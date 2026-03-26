@@ -28,6 +28,26 @@ resource "aws_ecs_task_definition" "afms-task" {
         {
           name  = "ConnectionStrings__DefaultConnection"
           value = "Host=${split(":", var.rds_endpoint)[0]};Port=${var.rds_port};Database=${var.rds_db_name};Username=${var.rds_username};Password=${var.rds_password};SSL Mode=Require;"
+        },
+        {
+          name  = "DEEPSEEK_API_KEY"
+          value = var.deepseek_api_key
+        },
+        {
+          name  = "DEEPSEEK_API_ENDPOINT"
+          value = var.deepseek_api_endpoint
+        },
+        {
+          name  = "DEEPSEEK_MODEL"
+          value = var.deepseek_model
+        },
+        {
+          name  = "DEEPSEEK_TIMEOUT_SECONDS"
+          value = tostring(var.deepseek_timeout_seconds)
+        },
+        {
+          name  = "DEEPSEEK_MAX_REQUESTS_PER_MINUTE"
+          value = tostring(var.deepseek_max_requests_per_minute)
         }
       ]
 
