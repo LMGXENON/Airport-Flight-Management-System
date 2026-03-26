@@ -55,13 +55,14 @@ public class AccountController : Controller
             HttpOnly = true,
             Secure = Request.IsHttps,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddHours(GetTokenExpiryHours())
+            Expires = DateTimeOffset.UtcNow.AddHours(GetTokenExpiryHours()),
+            Path = "/"
         });
 
         var redirectUrl = model.ReturnUrl;
         if (string.IsNullOrWhiteSpace(redirectUrl) || !Url.IsLocalUrl(redirectUrl))
         {
-            redirectUrl = Url.Action("Index", "Home") ?? "/";
+            redirectUrl = Url.Action("Index", "Home") ?? "/Home/Index";
         }
 
         return Redirect(redirectUrl);
@@ -73,7 +74,8 @@ public class AccountController : Controller
     public IActionResult Logout()
     {
         Response.Cookies.Delete("afms_auth_token");
-        return Redirect(Url.Action("Login", "Account") ?? "/Account/Login");
+        var loginUrl = Url.Action("Login", "Account");
+        return Redirect(loginUrl ?? "/Account/Login");
     }
 
     private string CreateToken(string username)

@@ -23,7 +23,11 @@ module "ecs" {
   rds_username       = module.RDS.rds_username
   rds_password       = var.rds_password
   rds_port           = module.RDS.rds_port
-
+  deepseek_api_key   = var.deepseek_api_key
+  deepseek_api_endpoint = var.deepseek_api_endpoint
+  deepseek_model     = var.deepseek_model
+  deepseek_timeout_seconds = var.deepseek_timeout_seconds
+  deepseek_max_requests_per_minute = var.deepseek_max_requests_per_minute
 }
 
 module "RDS" {
