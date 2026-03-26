@@ -37,7 +37,8 @@
     @if (!string.IsNullOrEmpty(Model.Search))
     {
         <a href="@Url.Action("Index", "Flight")"
-           class="flight-search-clear">
+           class="flight-search-clear"
+           aria-label="Clear search and show all flights">
             Clear
         </a>
     }
