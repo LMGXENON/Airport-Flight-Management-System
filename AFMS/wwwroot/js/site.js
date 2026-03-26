@@ -12,6 +12,30 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+// Form submission handlers to prevent double-submission and provide feedback
+(function () {
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        var submitBtn = form.querySelector('button[type="submit"]');
+        
+        if (form.classList.contains('logout-form') || form.classList.contains('login-form')) {
+            if (submitBtn && !submitBtn.disabled) {
+                submitBtn.disabled = true;
+                var originalText = submitBtn.textContent;
+                submitBtn.textContent = form.classList.contains('logout-form') ? 'Logging out...' : 'Logging in...';
+                
+                // Re-enable if form submission fails (e.g., validation errors)
+                setTimeout(function () {
+                    if (form.querySelector('input.input-validation-error')) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
+                }, 500);
+            }
+        }
+    });
+})();
+
 // Sidebar toggle for mobile
 (function () {
     var sidebar = document.getElementById('sidebar');
