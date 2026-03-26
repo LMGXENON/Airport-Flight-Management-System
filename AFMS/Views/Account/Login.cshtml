@@ -53,5 +53,19 @@
     </main>
 
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('.login-form');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Logging in...';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
