@@ -28,7 +28,7 @@
     <input type="text"
            name="search"
            value="@Model.Search"
-           placeholder="Search by flight number (e.g. BA123)..."
+           placeholder="e.g. BA123, search by flight number..."
            class="flight-search-input" />
     <button type="submit"
             class="flight-search-submit">
@@ -44,7 +44,12 @@
 </form>
 
 <!-- Flights Section -->
-<div class="flights-section">
+<div class="flights-section" style="position: relative;">
+    <!-- Loading Spinner Overlay -->
+    <div id="flightsLoadingSpinner" class="loading-spinner-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <span class="loading-spinner-label">Loading flights…</span>
+    </div>
     <div class="table-wrapper">
         <table class="flights-table">
             <thead>
@@ -82,7 +87,7 @@
                         <td class="actions-cell">
                             <a href="@Url.Action("Details", "Flight", new { id = flight.Id })" class="action-link view">View Flight</a>
                             <a href="@Url.Action("Edit", "Flight", new { id = flight.Id })" class="action-link edit">Edit Flight</a>
-                            <a href="@Url.Action("Delete", "Flight", new { id = flight.Id })" class="action-link delete">Delete Flight</a>
+                            <a href="@Url.Action("Delete", "Flight", new { id = flight.Id })" class="action-link delete" onclick="return confirm('Are you sure you want to delete this flight?');">Delete Flight</a>
                         </td>
                     </tr>
                 }
