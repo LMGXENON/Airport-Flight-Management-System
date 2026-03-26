@@ -77,6 +77,16 @@ resource "aws_security_group_rule" "allow_all_https_in_alb" {
   protocol          = "tcp"
 
 }
+
+resource "aws_security_group_rule" "allow_alb_egress_to_targets" {
+  type              = "egress"
+  security_group_id = aws_security_group.alb_sg.id
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
 output "alb_sg_id" {
   value = aws_security_group.alb_sg.id
 }
