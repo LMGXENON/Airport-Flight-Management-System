@@ -37,3 +37,29 @@ variable "alb_sg_id" {
   description = "Security group ID of the ALB"
   type        = string
 }
+
+variable "rds_endpoint" {
+  description = "RDS database endpoint"
+  type        = string
+}
+
+variable "rds_db_name" {
+  description = "RDS database name"
+  type        = string
+}
+
+variable "rds_username" {
+  description = "RDS database username"
+  type        = string
+}
+
+variable "rds_password" {
+  description = "RDS database password"
+  type        = string
+  sensitive   = true
+}
+
+variable "rds_port" {
+  description = "RDS database port"
+  type        = number
+}

@@ -86,7 +86,19 @@ builder.Services.AddHttpClient("DeepSeek", client =>
 
 // Add database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    
+    // Use PostgreSQL if connection string contains "Host=" (PostgreSQL), otherwise use SQLite
+    if (connectionString?.Contains("Host=") == true)
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+});
 
 // Add flight sync service
 builder.Services.AddScoped<FlightSyncService>();
