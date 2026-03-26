@@ -329,7 +329,7 @@ body {
     max-width: 360px;
     padding: 10px 14px;
     background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    border: 1.5px solid #4169e1;
     border-radius: 8px;
     color: var(--text-primary);
     font-size: 14px;
