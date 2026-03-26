@@ -41,6 +41,10 @@ updateClock();
                 directionBtns.forEach(function (btn) { btn.classList.remove('active'); btn.setAttribute('aria-pressed', 'false'); });
                 var directionInput = document.getElementById('directionInput');
                 if (directionInput) directionInput.value = '';
+
+                // Focus the first input for better UX
+                var firstInput = searchForm.querySelector('input:not([type=hidden]):not([type=submit]):not([type=button]), select');
+                if (firstInput) firstInput.focus();
             });
         }
     });
