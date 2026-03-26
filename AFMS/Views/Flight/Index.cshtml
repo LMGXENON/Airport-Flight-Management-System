@@ -115,32 +115,27 @@
     @if (pagination.TotalCount > 0)
     {
         <nav class="pagination" aria-label="Managed flights pagination">
+            @* Previous button *@
             @if (pagination.HasPreviousPage)
-            }
-        </nav>
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="@(pagination.Page - 1)">‹ Prev</a>
+            {
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pagination.Page - 1 })">‹ Prev</a>
             }
             else
             {
                 <button type="button" class="page-btn" disabled>‹ Prev</button>
             }
 
+            @* First page and ellipsis *@
             @if (pagination.VisiblePages().First() > 1)
             {
-                <a class="page-btn"
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="1">1</a>
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = 1 })">1</a>
                 @if (pagination.VisiblePages().First() > 2)
                 {
                     <span class="page-ellipsis">…</span>
                 }
             }
 
+            @* Page numbers *@
             @foreach (var pageNumber in pagination.VisiblePages())
             {
                 if (pageNumber == pagination.Page)
@@ -149,34 +144,24 @@
                 }
                 else
                 {
-                    <a class="page-btn"
-                       asp-action="Index"
-                       asp-controller="Flight"
-                       asp-route-search="@Model.Search"
-                       asp-route-page="@pageNumber">@pageNumber</a>
+                    <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pageNumber })">@pageNumber</a>
                 }
             }
 
+            @* Last page and ellipsis *@
             @if (pagination.VisiblePages().Last() < pagination.TotalPages)
             {
-                @if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
+                if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
                 {
                     <span class="page-ellipsis">…</span>
                 }
-                <a class="page-btn"
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="@pagination.TotalPages">@pagination.TotalPages</a>
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pagination.TotalPages })">@pagination.TotalPages</a>
             }
 
+            @* Next button *@
             @if (pagination.HasNextPage)
             {
-                <a class="page-btn"
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="@(pagination.Page + 1)">Next ›</a>
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pagination.Page + 1 })">Next ›</a>
             }
             else
             {
@@ -184,6 +169,6 @@
             }
 
             <span class="page-info">Showing @pagination.PageStart-@pagination.PageEnd of @pagination.TotalCount</span>
-        </div>
+        </nav>
     }
 </div>
