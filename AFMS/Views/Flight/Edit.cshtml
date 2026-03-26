@@ -14,7 +14,7 @@
 </div>
 
 <div class="form-card">
-    <form asp-action="Edit" method="post">
+    <form asp-action="Edit" method="post" aria-label="Edit flight details">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
 
