@@ -1,4 +1,3 @@
-
 data "aws_caller_identity" "current" {}
 
 locals {
@@ -33,8 +32,6 @@ module "RDS" {
   private_subnet_ids = module.vpc.private_subnet_ids
   ecs_sg_id          = module.ecs.ecs_sg_id
   db_password        = var.rds_password
-
-  depends_on = [module.ecs]
 }
 
 module "ALB" {
