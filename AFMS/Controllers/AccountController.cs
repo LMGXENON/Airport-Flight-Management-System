@@ -58,12 +58,13 @@ public class AccountController : Controller
             Expires = DateTimeOffset.UtcNow.AddHours(GetTokenExpiryHours())
         });
 
-        if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+        var redirectUrl = model.ReturnUrl;
+        if (string.IsNullOrWhiteSpace(redirectUrl) || !Url.IsLocalUrl(redirectUrl))
         {
-            return Redirect(model.ReturnUrl);
+            redirectUrl = Url.Action("Index", "Home") ?? "/";
         }
 
-        return RedirectToAction("Index", "Home");
+        return Redirect(redirectUrl);
     }
 
     [Authorize]
@@ -72,7 +73,7 @@ public class AccountController : Controller
     public IActionResult Logout()
     {
         Response.Cookies.Delete("afms_auth_token");
-        return RedirectToAction(nameof(Login));
+        return Redirect(Url.Action("Login", "Account") ?? "/Account/Login");
     }
 
     private string CreateToken(string username)
@@ -108,3 +109,4 @@ public class AccountController : Controller
         return Math.Clamp(configured, 1, 24);
     }
 }
+
