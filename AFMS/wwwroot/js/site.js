@@ -92,6 +92,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
+
+        // (Optional) If flights table is ever loaded via AJAX, expose a global function to show/hide spinner
+        window.showFlightsLoadingSpinner = function () {
+            spinner.style.display = 'flex';
+        };
+        window.hideFlightsLoadingSpinner = function () {
+            spinner.style.display = 'none';
+        };
     }
 });
 
