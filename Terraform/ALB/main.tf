@@ -21,8 +21,8 @@ resource "aws_lb_target_group" "afms_tg" {
 
   health_check {
     protocol            = "HTTP"
-    path                = "/"
-    matcher             = "200-399"
+    path                = "/health"
+    matcher             = "200"
     healthy_threshold   = 2
     unhealthy_threshold = 2
     interval            = 30
