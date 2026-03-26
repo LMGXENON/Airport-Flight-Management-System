@@ -19,19 +19,21 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Login(string? returnUrl = null)
+    public async Task<IActionResult> Login(string? returnUrl = null)
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToAction("Index", "Home");
         }
 
+        // Simulate async for consistency (no real async work here)
+        await Task.CompletedTask;
         return View(new LoginViewModel { ReturnUrl = returnUrl });
     }
 
     [HttpPost]
     [AllowAnonymous]
-    public IActionResult Login(LoginViewModel model)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -59,15 +61,17 @@ public class AccountController : Controller
         });
 
         var redirectUrl = ResolvePostLoginRedirect(model.ReturnUrl);
+        await Task.CompletedTask;
         return LocalRedirect(redirectUrl);
     }
 
     [Authorize]
     [HttpPost]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         Response.Cookies.Delete("afms_auth_token");
         var loginUrl = Url.Action("Login", "Account");
+        await Task.CompletedTask;
         return Redirect(loginUrl ?? "/Account/Login");
     }
 
