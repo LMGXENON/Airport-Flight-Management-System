@@ -89,32 +89,44 @@ public class HomeController : Controller
     public async Task<IActionResult> Index()
     {
         var airportCode = _configuration["AeroDataBox:DefaultAirport"] ?? "EGLL"; // London Heathrow ICAO
-
-        // Get London local time (GMT/BST)
         var londonTime = GetLondonNow();
-
-        // Use cache to avoid hitting API rate limits (BASIC plan has strict limits)
         var cacheKey = $"flights_{airportCode}_{londonTime:yyyyMMddHH}";
 
+        var sortedFlights = await GetSortedFlightsAsync(airportCode, londonTime, cacheKey);
+        var allDbFlights = await _context.Flights.ToListAsync();
+        ViewBag.DbFlightIds = BuildDbFlightIdLookup(allDbFlights);
+
+        OverrideApiDataWithManualFlights(sortedFlights, allDbFlights);
+        AddManualFlightsNotInApi(sortedFlights, allDbFlights);
+        sortedFlights = _manualFlightMergeService.MergeManualFlights(sortedFlights, allDbFlights).ToList();
+        sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
+
+        if (!sortedFlights.Any())
+            ViewBag.ApiError = _cache.Get<string>(AFMS.Services.AeroDataBoxService.ApiErrorCacheKey);
+
+        return View(sortedFlights);
+    }
+
+    private async Task<List<AeroDataBoxFlight>> GetSortedFlightsAsync(string airportCode, DateTime londonTime, string cacheKey)
+    {
         var flights = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            // Cache for 2 minutes to reduce API calls
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
             return await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
         });
+        return SortFlightsByLhrLegTime(flights ?? []);
+    }
 
-        var sortedFlights = SortFlightsByLhrLegTime(flights ?? []);
-
-        // Fetch all DB flights once — used for MANAGE links and dashboard merge
-        var allDbFlights = await _context.Flights.ToListAsync();
-
-        // Build flight number → DB id lookup for the MANAGE column
-        ViewBag.DbFlightIds = allDbFlights
+    private Dictionary<string, int> BuildDbFlightIdLookup(List<Flight> allDbFlights)
+    {
+        return allDbFlights
             .Where(f => !string.IsNullOrWhiteSpace(f.FlightNumber))
             .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
+    }
 
-        // Override API data with values from manually-edited DB flights
+    private void OverrideApiDataWithManualFlights(List<AeroDataBoxFlight> sortedFlights, List<Flight> allDbFlights)
+    {
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
         {
             var existing = sortedFlights.FirstOrDefault(f =>
@@ -124,33 +136,21 @@ public class HomeController : Controller
                 var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
                 if (lhrLeg != null)
                 {
-                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
+                    if (!string.IsNullOrEmpty(dbFlight.Gate)) lhrLeg.Gate = dbFlight.Gate;
                     if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
                 }
                 existing.Status = dbFlight.Status;
             }
         }
+    }
 
-        // Add manually-entered flights that the live API doesn't know about
+    private void AddManualFlightsNotInApi(List<AeroDataBoxFlight> sortedFlights, List<Flight> allDbFlights)
+    {
         var apiNumbers = sortedFlights
             .Select(f => f.Number?.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
             sortedFlights.Add(CreateSyntheticFlight(dbFlight));
-
-        sortedFlights = _manualFlightMergeService
-            .MergeManualFlights(sortedFlights, allDbFlights)
-            .ToList();
-
-
-        // Re-sort so manual additions land in the right chronological position
-        sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
-
-        // Surface API error if the list is empty
-        if (!sortedFlights.Any())
-            ViewBag.ApiError = _cache.Get<string>(AFMS.Services.AeroDataBoxService.ApiErrorCacheKey);
-
-        return View(sortedFlights);
     }
 
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight dbFlight)
