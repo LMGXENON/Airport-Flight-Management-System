@@ -82,7 +82,7 @@
                         <td class="actions-cell">
                             <a href="@Url.Action("Details", "Flight", new { id = flight.Id })" class="action-link view">View Flight</a>
                             <a href="@Url.Action("Edit", "Flight", new { id = flight.Id })" class="action-link edit">Edit Flight</a>
-                            <a href="@Url.Action("Delete", "Flight", new { id = flight.Id })" class="action-link delete">Delete Flight</a>
+                            <a href="@Url.Action("Delete", "Flight", new { id = flight.Id })" class="action-link delete" onclick="return confirm('Are you sure you want to delete this flight?');">Delete Flight</a>
                         </td>
                     </tr>
                 }
