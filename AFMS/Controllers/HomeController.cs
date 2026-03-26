@@ -320,10 +320,10 @@ public class HomeController : Controller
                     clientKey,
                     Truncate(errorContent, 300));
 
-                return StatusCode((int)response.StatusCode, new
+                return Ok(new AiSearchFiltersResponse
                 {
-                    error = $"DeepSeek API error: {response.StatusCode}",
-                    details = Truncate(errorContent, 300)
+                    IsSearchRequest = false,
+                    Message = "AI is temporarily unavailable. You can still use manual filters while it recovers."
                 });
             }
 
@@ -369,12 +369,20 @@ public class HomeController : Controller
         catch (OperationCanceledException ex) when (!HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "DeepSeek request timed out for client {ClientKey}.", clientKey);
-            return StatusCode(StatusCodes.Status504GatewayTimeout, new { error = "DeepSeek request timed out" });
+            return Ok(new AiSearchFiltersResponse
+            {
+                IsSearchRequest = false,
+                Message = "AI timed out. Please try a shorter query or use manual filters."
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process AI query for client {ClientKey}.", clientKey);
-            return StatusCode(500, new { error = "Failed to process AI request" });
+            return Ok(new AiSearchFiltersResponse
+            {
+                IsSearchRequest = false,
+                Message = "AI is unavailable right now. Please use manual filters and try again shortly."
+            });
         }
         finally
         {
@@ -458,10 +466,10 @@ public class HomeController : Controller
                     clientKey,
                     Truncate(errorContent, 300));
 
-                return StatusCode((int)response.StatusCode, new
+                return Ok(new AiAddFlightResponse
                 {
-                    error = $"DeepSeek API error: {response.StatusCode}",
-                    details = Truncate(errorContent, 300)
+                    IsAddFlightRequest = false,
+                    Message = "AI is temporarily unavailable. Please fill the Add Flight form manually for now."
                 });
             }
 
@@ -507,12 +515,20 @@ public class HomeController : Controller
         catch (OperationCanceledException ex) when (!HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "DeepSeek add-flight request timed out for client {ClientKey}.", clientKey);
-            return StatusCode(StatusCodes.Status504GatewayTimeout, new { error = "DeepSeek request timed out" });
+            return Ok(new AiAddFlightResponse
+            {
+                IsAddFlightRequest = false,
+                Message = "AI timed out. Please fill required fields manually and try again."
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process add-flight AI query for client {ClientKey}.", clientKey);
-            return StatusCode(500, new { error = "Failed to process add-flight AI request" });
+            return Ok(new AiAddFlightResponse
+            {
+                IsAddFlightRequest = false,
+                Message = "AI is unavailable right now. Please continue with manual form entry."
+            });
         }
         finally
         {
