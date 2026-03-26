@@ -283,18 +283,18 @@ body {
     flex-wrap: wrap;
 }
 
-.page-title {
-    font-size: 26px;
-    font-weight: 600;
+.page-btn {
+    padding: 12px 22px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: none;
     color: var(--text-primary);
-    margin-bottom: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0 2px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
 }
-
-.page-subtitle {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
 .flight-add-btn {
     padding: 12px 24px;
     border-radius: 8px;
