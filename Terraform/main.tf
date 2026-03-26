@@ -9,24 +9,24 @@ module "vpc" {
 }
 
 module "ecs" {
-  source             = "./ecs"
-  vpc_id             = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
-  target_group_arn   = module.ALB.target_group_arn
-  alb_sg_id          = module.ALB.alb_sg_id
-  afms_image         = local.afms_ecr_image
-  afms_image_tag     = "latest"
-  region             = "eu-west-2"
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  rds_endpoint       = module.RDS.rds_endpoint
-  rds_db_name        = module.RDS.rds_db_name
-  rds_username       = module.RDS.rds_username
-  rds_password       = var.rds_password
-  rds_port           = module.RDS.rds_port
-  deepseek_api_key   = var.deepseek_api_key
-  deepseek_api_endpoint = var.deepseek_api_endpoint
-  deepseek_model     = var.deepseek_model
-  deepseek_timeout_seconds = var.deepseek_timeout_seconds
+  source                           = "./ecs"
+  vpc_id                           = module.vpc.vpc_id
+  private_subnet_ids               = module.vpc.private_subnet_ids
+  target_group_arn                 = module.ALB.target_group_arn
+  alb_sg_id                        = module.ALB.alb_sg_id
+  afms_image                       = local.afms_ecr_image
+  afms_image_tag                   = "latest"
+  region                           = "eu-west-2"
+  execution_role_arn               = aws_iam_role.ecs_task_execution_role.arn
+  rds_endpoint                     = module.RDS.rds_endpoint
+  rds_db_name                      = module.RDS.rds_db_name
+  rds_username                     = module.RDS.rds_username
+  rds_password                     = var.rds_password
+  rds_port                         = module.RDS.rds_port
+  deepseek_api_key                 = var.deepseek_api_key
+  deepseek_api_endpoint            = var.deepseek_api_endpoint
+  deepseek_model                   = var.deepseek_model
+  deepseek_timeout_seconds         = var.deepseek_timeout_seconds
   deepseek_max_requests_per_minute = var.deepseek_max_requests_per_minute
 }
 
