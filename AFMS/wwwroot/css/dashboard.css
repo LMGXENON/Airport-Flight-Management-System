@@ -334,6 +334,10 @@ body {
     color: var(--accent-blue);
 }
 
+.empty-state-retry {
+    margin-top: 14px;
+}
+
 .app-logo-image {
     width: 100%;
     height: 100%;
