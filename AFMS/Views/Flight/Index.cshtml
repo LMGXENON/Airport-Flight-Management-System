@@ -18,13 +18,13 @@
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="flight-success-banner">
+    <div class="flight-success-banner" aria-live="polite">
         @TempData["SuccessMessage"]
     </div>
 }
 
 <!-- Flight Number Search -->
-<form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form">
+<form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form" aria-label="Search flights by flight number">
     <input type="text"
            name="search"
            value="@Model.Search"
@@ -37,7 +37,8 @@
     @if (!string.IsNullOrEmpty(Model.Search))
     {
         <a href="@Url.Action("Index", "Flight")"
-           class="flight-search-clear">
+           class="flight-search-clear"
+           aria-label="Clear search and show all flights">
             Clear
         </a>
     }
@@ -51,19 +52,19 @@
         <span class="loading-spinner-label">Loading flights…</span>
     </div>
     <div class="table-wrapper">
-        <table class="flights-table">
+        <table class="flights-table" aria-label="List of managed flights">
             <thead>
                 <tr>
-                    <th>Flight #</th>
-                    <th>Airline</th>
-                    <th>Destination</th>
-                    <th>Aircraft</th>
-                    <th>Departure</th>
-                    <th>Arrival</th>
-                    <th>Gate</th>
-                    <th>Terminal</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th scope="col">Flight #</th>
+                    <th scope="col">Airline</th>
+                    <th scope="col">Destination</th>
+                    <th scope="col">Aircraft</th>
+                    <th scope="col">Departure</th>
+                    <th scope="col">Arrival</th>
+                    <th scope="col">Gate</th>
+                    <th scope="col">Terminal</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -96,7 +97,7 @@
 
         @if (!Model.Flights.Any())
         {
-            <div class="empty-state">
+            <div class="empty-state" aria-live="polite">
                 @if (!string.IsNullOrEmpty(Model.Search))
                 {
                     <p class="empty-state-title">No flights found for "@Model.Search"</p>
@@ -113,7 +114,7 @@
 
     @if (pagination.TotalCount > 0)
     {
-        <div class="pagination" aria-label="Managed flights pagination">
+        <nav class="pagination" aria-label="Managed flights pagination">
             @if (pagination.HasPreviousPage)
             {
                 <a class="page-btn"
