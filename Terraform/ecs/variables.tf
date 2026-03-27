@@ -119,3 +119,9 @@ variable "default_airport" {
   type        = string
   default     = "EGLL"
 }
+
+variable "data_protection_keys_path" {
+  description = "Container path used to store shared ASP.NET Data Protection keys"
+  type        = string
+  default     = "/var/afms-dpkeys"
+}
