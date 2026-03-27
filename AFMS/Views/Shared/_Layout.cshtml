@@ -45,7 +45,7 @@
             <div class="sidebar-footer">
                 <span class="user-label">Logged in as</span>
                 <div class="user-session-row">
-                    <span class="user-name">@(User.Identity?.Name ?? "Admin")</span>
+                    <span class="user-name">ADMIN</span>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-danger logout-btn">Logout</button>
