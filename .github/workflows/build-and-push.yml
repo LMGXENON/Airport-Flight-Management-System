@@ -1,0 +1,47 @@
+name: Build and Push AFMS Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - AFMS/**
+      - .github/workflows/build-and-push.yml
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  ECR_REPOSITORY: afms-repo
+
+jobs:
+  build-and-push:
+    name: Build and Push to ECR
+    if: github.actor == 'Mubarek-Amin'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG_SHA: ${{ github.sha }}
+        run: |
+          docker build -f AFMS/Dockerfile -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" AFMS
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:latest"

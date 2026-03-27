@@ -27,7 +27,7 @@
 
 <!-- Search Form -->
 <div class="search-form-container">
-    <form class="search-form" id="searchForm" method="get" asp-action="AdvancedSearch" asp-controller="Home">
+    <form class="search-form" id="searchForm" method="get" asp-action="AdvancedSearch" asp-controller="Home" aria-label="Advanced flight search">
         <input type="hidden" name="search" value="1" />
 
         <!-- Row 1: Flight, Airline, Destination -->
@@ -251,8 +251,8 @@
                 <span class="btn-icon">🔍</span>
                 Search Flights
             </button>
-            <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
-                Clear Filters
+            <button type="button" class="btn btn-secondary" id="resetSearchBtn">
+                Reset Search
             </button>
         </div>
 

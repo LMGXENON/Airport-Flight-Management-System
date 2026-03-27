@@ -6,5 +6,5 @@ variable "private_cidrs" {
   default = ["10.0.3.0/26", "10.0.4.0/26"]
 }
 variable "azs" {
-  default = ["eu-west-1a", "eu-west-1b"]
+  default = ["eu-west-2a", "eu-west-2b"]
 }
