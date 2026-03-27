@@ -317,6 +317,9 @@
                 <div class="empty-state">
                     <p class="empty-state-title empty-state-title--danger">Live data unavailable</p>
                     <p class="empty-state-muted">Flight data temporarily unavailable - quota resets shortly.</p>
+                    <button type="button" id="retryDashboardBtn" class="empty-state-retry-btn" aria-label="Retry loading live flight data">
+                        ↺ Retry
+                    </button>
                 </div>
             }
             else
@@ -339,6 +342,19 @@
 @section Scripts {
 <script>
 (function () {
+    const retryBtn = document.getElementById('retryDashboardBtn');
+
+    if (retryBtn) {
+        retryBtn.addEventListener('click', function () {
+            retryBtn.disabled = true;
+            retryBtn.textContent = 'Retrying...';
+
+            const retryUrl = new URL(window.location.href);
+            retryUrl.searchParams.set('retry', Date.now().toString());
+            window.location.assign(retryUrl.toString());
+        });
+    }
+
     const statValueEls = document.querySelectorAll('.stat-value[data-final-value]');
     const statBadgeEls = document.querySelectorAll('.stat-badge[data-final-text]');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

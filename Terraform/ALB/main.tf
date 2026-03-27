@@ -19,6 +19,12 @@ resource "aws_lb_target_group" "afms_tg" {
   target_type = "ip"
   vpc_id      = var.vpc_id
 
+  stickiness {
+    type            = "lb_cookie"
+    enabled         = true
+    cookie_duration = 3600
+  }
+
   health_check {
     protocol            = "HTTP"
     path                = "/health"

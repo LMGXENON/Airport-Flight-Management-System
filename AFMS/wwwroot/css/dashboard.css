@@ -756,8 +756,8 @@ body {
 
 /* Delayed — red */
 .status-delayed {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: var(--danger);
+    background-color: rgba(245, 158, 11, 0.18);
+    color: #fbbf24;
 }
 
 /* Cancelled — red */
@@ -768,8 +768,8 @@ body {
 
 /* Scheduled — neutral */
 .status-scheduled {
-    background-color: rgba(136, 145, 178, 0.15);
-    color: var(--text-secondary);
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
 }
 
 /* Monospace for times */
@@ -1168,6 +1168,33 @@ body {
     padding: 40px;
     text-align: center;
     color: var(--text-secondary);
+}
+
+.empty-state-retry-btn {
+    margin-top: 16px;
+    padding: 9px 16px;
+    border: 1px solid rgba(124, 164, 255, 0.45);
+    border-radius: 7px;
+    background: rgba(65, 105, 225, 0.16);
+    color: #dce7ff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.empty-state-retry-btn:hover {
+    background: rgba(65, 105, 225, 0.24);
+    border-color: rgba(124, 164, 255, 0.7);
+}
+
+.empty-state-retry-btn:disabled {
+    opacity: 0.72;
+    cursor: wait;
 }
 
 /* Flight Details Page */
