@@ -8,12 +8,12 @@
     var totalArrivals = Model.Count(f => f.Direction == "Arrival");
     var totalAirlines = Model.Select(f => f.Airline?.Name).Where(n => n != null).Distinct().Count();
 
-    var totalFlightsDisplay = apiUnavailable ? "--" : Model.Count.ToString();
-    var departuresDisplay = apiUnavailable ? "--" : totalDepartures.ToString();
-    var arrivalsDisplay = apiUnavailable ? "--" : totalArrivals.ToString();
-    var airlinesDisplay = apiUnavailable ? "--" : totalAirlines.ToString();
+    var totalFlightsDisplay = apiUnavailable ? "N/A" : Model.Count.ToString();
+    var departuresDisplay = apiUnavailable ? "N/A" : totalDepartures.ToString();
+    var arrivalsDisplay = apiUnavailable ? "N/A" : totalArrivals.ToString();
+    var airlinesDisplay = apiUnavailable ? "N/A" : totalAirlines.ToString();
 
-    var statBadgeText = apiUnavailable ? "Unavailable" : "Live Data";
+    var statBadgeText = apiUnavailable ? "Data Unavailable" : "Live Data";
     var statBadgeClass = apiUnavailable ? "unavailable" : "positive";
 }
 
@@ -35,11 +35,11 @@
                 </div>
                 <div>
                     <div class="stat-label">Total Flights</div>
-                    <div class="stat-value">@totalFlightsDisplay</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@totalFlightsDisplay" aria-label="Loading total flights"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
@@ -53,11 +53,11 @@
                 </div>
                 <div>
                     <div class="stat-label">Departures</div>
-                    <div class="stat-value">@departuresDisplay</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@departuresDisplay" aria-label="Loading departures"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
@@ -71,11 +71,11 @@
                 </div>
                 <div>
                     <div class="stat-label">Arrivals</div>
-                    <div class="stat-value">@arrivalsDisplay</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@arrivalsDisplay" aria-label="Loading arrivals"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
@@ -88,11 +88,11 @@
                 </div>
                 <div>
                     <div class="stat-label">Airlines</div>
-                    <div class="stat-value">@airlinesDisplay</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@airlinesDisplay" aria-label="Loading airlines"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 </div>
 
@@ -339,6 +339,27 @@
 @section Scripts {
 <script>
 (function () {
+    const statValueEls = document.querySelectorAll('.stat-value[data-final-value]');
+    const statBadgeEls = document.querySelectorAll('.stat-badge[data-final-text]');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const revealDelayMs = prefersReducedMotion ? 0 : 650;
+
+    function revealStatValues() {
+        statValueEls.forEach(function (el) {
+            el.textContent = el.getAttribute('data-final-value') || '';
+            el.classList.remove('stat-value-skeleton');
+            el.removeAttribute('aria-label');
+        });
+
+        statBadgeEls.forEach(function (el) {
+            el.textContent = el.getAttribute('data-final-text') || '';
+            el.classList.remove('stat-badge-skeleton');
+            el.removeAttribute('aria-label');
+        });
+    }
+
+    window.setTimeout(revealStatValues, revealDelayMs);
+
     const PAGE_SIZE = 25;
     const query = new URLSearchParams(window.location.search);
     const requestedPage = Number.parseInt(query.get('page') ?? '1', 10);
