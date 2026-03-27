@@ -171,11 +171,17 @@ body {
 }
 
 .logout-btn {
-    padding: 6px 10px;
-    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border-radius: 999px;
     font-size: 12px;
-    line-height: 1.2;
-    min-width: 72px;
+    line-height: 1;
+    min-width: 80px;
+    border: 1px solid rgba(136, 145, 178, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 /* Main Content */
@@ -1257,17 +1263,16 @@ body {
     color: white;
 }
 
-/* Keep logout neutral in dashboard; reserve red for destructive actions. */
 .logout-btn.btn-danger {
-    background: rgba(136, 145, 178, 0.2);
-    border: 1px solid rgba(136, 145, 178, 0.35);
-    color: #d8deef;
+    background: linear-gradient(180deg, rgba(65, 105, 225, 0.22), rgba(65, 105, 225, 0.14));
+    color: #edf2ff;
 }
 
 .logout-btn.btn-danger:hover {
-    background: rgba(136, 145, 178, 0.3);
-    border-color: rgba(136, 145, 178, 0.5);
-    color: #eef2ff;
+    background: linear-gradient(180deg, rgba(65, 105, 225, 0.34), rgba(65, 105, 225, 0.22));
+    border-color: rgba(136, 145, 178, 0.55);
+    color: #ffffff;
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
