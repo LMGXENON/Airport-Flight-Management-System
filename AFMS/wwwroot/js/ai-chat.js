@@ -7,6 +7,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         const toggle     = document.getElementById('aiChatToggle');
         const chatWindow = document.getElementById('aiChatWindow');
+        const chatContainer = document.querySelector('.ai-chat-container');
+        const unavailablePopover = document.getElementById('aiChatUnavailablePopover');
         const closeBtn   = document.getElementById('aiChatClose');
         const clearBtn   = document.getElementById('aiChatClear');
         const sendBtn    = document.getElementById('chatSendBtn');
@@ -65,6 +67,12 @@
             }
         }
 
+        function setUnavailablePopoverOpen(isOpen) {
+            if (!unavailablePopover) return;
+            unavailablePopover.hidden = !isOpen;
+            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
+
         function showWelcomeState() {
             if (!welcome) return;
             welcome.style.display = '';
@@ -97,16 +105,56 @@
             }
         }
 
-        toggle.addEventListener('click', () => setWindowOpen(!chatWindow.classList.contains('active')));
-        if (closeBtn) closeBtn.addEventListener('click', () => setWindowOpen(false));
+        toggle.addEventListener('click', () => {
+            if (!isAiEnabledPage) {
+                if (chatWindow) {
+                    chatWindow.classList.remove('active');
+                    chatWindow.hidden = true;
+                }
+                setUnavailablePopoverOpen(unavailablePopover ? unavailablePopover.hidden : false);
+                return;
+            }
 
-        document.addEventListener('keydown', event => {
-            if (event.key === 'Escape' && chatWindow.classList.contains('active')) {
+            setUnavailablePopoverOpen(false);
+            setWindowOpen(!chatWindow.classList.contains('active'));
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => setWindowOpen(false));
+        }
+
+        document.addEventListener('click', event => {
+            if (!chatContainer || chatContainer.contains(event.target)) {
+                return;
+            }
+
+            setUnavailablePopoverOpen(false);
+            if (isAiEnabledPage) {
                 setWindowOpen(false);
             }
         });
 
+        document.addEventListener('keydown', event => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+
+            if (isAiEnabledPage && chatWindow.classList.contains('active')) {
+                setWindowOpen(false);
+            }
+
+            if (!isAiEnabledPage && unavailablePopover && !unavailablePopover.hidden) {
+                setUnavailablePopoverOpen(false);
+            }
+        });
+
         if (!isAiEnabledPage) {
+            if (toggle) {
+                toggle.setAttribute('aria-label', 'Assistant unavailable here. Open quick actions');
+            }
+            if (chatWindow) {
+                chatWindow.hidden = true;
+            }
             if (inputEl) {
                 inputEl.disabled = true;
                 inputEl.placeholder = getReadyPlaceholder();
