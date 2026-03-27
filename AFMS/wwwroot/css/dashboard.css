@@ -50,7 +50,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(136, 145, 178, 0.22);
 }
 
 .app-logo {
@@ -83,6 +83,26 @@ body {
     flex: 1;
     padding: 12px 10px;
     overflow-y: auto;
+    position: relative;
+}
+
+.sidebar-nav::before,
+.sidebar-nav::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(136, 145, 178, 0), rgba(136, 145, 178, 0.24), rgba(136, 145, 178, 0));
+    pointer-events: none;
+}
+
+.sidebar-nav::before {
+    top: 0;
+}
+
+.sidebar-nav::after {
+    bottom: 0;
 }
 
 .nav-item {
@@ -117,7 +137,7 @@ body {
 /* Sidebar Footer */
 .sidebar-footer {
     padding: 14px 16px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid rgba(136, 145, 178, 0.22);
 }
 
 .user-session-row {
