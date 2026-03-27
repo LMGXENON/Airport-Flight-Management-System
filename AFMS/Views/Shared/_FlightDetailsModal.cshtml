@@ -1,0 +1,81 @@
+<!-- Flight Details Modal – shared across Dashboard and Advanced Search -->
+<div class="modal-overlay" id="flightModal">
+    <div class="modal-content">
+        <button class="modal-close" type="button">&times;</button>
+        <div class="modal-header">
+            <div class="modal-airline" id="modalAirline"></div>
+            <div class="modal-flight-number" id="modalFlightNumber"></div>
+            <div class="modal-route" id="modalAircraft"></div>
+            <div class="modal-route" id="modalRoute"></div>
+        </div>
+        <div class="modal-status-banner" id="modalStatusBanner">
+            <span id="modalStatus"></span>
+        </div>
+        <div class="modal-body">
+            <!-- Flight Progress Tracker -->
+            <div class="flight-progress-section">
+                <div class="progress-header">
+                    <span class="progress-label" id="progressLabel">Flight Progress</span>
+                </div>
+                <div class="progress-route">
+                    <div class="progress-airport-info" id="progressDepCode"></div>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="progressBarFill"></div>
+                            <div class="progress-indicator" id="progressPlane"></div>
+                        </div>
+                    </div>
+                    <div class="progress-airport-info" id="progressArrCode"></div>
+                </div>
+                <div class="progress-time-info" id="progressTimeInfo"></div>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-airport-block">
+                    <div class="airport-code" id="modalDepCode"></div>
+                    <div class="airport-info">
+                        <div class="airport-label" id="modalDepCity"></div>
+                        <div class="flight-time-group">
+                            <div class="time-label" id="depTimeLabel">Scheduled departure</div>
+                            <div class="time-display">
+                                <span class="time-main" id="modalDepTime"></span>
+                                <span class="time-secondary" id="modalDepTimeOriginal"></span>
+                            </div>
+                        </div>
+                        <div class="airport-details">
+                            <span class="detail-label">Terminal</span>
+                            <span class="detail-value" id="modalDepTerminal"></span>
+                            <span class="detail-label">Gate</span>
+                            <span class="detail-value" id="modalDepGate"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flight-duration">
+                    <div class="duration-text" id="flightDuration"></div>
+                    <div class="duration-text" id="flightDistance"></div>
+                </div>
+
+                <div class="modal-airport-block">
+                    <div class="airport-code" id="modalArrCode"></div>
+                    <div class="airport-info">
+                        <div class="airport-label" id="modalArrCity"></div>
+                        <div class="flight-time-group">
+                            <div class="time-label" id="arrTimeLabel">Scheduled arrival</div>
+                            <div class="time-display">
+                                <span class="time-main" id="modalArrTime"></span>
+                                <span class="time-secondary" id="modalArrTimeOriginal"></span>
+                            </div>
+                        </div>
+                        <div class="airport-details">
+                            <span class="detail-label">Terminal</span>
+                            <span class="detail-value" id="modalArrTerminal"></span>
+                            <span class="detail-label">Gate</span>
+                            <span class="detail-value" id="modalArrGate"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

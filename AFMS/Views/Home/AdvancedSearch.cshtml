@@ -1,203 +1,595 @@
+@model AFMS.Models.AdvancedSearchViewModel
+
 @{
     ViewData["Title"] = "Advanced Search";
+    var selectedDirectionSummary = string.IsNullOrWhiteSpace(Model.Direction)
+        ? "Showing all directions"
+        : Model.Direction == "Departure"
+            ? "Showing departures only"
+            : "Showing arrivals only";
+    var selectedStatusesSummary = Model.Statuses.Any()
+        ? $"Status filters: {string.Join(", ", Model.Statuses)}"
+        : "No status filters selected";
 }
 
-<link rel="stylesheet" href="~/css/dashboard.css" />
-<link rel="stylesheet" href="~/css/advanced-search.css" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/advanced-search.css" asp-append-version="true" />
+}
 
-<div class="app-container">
-    <!-- Left Sidebar -->
-    <aside class="sidebar">
-        <!-- Sidebar Header -->
-        <div class="sidebar-header">
-            <div class="app-logo">
-                <img src="~/images/AFMS logo.png" alt="AFMS Logo" style="width: 100%; height: 100%; object-fit: contain;" />
-            </div>
-            <div class="app-info">
-                <h1 class="app-title">Airport Manager</h1>
-                <span class="app-version">v1.0</span>
-            </div>
-            <button class="close-btn">✕</button>
-        </div>
 
-        <!-- Navigation Menu -->
-        <nav class="sidebar-nav">
-            <a href="@Url.Action("Index", "Home")" class="nav-item">
-                <span class="nav-label">Dashboard</span>
-            </a>
-            <a href="@Url.Action("Add", "Flight")" class="nav-item">
-                <span class="nav-label">Add Flight</span>
-            </a>
-            <a href="@Url.Action("Details", "Flight")" class="nav-item">
-                <span class="nav-label">Flight Details</span>
-            </a>
-            <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item active">
-                <span class="nav-label">Advanced Search</span>
-            </a>
-            <a href="#" class="nav-item">
-                <span class="nav-label">Data Import</span>
-            </a>
-        </nav>
 
-        <!-- Sidebar Footer -->
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <span class="user-label">Logged in as</span>
-                <span class="user-name">Admin User</span>
-            </div>
-        </div>
-    </aside>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Bar -->
-        <header class="top-bar">
-            <div class="top-bar-spacer"></div>
-            <div class="top-bar-right">
-                <div class="current-time">
-                    <span class="time-label">Current Time</span>
-                    <span class="time-value" id="currentTime">20:44:22</span>
-                </div>
-                <div class="user-avatar">
-                    <button class="avatar-btn">A</button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Advanced Search Content -->
-        <div class="dashboard-container">
-            <!-- Page Header -->
-            <div class="page-header">
-                <h1 class="page-title">Advanced Flight Search</h1>
-                <p class="page-subtitle">Search and filter flight records</p>
-            </div>
-
-            <!-- Search Form -->
-            <div class="search-form-container">
-                <form class="search-form">
-                    <!-- Row 1: Flight Number, Airline, Origin Airport -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="flightNumber" class="form-label">Flight Number</label>
-                            <input type="text" id="flightNumber" class="form-input" placeholder="e.g., UA 1234" />
-                        </div>
-                        <div class="form-group">
-                            <label for="airline" class="form-label">Airline</label>
-                            <select id="airline" class="form-input">
-                                <option value="">All airlines</option>
-                                <option value="united">United Airlines</option>
-                                <option value="american">American Airlines</option>
-                                <option value="delta">Delta Airlines</option>
-                                <option value="southwest">Southwest</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="originAirport" class="form-label">Origin Airport</label>
-                            <input type="text" id="originAirport" class="form-input" list="airportOptions" placeholder="e.g., JFK" />
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Destination Airport, Date From, Date To -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="destinationAirport" class="form-label">Destination Airport</label>
-                            <input type="text" id="destinationAirport" class="form-input" list="airportOptions" placeholder="e.g., LAX" />
-                        </div>
-                        <div class="form-group">
-                            <label for="dateFrom" class="form-label">Date From</label>
-                            <input type="date" id="dateFrom" class="form-input" placeholder="dd/mm/yyyy" />
-                        </div>
-                        <div class="form-group">
-                            <label for="dateTo" class="form-label">Date To</label>
-                            <input type="date" id="dateTo" class="form-input" placeholder="dd/mm/yyyy" />
-                        </div>
-                    </div>
-
-                    <!-- Temporary Fallback Airport Options (replace with API later) -->
-                    <datalist id="airportOptions">
-                        <option value="JFK">John F. Kennedy (JFK)</option>
-                        <option value="LAX">Los Angeles (LAX)</option>
-                        <option value="ORD">Chicago O'Hare (ORD)</option>
-                        <option value="DFW">Dallas/Fort Worth (DFW)</option>
-                        <option value="DEN">Denver (DEN)</option>
-                        <option value="ATL">Atlanta (ATL)</option>
-                        <option value="SFO">San Francisco (SFO)</option>
-                        <option value="SEA">Seattle (SEA)</option>
-                    </datalist>
-
-                    <!-- Flight Status (single select) -->
-                    <div class="form-group-full">
-                        <label class="form-label">
-                            <span class="filter-icon">🔽</span> Flight Status
-                        </label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusAny" name="flightStatus" class="checkbox-input" checked />
-                                <span class="checkbox-text">Any</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusOnTime" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">On Time</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusBoarding" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Boarding</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusDelayed" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Delayed</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusDeparted" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Departed</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="radio" id="statusCancelled" name="flightStatus" class="checkbox-input" />
-                                <span class="checkbox-text">Cancelled</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="btn-icon">🔍</span>
-                            Search Flights
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
-                            Clear Filters
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">Advanced Flight Search</h1>
+    <p class="page-subtitle">Search and filter live flight records</p>
 </div>
+
+<!-- Search Form -->
+<div class="search-form-container">
+    <form class="search-form" id="searchForm" method="get" asp-action="AdvancedSearch" asp-controller="Home">
+        <input type="hidden" name="search" value="1" />
+
+        <!-- Row 1: Flight, Airline, Destination -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="flight" class="form-label">Flight Number</label>
+                <input type="text" id="flight" name="flight" class="form-input"
+                       placeholder="e.g., VY 5227" value="@Model.Flight" autocomplete="off" maxlength="10" pattern="[A-Za-z0-9-]+" />
+            </div>
+            <div class="form-group">
+                <label for="airline" class="form-label">Airline</label>
+                <div class="choice-field">
+                    <input type="text" id="airline" name="airline" class="form-input"
+                           list="airlineOptions" placeholder="e.g., British Airways" value="@Model.Airline" autocomplete="off" maxlength="100" />
+                </div>
+                <datalist id="airlineOptions">
+                    <option value="British Airways"></option>
+                    <option value="Virgin Atlantic"></option>
+                    <option value="easyJet"></option>
+                    <option value="Ryanair"></option>
+                    <option value="Emirates"></option>
+                    <option value="Qatar Airways"></option>
+                    <option value="Lufthansa"></option>
+                    <option value="Air France"></option>
+                    <option value="KLM"></option>
+                    <option value="United Airlines"></option>
+                    <option value="American Airlines"></option>
+                    <option value="Delta Air Lines"></option>
+                    <option value="Singapore Airlines"></option>
+                    <option value="Cathay Pacific"></option>
+                    <option value="Turkish Airlines"></option>
+                    <option value="Etihad Airways"></option>
+                    <option value="Swiss International Air Lines"></option>
+                    <option value="Iberia"></option>
+                    <option value="Finnair"></option>
+                    <option value="SAS Scandinavian Airlines"></option>
+                    <option value="Air Canada"></option>
+                    <option value="Japan Airlines"></option>
+                    <option value="ANA All Nippon Airways"></option>
+                    <option value="Qantas"></option>
+                    <option value="South African Airways"></option>
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label for="destination" class="form-label">Destination</label>
+                <div class="choice-field">
+                    <input type="text" id="destination" name="destination" class="form-input"
+                           list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Destination" autocomplete="off" maxlength="100" />
+                </div>
+                <datalist id="airportOptions">
+                    <option value="ABV">Abuja (ABV)</option>
+                    <option value="ACC">Accra (ACC)</option>
+                    <option value="AMS">Amsterdam Schiphol (AMS)</option>
+                    <option value="ATH">Athens Eleftherios Venizelos (ATH)</option>
+                    <option value="ATL">Atlanta Hartsfield-Jackson (ATL)</option>
+                    <option value="AUH">Abu Dhabi (AUH)</option>
+                    <option value="AYT">Antalya (AYT)</option>
+                    <option value="BCN">Barcelona El Prat (BCN)</option>
+                    <option value="BEY">Beirut Rafic Hariri (BEY)</option>
+                    <option value="BGW">Baghdad (BGW)</option>
+                    <option value="BKK">Bangkok Suvarnabhumi (BKK)</option>
+                    <option value="BLR">Bangalore (BLR)</option>
+                    <option value="BOM">Mumbai (BOM)</option>
+                    <option value="BOS">Boston Logan (BOS)</option>
+                    <option value="BRU">Brussels (BRU)</option>
+                    <option value="CAI">Cairo (CAI)</option>
+                    <option value="ORD">Chicago O'Hare (ORD)</option>
+                    <option value="CPT">Cape Town (CPT)</option>
+                    <option value="CDG">Paris Charles de Gaulle (CDG)</option>
+                    <option value="DEL">Delhi Indira Gandhi (DEL)</option>
+                    <option value="DFW">Dallas/Fort Worth (DFW)</option>
+                    <option value="DOH">Doha Hamad (DOH)</option>
+                    <option value="DUB">Dublin (DUB)</option>
+                    <option value="DXB">Dubai (DXB)</option>
+                    <option value="EDI">Edinburgh (EDI)</option>
+                    <option value="FCO">Rome Fiumicino (FCO)</option>
+                    <option value="FRA">Frankfurt (FRA)</option>
+                    <option value="GRU">São Paulo Guarulhos (GRU)</option>
+                    <option value="GVA">Geneva (GVA)</option>
+                    <option value="HKG">Hong Kong (HKG)</option>
+                    <option value="HND">Tokyo Haneda (HND)</option>
+                    <option value="IAD">Washington Dulles (IAD)</option>
+                    <option value="ICN">Seoul Incheon (ICN)</option>
+                    <option value="IST">Istanbul (IST)</option>
+                    <option value="JFK">New York JFK (JFK)</option>
+                    <option value="JNB">Johannesburg (JNB)</option>
+                    <option value="KHI">Karachi (KHI)</option>
+                    <option value="KUL">Kuala Lumpur (KUL)</option>
+                    <option value="LAD">Luanda (LAD)</option>
+                    <option value="LAX">Los Angeles (LAX)</option>
+                    <option value="LGW">London Gatwick (LGW)</option>
+                    <option value="LHR">London Heathrow (LHR)</option>
+                    <option value="LIS">Lisbon (LIS)</option>
+                    <option value="LOS">Lagos (LOS)</option>
+                    <option value="MAD">Madrid Barajas (MAD)</option>
+                    <option value="MAN">Manchester (MAN)</option>
+                    <option value="MEX">Mexico City (MEX)</option>
+                    <option value="MIA">Miami (MIA)</option>
+                    <option value="MUC">Munich (MUC)</option>
+                    <option value="NBO">Nairobi (NBO)</option>
+                    <option value="NRT">Tokyo Narita (NRT)</option>
+                    <option value="PEK">Beijing Capital (PEK)</option>
+                    <option value="PHL">Philadelphia (PHL)</option>
+                    <option value="PKX">Beijing Daxing (PKX)</option>
+                    <option value="PVG">Shanghai Pudong (PVG)</option>
+                    <option value="SFO">San Francisco (SFO)</option>
+                    <option value="SIN">Singapore Changi (SIN)</option>
+                    <option value="SYD">Sydney (SYD)</option>
+                    <option value="TLV">Tel Aviv Ben Gurion (TLV)</option>
+                    <option value="VIE">Vienna (VIE)</option>
+                    <option value="YUL">Montreal Trudeau (YUL)</option>
+                    <option value="YYZ">Toronto Pearson (YYZ)</option>
+                    <option value="ZRH">Zurich (ZRH)</option>
+                </datalist>
+            </div>
+        </div>
+
+        <!-- Row 2: Departure Date, Arrival Date, Terminal -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="departureDate" class="form-label">Departure Date</label>
+                <div class="choice-field choice-field--date">
+                    <input type="date" id="departureDate" name="departureDate" class="form-input"
+                           value="@Model.DepartureDate?.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="arrivalDate" class="form-label">Arrival Date</label>
+                <div class="choice-field choice-field--date">
+                    <input type="date" id="arrivalDate" name="arrivalDate" class="form-input"
+                           value="@Model.ArrivalDate?.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="terminal" class="form-label">Terminal</label>
+                <div class="choice-field choice-field--select select-wrapper">
+                    <select asp-for="Terminal" id="terminal" class="form-input form-select">
+                        <option value="">All Terminals</option>
+                        <option value="2">Terminal 2</option>
+                        <option value="3">Terminal 3</option>
+                        <option value="4">Terminal 4</option>
+                        <option value="5">Terminal 5</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Direction + Time Range (new) -->
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Direction</label>
+                <div class="direction-toggle">
+                    <input type="hidden" id="directionInput" name="direction" value="@Model.Direction" />
+                    <button type="button" class="direction-btn @(string.IsNullOrEmpty(Model.Direction) ? "active" : "")"
+                            data-direction=""
+                            aria-pressed="@(string.IsNullOrEmpty(Model.Direction) ? "true" : "false")">All</button>
+                    <button type="button" class="direction-btn @(Model.Direction == "Departure" ? "active" : "")"
+                            data-direction="Departure"
+                            aria-pressed="@(Model.Direction == "Departure" ? "true" : "false")">Departures</button>
+                    <button type="button" class="direction-btn @(Model.Direction == "Arrival" ? "active" : "")"
+                            data-direction="Arrival"
+                            aria-pressed="@(Model.Direction == "Arrival" ? "true" : "false")">Arrivals</button>
+                </div>
+                <div class="selection-summary @(string.IsNullOrWhiteSpace(Model.Direction) ? "" : "selection-summary--filtered")"
+                     id="directionSelectionSummary"
+                     aria-live="polite">@selectedDirectionSummary</div>
+            </div>
+            <div class="form-group">
+                <label for="timeRangeStart" class="form-label">From Time</label>
+                <div class="choice-field choice-field--time">
+                    <input type="time" id="timeRangeStart" name="timeRangeStart" class="form-input"
+                           value="@Model.TimeRangeStart" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="timeRangeEnd" class="form-label">To Time</label>
+                <div class="choice-field choice-field--time">
+                    <input type="time" id="timeRangeEnd" name="timeRangeEnd" class="form-input"
+                           value="@Model.TimeRangeEnd" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 4: Status Buttons (multi-select) -->
+        <div class="form-row">
+            <div class="form-group form-group--full-width">
+                <label class="form-label">
+                    Flight Status
+                    <span class="form-label-hint">(select multiple)</span>
+                </label>
+                <div class="status-buttons" id="statusButtons">
+                    @{
+                        foreach (var status in FlightStatusCatalog.Options)
+                        {
+                            var isActive = Model.Statuses.Contains(status.Value, StringComparer.OrdinalIgnoreCase);
+                            <button type="button"
+                                    class="status-btn @(isActive ? "active" : "")"
+                                    data-status="@status.Value"
+                                    aria-pressed="@(isActive ? "true" : "false")">@status.Label</button>
+                        }
+                    }
+                </div>
+                @foreach (var s in Model.Statuses)
+                {
+                    <input type="hidden" name="statuses" value="@s" class="status-hidden-input" />
+                }
+                <div class="selection-summary @(Model.Statuses.Any() ? "selection-summary--filtered" : "")"
+                     id="statusSelectionSummary"
+                     aria-live="polite">@selectedStatusesSummary</div>
+            </div>
+        </div>
+
+        <!-- Hidden sort/page state (for progressive enhancement) -->
+        <input type="hidden" id="sortByInput"    name="sortBy"    value="@Model.SortBy" />
+        <input type="hidden" id="sortOrderInput" name="sortOrder" value="@Model.SortOrder" />
+        <input type="hidden" id="pageInput"      name="page"      value="@Model.Page" />
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="searchBtn">
+                <span class="btn-icon">🔍</span>
+                Search Flights
+            </button>
+            <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
+                Clear Filters
+            </button>
+        </div>
+
+        <div class="search-validation @(Model.HasValidationErrors ? "search-validation--visible" : "")"
+             id="searchValidationMessage"
+             aria-live="polite"
+             @(Model.HasValidationErrors ? "" : "hidden")>
+            <div class="search-validation-title">Please fix these before searching:</div>
+            <ul class="search-validation-list" id="searchValidationList">
+                @foreach (var error in Model.ValidationErrors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    </form>
+
+    <p class="api-hint">Tip: every filter is optional — combine any number of filters together.</p>
+</div>
+
+<!-- Loading Spinner -->
+<div class="search-loading" id="searchLoading" hidden>
+    <div class="spinner"></div>
+    <span>Searching flights…</span>
+</div>
+
+<!-- Results Container (pre-rendered on first GET, then replaced via AJAX) -->
+<div id="results-container">
+    @if (Model.HasSearched)
+    {
+        @await Html.PartialAsync("_AdvancedSearchResults", Model)
+    }
+</div>
+
+<!-- Flight Details Modal (shared partial) -->
+@await Html.PartialAsync("_FlightDetailsModal")
 
 @section Scripts {
     <script>
-        // Update current time
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toTimeString().split(' ')[0];
-            document.getElementById('currentTime').textContent = timeString;
+        // -------------------------------------------------------------------
+        // State
+        // -------------------------------------------------------------------
+        let currentSortBy  = '@(Model.SortBy ?? "")';
+        let currentSortOrd = '@(Model.SortOrder ?? "asc")';
+        const directionInput   = document.getElementById('directionInput');
+        const directionSummary = document.getElementById('directionSelectionSummary');
+        const statusSummary    = document.getElementById('statusSelectionSummary');
+        const searchForm       = document.getElementById('searchForm');
+        const validationBox    = document.getElementById('searchValidationMessage');
+        const validationList   = document.getElementById('searchValidationList');
+
+        function describeDirection(direction) {
+            if (!direction) return 'Showing all directions';
+            return direction === 'Departure' ? 'Showing departures only' : 'Showing arrivals only';
         }
-        
-        updateTime();
-        setInterval(updateTime, 1000);
 
-        // Temporary fallback behavior (remove when API is wired)
-        const clearBtn = document.getElementById('clearFiltersBtn');
-        const form = document.querySelector('.search-form');
+        function getSelectedStatuses() {
+            return [...document.querySelectorAll('#statusButtons .status-btn.active')]
+                .map(b => b.dataset.status)
+                .filter(Boolean);
+        }
 
-        if (clearBtn && form) {
-            clearBtn.addEventListener('click', () => {
-                form.reset();
-                const anyStatus = document.getElementById('statusAny');
-                if (anyStatus) {
-                    anyStatus.checked = true;
-                }
+        function updateDirectionButtons(selectedDirection = '') {
+            document.querySelectorAll('.direction-btn').forEach(btn => {
+                const isActive = btn.dataset.direction === selectedDirection;
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            if (directionInput) {
+                directionInput.value = selectedDirection;
+            }
+
+            if (directionSummary) {
+                directionSummary.textContent = describeDirection(selectedDirection);
+                directionSummary.classList.toggle('selection-summary--filtered', Boolean(selectedDirection));
+            }
+        }
+
+        function updateStatusButtons(selectedStatuses = getSelectedStatuses()) {
+            const normalized = [...new Set(selectedStatuses)];
+
+            document.querySelectorAll('#statusButtons .status-btn').forEach(btn => {
+                const isActive = normalized.includes(btn.dataset.status);
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            if (statusSummary) {
+                statusSummary.textContent = normalized.length
+                    ? `Status filters: ${normalized.join(', ')}`
+                    : 'No status filters selected';
+                statusSummary.classList.toggle('selection-summary--filtered', normalized.length > 0);
+            }
+        }
+
+        window.syncAdvancedSearchSelections = function () {
+            updateDirectionButtons(directionInput?.value ?? '');
+            updateStatusButtons();
+        };
+
+        function setFieldError(id, isInvalid) {
+            const input = document.getElementById(id);
+            if (!input) return;
+
+            input.classList.toggle('input-error', isInvalid);
+            const fieldWrapper = input.closest('.choice-field');
+            if (fieldWrapper) {
+                fieldWrapper.classList.toggle('choice-field--error', isInvalid);
+            }
+        }
+
+        function clearValidationState() {
+            if (validationBox) {
+                validationBox.hidden = true;
+                validationBox.classList.remove('search-validation--visible');
+            }
+
+            if (validationList) {
+                validationList.innerHTML = '';
+            }
+
+            ['departureDate', 'arrivalDate', 'timeRangeStart', 'timeRangeEnd'].forEach(id => setFieldError(id, false));
+        }
+
+        function showValidationErrors(errors, fieldIds = []) {
+            if (!validationBox || !validationList) return;
+
+            validationList.innerHTML = errors.map(error => `<li>${error}</li>`).join('');
+            validationBox.hidden = false;
+            validationBox.classList.add('search-validation--visible');
+            ['departureDate', 'arrivalDate', 'timeRangeStart', 'timeRangeEnd'].forEach(id => {
+                setFieldError(id, fieldIds.includes(id));
             });
         }
+
+        function hasAnySearchFilter() {
+            return Boolean(
+                document.getElementById('flight')?.value.trim()
+                || document.getElementById('airline')?.value.trim()
+                || document.getElementById('destination')?.value.trim()
+                || document.getElementById('departureDate')?.value
+                || document.getElementById('arrivalDate')?.value
+                || document.getElementById('terminal')?.value
+                || directionInput?.value
+                || document.getElementById('timeRangeStart')?.value
+                || document.getElementById('timeRangeEnd')?.value
+                || getSelectedStatuses().length
+            );
+        }
+
+        function validateSearchForm() {
+            const errors = [];
+            const invalidFieldIds = [];
+            const departureDate = document.getElementById('departureDate')?.value;
+            const arrivalDate = document.getElementById('arrivalDate')?.value;
+            const timeRangeStart = document.getElementById('timeRangeStart')?.value;
+            const timeRangeEnd = document.getElementById('timeRangeEnd')?.value;
+
+            if (!hasAnySearchFilter()) {
+                errors.push('Choose at least one filter before searching.');
+            }
+
+            if (departureDate && arrivalDate && departureDate > arrivalDate) {
+                errors.push('Departure date cannot be after arrival date.');
+                invalidFieldIds.push('departureDate', 'arrivalDate');
+            }
+
+            if (timeRangeStart && timeRangeEnd && timeRangeStart > timeRangeEnd) {
+                errors.push('The start time cannot be later than the end time.');
+                invalidFieldIds.push('timeRangeStart', 'timeRangeEnd');
+            }
+
+            return {
+                isValid: errors.length === 0,
+                errors,
+                invalidFieldIds: [...new Set(invalidFieldIds)]
+            };
+        }
+
+        // -------------------------------------------------------------------
+        // Direction toggle
+        // -------------------------------------------------------------------
+        document.querySelectorAll('.direction-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                clearValidationState();
+                updateDirectionButtons(btn.dataset.direction);
+            });
+        });
+
+        // -------------------------------------------------------------------
+        // Status multi-select
+        // -------------------------------------------------------------------
+        document.querySelectorAll('#statusButtons .status-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                clearValidationState();
+                btn.classList.toggle('active');
+                updateStatusButtons();
+            });
+        });
+
+        // -------------------------------------------------------------------
+        // Build URLSearchParams from the form + current sort/page
+        // -------------------------------------------------------------------
+        function buildParams(page = 1, sortBy = currentSortBy, sortOrd = currentSortOrd) {
+            const form   = document.getElementById('searchForm');
+            const data   = new FormData(form);
+            const params = new URLSearchParams();
+
+            const skip = new Set(['search', 'statuses', 'sortBy', 'sortOrder', 'page']);
+            for (const [k, v] of data.entries()) {
+                if (!skip.has(k) && v) params.append(k, v);
+            }
+
+            getSelectedStatuses().forEach(s => params.append('statuses', s));
+
+            if (sortBy)  params.set('sortBy',    sortBy);
+            if (sortOrd) params.set('sortOrder', sortOrd);
+            params.set('page', page);
+
+            return params;
+        }
+
+        function syncSearchUrl(params) {
+            const nextParams = new URLSearchParams(params);
+            nextParams.set('search', '1');
+            window.history.replaceState({}, '', `/Home/AdvancedSearch?${nextParams.toString()}`);
+        }
+
+        // -------------------------------------------------------------------
+        // AJAX: replace results container
+        // -------------------------------------------------------------------
+        async function fetchResults(params) {
+            const container = document.getElementById('results-container');
+            clearValidationState();
+            document.getElementById('searchLoading').hidden = false;
+            container.style.opacity = '0.35';
+
+            try {
+                const res  = await fetch(`/Home/AdvancedSearchResults?${params}`);
+                const html = await res.text();
+                container.innerHTML   = html;
+                container.style.opacity = '1';
+                attachFlightRowHandlers();
+                attachSortHandlers();
+                attachPaginationHandlers();
+                currentSortBy  = params.get('sortBy')    ?? '';
+                currentSortOrd = params.get('sortOrder') ?? 'asc';
+                document.getElementById('sortByInput').value = currentSortBy;
+                document.getElementById('sortOrderInput').value = currentSortOrd;
+                document.getElementById('pageInput').value = params.get('page') ?? '1';
+                syncSearchUrl(params);
+            } catch (err) {
+                console.error('Search failed:', err);
+                container.style.opacity = '1';
+            } finally {
+                document.getElementById('searchLoading').hidden = true;
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // Sort headers (re-attached after each render)
+        // -------------------------------------------------------------------
+        function attachSortHandlers() {
+            document.querySelectorAll('.sortable-th').forEach(th => {
+                th.style.cursor = 'pointer';
+                th.addEventListener('click', () => {
+                    const col = th.dataset.col;
+                    currentSortOrd = (currentSortBy === col && currentSortOrd === 'asc') ? 'desc' : 'asc';
+                    currentSortBy  = col;
+                    fetchResults(buildParams(1, currentSortBy, currentSortOrd));
+                });
+            });
+        }
+
+        // -------------------------------------------------------------------
+        // Pagination links (re-attached after each render)
+        // -------------------------------------------------------------------
+        function attachPaginationHandlers() {
+            document.querySelectorAll('#results-container .pagination-link').forEach(link => {
+                link.addEventListener('click', event => {
+                    event.preventDefault();
+                    const page = Number(link.dataset.page ?? 1);
+                    fetchResults(buildParams(page, currentSortBy, currentSortOrd));
+                });
+            });
+        }
+
+        // -------------------------------------------------------------------
+        // Form submit → AJAX
+        // -------------------------------------------------------------------
+        searchForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const validation = validateSearchForm();
+            if (!validation.isValid) {
+                showValidationErrors(validation.errors, validation.invalidFieldIds);
+                return;
+            }
+
+            currentSortBy  = '';
+            currentSortOrd = 'asc';
+            fetchResults(buildParams(1, '', 'asc'));
+        });
+
+        // -------------------------------------------------------------------
+        // Clear filters
+        // -------------------------------------------------------------------
+        document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+            searchForm.reset();
+            searchForm.querySelectorAll('input[type="text"], input[type="date"], input[type="time"]').forEach(input => input.value = '');
+            document.getElementById('terminal').value = '';
+            updateDirectionButtons('');
+            updateStatusButtons([]);
+            clearValidationState();
+            document.getElementById('results-container').innerHTML = '';
+            currentSortBy  = '';
+            currentSortOrd = 'asc';
+            document.getElementById('sortByInput').value = '';
+            document.getElementById('sortOrderInput').value = 'asc';
+            document.getElementById('pageInput').value = '1';
+            window.history.replaceState({}, '', '/Home/AdvancedSearch');
+        });
+
+        searchForm.querySelectorAll('input, select').forEach(field => {
+            field.addEventListener('input', clearValidationState);
+            field.addEventListener('change', clearValidationState);
+        });
+
+        // -------------------------------------------------------------------
+        // Initialise
+        // -------------------------------------------------------------------
+        updateDirectionButtons(directionInput?.value ?? '');
+        updateStatusButtons();
+        if (!validationBox?.classList.contains('search-validation--visible')) {
+            clearValidationState();
+        }
+        attachSortHandlers();
+        attachPaginationHandlers();
     </script>
 }

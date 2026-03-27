@@ -1,0 +1,360 @@
+@model AFMS.Models.AdvancedSearchViewModel
+
+@{
+    var activeFilters = new List<(string Label, string Value)>();
+    var pagination = Model.Pagination;
+    var visiblePages = pagination.VisiblePages().ToList();
+
+    if (!string.IsNullOrWhiteSpace(Model.Flight))
+        activeFilters.Add(("Flight", Model.Flight));
+
+    if (!string.IsNullOrWhiteSpace(Model.Airline))
+        activeFilters.Add(("Airline", Model.Airline));
+
+    if (!string.IsNullOrWhiteSpace(Model.Destination))
+        activeFilters.Add(("Destination", Model.Destination));
+
+    if (Model.DepartureDate.HasValue)
+        activeFilters.Add(("Departure date", Model.DepartureDate.Value.ToString("dd MMM yyyy")));
+
+    if (Model.ArrivalDate.HasValue)
+        activeFilters.Add(("Arrival date", Model.ArrivalDate.Value.ToString("dd MMM yyyy")));
+
+    if (!string.IsNullOrWhiteSpace(Model.Terminal))
+        activeFilters.Add(("Terminal", $"Terminal {Model.Terminal}"));
+
+    if (!string.IsNullOrWhiteSpace(Model.Direction))
+        activeFilters.Add(("Direction", Model.Direction == "Departure" ? "Departures" : "Arrivals"));
+
+    if (!string.IsNullOrWhiteSpace(Model.TimeRangeStart) || !string.IsNullOrWhiteSpace(Model.TimeRangeEnd))
+    {
+        var timeStart = Model.TimeRangeStart ?? "00:00";
+        var timeEnd = Model.TimeRangeEnd ?? "23:59";
+        activeFilters.Add(("Time", $"{timeStart} - {timeEnd}"));
+    }
+
+    if (Model.Statuses.Any())
+        activeFilters.Add(("Status", string.Join(", ", Model.Statuses)));
+
+    List<KeyValuePair<string, string?>> BuildBaseQueryItems()
+    {
+        var queryItems = new List<KeyValuePair<string, string?>>();
+
+        void Add(string key, string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                queryItems.Add(new KeyValuePair<string, string?>(key, value));
+            }
+        }
+
+        queryItems.Add(new KeyValuePair<string, string?>("search", "1"));
+        Add("flight", Model.Flight);
+        Add("airline", Model.Airline);
+        Add("destination", Model.Destination);
+        Add("departureDate", Model.DepartureDate?.ToString("yyyy-MM-dd"));
+        Add("arrivalDate", Model.ArrivalDate?.ToString("yyyy-MM-dd"));
+        Add("terminal", Model.Terminal);
+        Add("direction", Model.Direction);
+        Add("timeRangeStart", Model.TimeRangeStart);
+        Add("timeRangeEnd", Model.TimeRangeEnd);
+        Add("sortBy", Model.SortBy);
+        Add("sortOrder", Model.SortOrder);
+
+        foreach (var status in Model.Statuses.Where(status => !string.IsNullOrWhiteSpace(status)))
+        {
+            queryItems.Add(new KeyValuePair<string, string?>("statuses", status));
+        }
+
+        return queryItems;
+    }
+
+    string BuildPageUrl(int pageNumber)
+    {
+        var queryItems = BuildBaseQueryItems();
+        queryItems.Add(new KeyValuePair<string, string?>("page", pageNumber.ToString()));
+
+        return $"{Url.Action("AdvancedSearch", "Home")}{Microsoft.AspNetCore.Http.QueryString.Create(queryItems)}";
+    }
+}
+
+<div class="flights-section advanced-results">
+    <div class="flights-header">
+        <h2 class="section-title">
+            Search Results
+            <span class="result-count">(@Model.TotalCount)</span>
+        </h2>
+        <div class="result-meta">Airport: @Model.UsedAirportCode</div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Notice))
+    {
+        <div class="search-notice">@Model.Notice</div>
+    }
+
+    @if (Model.HasValidationErrors)
+    {
+        <div class="search-validation search-validation--server" aria-live="polite">
+            <div class="search-validation-title">Please fix these before searching:</div>
+            <ul class="search-validation-list">
+                @foreach (var error in Model.ValidationErrors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (activeFilters.Any())
+    {
+        <div class="active-filters" aria-label="Active search filters">
+            <div class="active-filters-header">
+                <span class="active-filters-title">Active filters</span>
+                <span class="active-filters-count">@activeFilters.Count selected</span>
+            </div>
+            <div class="active-filters-list">
+                @foreach (var filter in activeFilters)
+                {
+                    <span class="active-filter-chip">
+                        <strong>@filter.Label:</strong> @filter.Value
+                    </span>
+                }
+            </div>
+        </div>
+    }
+
+    @if (Model.HasValidationErrors)
+    {
+    }
+    else if (!Model.Results.Any())
+    {
+        <div class="empty-state">
+            <p class="empty-state-title">No flights matched your filters</p>
+            <p>Try a different airport code, broader dates, or fewer filters.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper">
+            <table class="flights-table">
+                <thead>
+                <tr>
+                    <th class="sortable-th" data-col="flight">
+                        Flight
+                        @if (Model.SortBy == "flight")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th class="sortable-th" data-col="airline">
+                        Airline
+                        @if (Model.SortBy == "airline")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th>Aircraft</th>
+                    <th>Type</th>
+                    <th>Route</th>
+                    <th class="sortable-th" data-col="departure">
+                        Departure
+                        @if (Model.SortBy == "departure" || string.IsNullOrEmpty(Model.SortBy))
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th class="sortable-th" data-col="arrival">
+                        Arrival
+                        @if (Model.SortBy == "arrival")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                    <th>Terminal</th>
+                    <th class="sortable-th" data-col="status">
+                        Status
+                        @if (Model.SortBy == "status")
+                        {
+                            <span class="sort-icon">@(Model.SortOrder == "desc" ? "↓" : "↑")</span>
+                        }
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var flight in Model.Results)
+                {
+                    var isDep          = flight.Direction == "Departure";
+                    var movementStatus = isDep ? flight.Departure?.Status : flight.Arrival?.Status;
+                    var rawStatus      = (movementStatus ?? flight.Status ?? "Unknown").ToLower();
+
+                    var statusClass = AFMS.Models.AdvancedSearchViewModel.GetStatusClass(rawStatus);
+                    var statusLabel = AFMS.Models.AdvancedSearchViewModel.GetStatusLabel(rawStatus);
+
+                    var depIata = flight.Departure?.Airport?.Iata
+                        ?? FlightFormattingHelpers.ConvertToIata(flight.Departure?.Airport?.Icao ?? "");
+                    var arrIata = flight.Arrival?.Airport?.Iata
+                        ?? FlightFormattingHelpers.ConvertToIata(flight.Arrival?.Airport?.Icao ?? "");
+
+                    if (string.IsNullOrWhiteSpace(depIata))
+                        depIata = isDep ? FlightFormattingHelpers.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
+                    if (string.IsNullOrWhiteSpace(arrIata))
+                        arrIata = !isDep ? FlightFormattingHelpers.ConvertToIata(Model.UsedAirportCode ?? "-") : "-";
+
+                    var depCity = flight.Departure?.Airport?.MunicipalityName ?? flight.Departure?.Airport?.ShortName ?? depIata;
+                    var arrCity = flight.Arrival?.Airport?.MunicipalityName   ?? flight.Arrival?.Airport?.ShortName   ?? arrIata;
+
+                    var departureTime = FlightFormattingHelpers.FormatLocalDateTime(flight.Departure?.ScheduledTime?.Local, "ddd dd MMM HH:mm");
+
+                    var arrivalTime = FlightFormattingHelpers.FormatLocalDateTime(flight.Arrival?.ScheduledTime?.Local, "ddd dd MMM HH:mm");
+
+                    var lhrLeg  = isDep ? flight.Departure : flight.Arrival;
+                    var gate     = !string.IsNullOrWhiteSpace(lhrLeg?.Gate)     ? lhrLeg!.Gate     : "-";
+                    var terminal = !string.IsNullOrWhiteSpace(lhrLeg?.Terminal) ? lhrLeg!.Terminal : "-";
+
+                    var depUtc          = flight.Departure?.ScheduledTime?.Utc ?? "";
+                    var arrUtc          = flight.Arrival?.ScheduledTime?.Utc   ?? "";
+                    var runwayDepUtc    = flight.Departure?.RunwayTime?.Utc     ?? "";
+                    var runwayArrUtc    = flight.Arrival?.RunwayTime?.Utc       ?? "";
+                    var revisedDepUtc   = flight.Departure?.RevisedTime?.Utc    ?? "";
+                    var revisedArrUtc   = flight.Arrival?.RevisedTime?.Utc      ?? "";
+                    var predictedDepUtc = flight.Departure?.PredictedTime?.Utc  ?? "";
+                    var predictedArrUtc = flight.Arrival?.PredictedTime?.Utc    ?? "";
+
+                    var detailedStatus       = statusLabel;
+                    var hasActuallyDeparted  = !string.IsNullOrEmpty(runwayDepUtc) || rawStatus is "enroute" or "approaching" or "departed" or "gateclosed";
+                    var hasActuallyArrived   = !string.IsNullOrEmpty(runwayArrUtc) || rawStatus == "arrived";
+
+                    if (hasActuallyArrived)
+                    {
+                        if (DateTime.TryParse(runwayArrUtc, out var actArrTime))
+                            detailedStatus = $"Arrived {actArrTime.ToLocalTime():HH:mm}";
+                        else detailedStatus = "Arrived";
+                        statusLabel = "Arrived"; statusClass = "status-arrived";
+                    }
+                    else if (hasActuallyDeparted && isDep)
+                    {
+                        if (DateTime.TryParse(runwayDepUtc, out var actDepTime))
+                            detailedStatus = $"Departed {actDepTime.ToLocalTime():HH:mm}";
+                        else detailedStatus = "Departed";
+                        statusLabel = FlightFormattingHelpers.GetStatusLabel("Departed");
+                        statusClass = FlightFormattingHelpers.GetStatusClass("Departed");
+                    }
+                    else if (hasActuallyDeparted && !isDep)
+                    {
+                        detailedStatus = rawStatus == "approaching" ? "Approaching" : "In Flight";
+                        statusLabel = detailedStatus; statusClass = "status-departed";
+                    }
+                    else if (rawStatus == "delayed")  { detailedStatus = "Delayed"; }
+                    else if (rawStatus == "boarding") { detailedStatus = "Boarding"; }
+                    else if (rawStatus == "canceled") { detailedStatus = "Canceled"; }
+
+                    var typeLabel = isDep ? "DEP" : "ARR";
+                    var typeClass = isDep ? "type-dep" : "type-arr";
+                    var displayDepTime = FlightFormattingHelpers.FormatLocalTime(flight.Departure?.ScheduledTime?.Local);
+                    var displayArrTime = FlightFormattingHelpers.FormatLocalTime(flight.Arrival?.ScheduledTime?.Local);
+                    var aircraftInfo = !string.IsNullOrWhiteSpace(flight.Aircraft?.Model)
+                        ? (!string.IsNullOrWhiteSpace(flight.Aircraft?.Reg)
+                            ? $"{flight.Aircraft.Model} ({flight.Aircraft.Reg})"
+                            : flight.Aircraft!.Model!)
+                        : "-";
+
+                    <tr class="flight-row"
+                        data-direction="@flight.Direction"
+                        data-flight-number="@flight.Number"
+                        data-airline="@(flight.Airline?.Name ?? "-")"
+                        data-dep-iata="@depIata"
+                        data-arr-iata="@arrIata"
+                        data-dep-city="@depCity"
+                        data-arr-city="@arrCity"
+                        data-dep-time="@departureTime"
+                        data-arr-time="@arrivalTime"
+                        data-dep-utc="@depUtc"
+                        data-arr-utc="@arrUtc"
+                        data-aircraft="@aircraftInfo"
+                        data-runway-dep-utc="@runwayDepUtc"
+                        data-runway-arr-utc="@runwayArrUtc"
+                        data-revised-dep-utc="@revisedDepUtc"
+                        data-revised-arr-utc="@revisedArrUtc"
+                        data-predicted-dep-utc="@predictedDepUtc"
+                        data-predicted-arr-utc="@predictedArrUtc"
+                        data-raw-status="@rawStatus"
+                        data-gate="@gate"
+                        data-terminal="@terminal"
+                        data-status-class="@statusClass"
+                        data-status-label="@detailedStatus">
+                        <td class="flight-number">@flight.Number</td>
+                        <td>@(flight.Airline?.Name ?? "-")</td>
+                        <td>@aircraftInfo</td>
+                        <td><span class="type-badge @typeClass">@typeLabel</span></td>
+                        <td>@depIata → @arrIata</td>
+                        <td class="mono">@displayDepTime</td>
+                        <td class="mono">@displayArrTime</td>
+                        <td>@terminal</td>
+                        <td><span class="status-badge @statusClass">@detailedStatus</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" aria-label="Advanced search pagination">
+            @if (pagination.HasPreviousPage)
+            {
+                <a class="page-btn pagination-link"
+                   href="@BuildPageUrl(pagination.Page - 1)"
+                   data-page="@(pagination.Page - 1)">‹ Prev</a>
+            }
+            else
+            {
+                <button type="button" class="page-btn" disabled>‹ Prev</button>
+            }
+
+            @if (visiblePages.First() > 1)
+            {
+                <a class="page-btn pagination-link" href="@BuildPageUrl(1)" data-page="1">1</a>
+                @if (visiblePages.First() > 2)
+                {
+                    <span class="page-ellipsis">…</span>
+                }
+            }
+
+            @foreach (var pageNumber in visiblePages)
+            {
+                if (pageNumber == pagination.Page)
+                {
+                    <button type="button" class="page-btn active" aria-current="page" disabled>@pageNumber</button>
+                }
+                else
+                {
+                    <a class="page-btn pagination-link"
+                       href="@BuildPageUrl(pageNumber)"
+                       data-page="@pageNumber">@pageNumber</a>
+                }
+            }
+
+            @if (visiblePages.Last() < pagination.TotalPages)
+            {
+                @if (visiblePages.Last() < pagination.TotalPages - 1)
+                {
+                    <span class="page-ellipsis">…</span>
+                }
+                <a class="page-btn pagination-link"
+                   href="@BuildPageUrl(pagination.TotalPages)"
+                   data-page="@pagination.TotalPages">@pagination.TotalPages</a>
+            }
+
+            @if (pagination.HasNextPage)
+            {
+                <a class="page-btn pagination-link"
+                   href="@BuildPageUrl(pagination.Page + 1)"
+                   data-page="@(pagination.Page + 1)">Next ›</a>
+            }
+            else
+            {
+                <button type="button" class="page-btn" disabled>Next ›</button>
+            }
+
+            <span class="page-info">Showing @pagination.PageStart-@pagination.PageEnd of @Model.TotalCount</span>
+        </div>
+    }
+</div>

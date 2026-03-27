@@ -18,3 +18,9 @@
 *.pch
 *.vspscc
 *.vssscc
+*.terraform
+*.hcl
+*.DS_store
+*.env
+*.env.example
+.vscode/

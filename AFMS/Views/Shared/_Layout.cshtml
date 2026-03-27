@@ -1,14 +1,139 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] - AFMS</title>
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/flight-progress.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true"/>
+    @RenderSection("Styles", required: false)
 </head>
 <body>
-    @RenderBody()
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="app-logo">
+                    <img src="~/images/AFMS logo.png" alt="AFMS Logo" class="app-logo-image" />
+                </div>
+                <div class="app-info">
+                    <h1 class="app-title">AFMS</h1>
+                </div>
+                </div>
+
+            <nav class="sidebar-nav">
+                <a href="@Url.Action("Index", "Home")" class="nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
+                    <span class="nav-label">Dashboard</span>
+                </a>
+                <a href="@Url.Action("Add", "Flight")" class="nav-item @(currentController == "Flight" && currentAction == "Add" ? "active" : "")">
+                    <span class="nav-label">Add Flight</span>
+                </a>
+                <a href="@Url.Action("Index", "Flight")" class="nav-item @(currentController == "Flight" && currentAction != "Add" ? "active" : "")">
+                    <span class="nav-label">Flight Details</span>
+                </a>
+                <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")">
+                    <span class="nav-label">Advanced Search</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="user-label">Logged in as</span>
+                <div class="user-session-row">
+                    <span class="user-name">@(User.Identity?.Name ?? "Admin")</span>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger logout-btn">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="top-bar">
+                <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+                <div class="top-bar-spacer"></div>
+                <div class="top-bar-right">
+                    <div class="current-time">
+                        <span class="time-label">Current Time</span>
+                        <span class="time-value" id="currentTime">00:00:00</span>
+                    </div>
+                    <div class="user-avatar">
+                        <button class="avatar-btn">@((User.Identity?.Name ?? "A")[0].ToString().ToUpperInvariant())</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-container">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chat Widget -->
+    <div class="ai-chat-container">
+        <div class="ai-chat-window" id="aiChatWindow" role="dialog" aria-modal="false" aria-labelledby="aiChatTitle">
+            <div class="ai-chat-header">
+                <div class="ai-chat-header-content">
+                    <div class="ai-chat-avatar">
+                        <img src="~/images/AFMS logo.png" alt="AI" />
+                    </div>
+                    <div class="ai-chat-title">
+                        <h3 id="aiChatTitle">Flight Assistant</h3>
+                        <p>Search helper for flights and filters</p>
+                    </div>
+                </div>
+                <div class="ai-chat-header-actions">
+                    <button type="button" class="ai-chat-clear" id="aiChatClear">Clear chat</button>
+                    <button type="button" class="ai-chat-close" id="aiChatClose" aria-label="Close chat">×</button>
+                </div>
+            </div>
+            
+            <div class="ai-chat-messages" id="chatMessages" aria-live="polite">
+                <div class="welcome-message">
+                    <div class="ai-icon">
+                        <img src="~/images/AFMS logo.png" alt="AI" class="ai-icon-image" />
+                    </div>
+                    <h4>AI Flight Assistant</h4>
+                    <p>Ask me about flights, schedules, and airport information.</p>
+                </div>
+            </div>
+            
+            <div class="ai-chat-input">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input-field" 
+                        placeholder="Describe your flight search..."
+                        aria-label="Ask the flight assistant for search help"
+                        rows="1"
+                    ></textarea>
+                    <div class="chat-input-hint" id="chatInputHint">Press Enter to send. Shift+Enter adds a new line.</div>
+                </div>
+                <button class="chat-send-btn" id="chatSendBtn" aria-label="Send chat message">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <button class="ai-chat-toggle" id="aiChatToggle" aria-label="Open flight assistant" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </button>
+    </div>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/ai-chat.js" asp-append-version="true"></script>
+    <script src="~/js/flight-details-modal.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
