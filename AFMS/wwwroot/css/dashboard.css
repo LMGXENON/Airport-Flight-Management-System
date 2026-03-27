@@ -877,6 +877,11 @@ body:not(.dark-theme) .flights-table tbody tr.flight-row:hover {
     color: var(--success);
 }
 
+body:not(.dark-theme) .status-scheduled {
+    background-color: rgba(5, 150, 105, 0.22);
+    color: #065f46;
+}
+
 /* Monospace for times */
 .mono {
     font-family: 'Courier New', monospace;
