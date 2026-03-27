@@ -433,6 +433,12 @@ body {
     color: var(--success);
 }
 
+.stat-badge.unavailable {
+    background-color: rgba(136, 145, 178, 0.18);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+}
+
 .stat-badge.neutral {
     background-color: rgba(136, 145, 178, 0.2);
     color: var(--text-secondary);
