@@ -317,6 +317,12 @@ body {
     margin-bottom: 6px;
 }
 
+.dashboard-title {
+    font-family: "Oxanium", "Segoe UI", sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
 .page-subtitle {
     font-size: 14px;
     color: var(--text-secondary);
