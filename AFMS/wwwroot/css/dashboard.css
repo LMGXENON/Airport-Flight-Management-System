@@ -1052,6 +1052,19 @@ body {
     color: white;
 }
 
+/* Keep logout neutral in dashboard; reserve red for destructive actions. */
+.logout-btn.btn-danger {
+    background: rgba(136, 145, 178, 0.2);
+    border: 1px solid rgba(136, 145, 178, 0.35);
+    color: #d8deef;
+}
+
+.logout-btn.btn-danger:hover {
+    background: rgba(136, 145, 178, 0.3);
+    border-color: rgba(136, 145, 178, 0.5);
+    color: #eef2ff;
+}
+
 .btn-secondary {
     background: #64748b;
     color: white;
