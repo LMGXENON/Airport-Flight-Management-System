@@ -508,6 +508,47 @@ body {
     color: var(--text-primary);
 }
 
+.stat-value-skeleton,
+.stat-badge-skeleton {
+    position: relative;
+    color: transparent;
+    overflow: hidden;
+    user-select: none;
+}
+
+.stat-value-skeleton {
+    width: 68px;
+    height: 28px;
+    border-radius: 6px;
+}
+
+.stat-badge-skeleton {
+    width: 112px;
+    height: 22px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.stat-value-skeleton::before,
+.stat-badge-skeleton::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(100deg, rgba(136, 145, 178, 0.16) 20%, rgba(214, 222, 249, 0.34) 50%, rgba(136, 145, 178, 0.16) 80%);
+    background-size: 220% 100%;
+    animation: stat-shimmer 1.2s linear infinite;
+}
+
+@keyframes stat-shimmer {
+    from {
+        background-position: 180% 0;
+    }
+    to {
+        background-position: -40% 0;
+    }
+}
+
 .stat-badge {
     display: inline-block;
     padding: 3px 8px;
@@ -530,6 +571,13 @@ body {
 .stat-badge.neutral {
     background-color: rgba(136, 145, 178, 0.2);
     color: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stat-value-skeleton::before,
+    .stat-badge-skeleton::before {
+        animation: none;
+    }
 }
 
 /* Flights Section */
