@@ -11,6 +11,18 @@
     --danger: #ef4444;
 }
 
+html[data-theme="light"] {
+    --bg-primary: #f3f7ff;
+    --bg-secondary: #e8eefb;
+    --bg-card: #ffffff;
+    --accent-blue: #2b59d6;
+    --text-primary: #16203a;
+    --text-secondary: #5f6f97;
+    --border-color: #d6def2;
+    --success: #059669;
+    --danger: #dc2626;
+}
+
 /* Reset & Base */
 * {
     margin: 0;
@@ -220,6 +232,52 @@ body {
     gap: 24px;
 }
 
+.theme-toggle-btn {
+    border: 1px solid rgba(136, 145, 178, 0.35);
+    background: rgba(136, 145, 178, 0.14);
+    color: var(--text-primary);
+    border-radius: 999px;
+    padding: 7px 12px;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(65, 105, 225, 0.16);
+    border-color: rgba(124, 164, 255, 0.55);
+    transform: translateY(-1px);
+}
+
+.theme-toggle-btn:focus-visible {
+    outline: 2px solid rgba(124, 164, 255, 0.8);
+    outline-offset: 2px;
+}
+
+.theme-toggle-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.theme-toggle-text {
+    letter-spacing: 0.01em;
+}
+
+html[data-theme="light"] .theme-toggle-btn {
+    background: rgba(43, 89, 214, 0.09);
+    border-color: rgba(43, 89, 214, 0.26);
+}
+
+html[data-theme="light"] .theme-toggle-btn:hover {
+    background: rgba(43, 89, 214, 0.14);
+    border-color: rgba(43, 89, 214, 0.42);
+}
+
 .current-time {
     display: flex;
     flex-direction: column;
@@ -376,6 +434,37 @@ body {
 .page-subtitle {
     font-size: 14px;
     color: var(--text-secondary);
+}
+
+.airport-switcher-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.airport-switcher-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.airport-switcher-select {
+    min-width: 260px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.airport-switcher-select:focus-visible {
+    outline: 2px solid rgba(124, 164, 255, 0.7);
+    outline-offset: 2px;
 }
 
 .flight-add-btn {

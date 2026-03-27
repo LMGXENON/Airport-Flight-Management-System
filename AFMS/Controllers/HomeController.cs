@@ -55,6 +55,14 @@ public class HomeController : Controller
         ["london stansted"] = "STN",
         ["stn"] = "STN"
     };
+    private static readonly (string Icao, string Iata, string Name)[] DashboardAirportOptions =
+    [
+        ("EGLL", "LHR", "London Heathrow Airport"),
+        ("EGKK", "LGW", "London Gatwick Airport"),
+        ("EGSS", "STN", "London Stansted Airport"),
+        ("KJFK", "JFK", "New York JFK Airport"),
+        ("KLAX", "LAX", "Los Angeles Airport")
+    ];
 
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly FlightSearchService _flightSearchService;
@@ -88,18 +96,36 @@ public class HomeController : Controller
         _logger              = logger;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? airport)
     {
-        var airportCode = _configuration["AeroDataBox:DefaultAirport"] ?? "EGLL"; // London Heathrow ICAO
-        var londonTime = GetLondonNow();
-        var cacheKey = $"flights_{airportCode}_{londonTime:yyyyMMddHH}";
+        var defaultAirport = (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant();
+        var selectedAirportCode = ResolveDashboardAirportCode(airport, defaultAirport);
+        var selectedAirport = DashboardAirportOptions
+            .FirstOrDefault(a => a.Icao.Equals(selectedAirportCode, StringComparison.OrdinalIgnoreCase));
 
-        var sortedFlights = await GetSortedFlightsAsync(airportCode, londonTime, cacheKey);
+        var selectedAirportName = string.IsNullOrWhiteSpace(selectedAirport.Name)
+            ? selectedAirportCode
+            : selectedAirport.Name;
+        var selectedAirportIata = string.IsNullOrWhiteSpace(selectedAirport.Iata)
+            ? selectedAirportCode
+            : selectedAirport.Iata;
+
+        ViewBag.SelectedAirportIcao = selectedAirportCode;
+        ViewBag.SelectedAirportIata = selectedAirportIata;
+        ViewBag.SelectedAirportName = selectedAirportName;
+        ViewBag.AirportOptions = DashboardAirportOptions
+            .Select(a => new KeyValuePair<string, string>(a.Icao, $"{a.Name} ({a.Iata}/{a.Icao})"))
+            .ToList();
+
+        var londonTime = GetLondonNow();
+        var cacheKey = $"flights_{selectedAirportCode}_{londonTime:yyyyMMddHH}";
+
+        var sortedFlights = await GetSortedFlightsAsync(selectedAirportCode, londonTime, cacheKey);
         var allDbFlights = await _context.Flights.ToListAsync();
         ViewBag.DbFlightIds = BuildDbFlightIdLookup(allDbFlights);
 
         OverrideApiDataWithManualFlights(sortedFlights, allDbFlights);
-        AddManualFlightsNotInApi(sortedFlights, allDbFlights);
+        AddManualFlightsNotInApi(sortedFlights, allDbFlights, selectedAirportIata);
         sortedFlights = _manualFlightMergeService.MergeManualFlights(sortedFlights, allDbFlights).ToList();
         sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
 
@@ -146,16 +172,38 @@ public class HomeController : Controller
         }
     }
 
-    private void AddManualFlightsNotInApi(List<AeroDataBoxFlight> sortedFlights, List<Flight> allDbFlights)
+    private void AddManualFlightsNotInApi(List<AeroDataBoxFlight> sortedFlights, List<Flight> allDbFlights, string homeAirportIata)
     {
         var apiNumbers = sortedFlights
             .Select(f => f.Number?.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
-            sortedFlights.Add(CreateSyntheticFlight(dbFlight));
+            sortedFlights.Add(CreateSyntheticFlight(dbFlight, homeAirportIata));
     }
 
-    private static AeroDataBoxFlight CreateSyntheticFlight(Flight dbFlight)
+    private static string ResolveDashboardAirportCode(string? requestedAirport, string fallbackAirport)
+    {
+        var fallback = string.IsNullOrWhiteSpace(fallbackAirport)
+            ? "EGLL"
+            : fallbackAirport.Trim().ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(requestedAirport))
+            return fallback;
+
+        var normalized = requestedAirport.Trim().ToUpperInvariant();
+
+        if (DashboardAirportOptions.Any(a => a.Icao.Equals(normalized, StringComparison.OrdinalIgnoreCase)))
+            return normalized;
+
+        var byIata = DashboardAirportOptions
+            .FirstOrDefault(a => a.Iata.Equals(normalized, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(byIata.Icao))
+            return byIata.Icao;
+
+        return fallback;
+    }
+
+    private static AeroDataBoxFlight CreateSyntheticFlight(Flight dbFlight, string homeAirportIata)
     {
         // Convert a manually-entered Flight from the database into an AeroDataBoxFlight
         // so it can be displayed alongside API flights with a consistent structure
@@ -166,7 +214,7 @@ public class HomeController : Controller
 
         var departure = new FlightMovement
         {
-            Airport = new Airport { Iata = "LHR" },
+            Airport = new Airport { Iata = string.IsNullOrWhiteSpace(homeAirportIata) ? "LHR" : homeAirportIata },
             ScheduledTime = scheduledTime,
             Terminal = dbFlight.Terminal,
             Gate = dbFlight.Gate,

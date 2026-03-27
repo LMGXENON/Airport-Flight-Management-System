@@ -3,6 +3,12 @@
 @{
     ViewData["Title"] = "Dashboard";
 
+    var selectedAirportName = ViewBag.SelectedAirportName as string ?? "London Heathrow Airport";
+    var selectedAirportIata = ViewBag.SelectedAirportIata as string ?? "LHR";
+    var selectedAirportIcao = ViewBag.SelectedAirportIcao as string ?? "EGLL";
+    var airportOptions = ViewBag.AirportOptions as IEnumerable<KeyValuePair<string, string>>
+        ?? Enumerable.Empty<KeyValuePair<string, string>>();
+
     var apiUnavailable = ViewBag.ApiError != null;
     var totalDepartures = Model.Count(f => f.Direction == "Departure");
     var totalArrivals = Model.Count(f => f.Direction == "Arrival");
@@ -18,9 +24,20 @@
 }
 
 <!-- Page Header -->
-<div class="page-header">
-    <h1 class="page-title dashboard-title">Dashboard</h1>
-    <p class="page-subtitle">London Heathrow Airport (LHR/EGLL) - Live Flight Data</p>
+<div class="page-header page-header--split">
+    <div>
+        <h1 class="page-title dashboard-title">Dashboard</h1>
+        <p class="page-subtitle">@selectedAirportName (@selectedAirportIata/@selectedAirportIcao) - Live Flight Data</p>
+    </div>
+    <form method="get" class="airport-switcher-form" aria-label="Choose dashboard airport">
+        <label for="airportSwitcher" class="airport-switcher-label">Airport</label>
+        <select id="airportSwitcher" name="airport" class="airport-switcher-select" onchange="this.form.submit()">
+            @foreach (var option in airportOptions)
+            {
+                <option value="@option.Key" selected="@(option.Key == selectedAirportIcao)">@option.Value</option>
+            }
+        </select>
+    </form>
 </div>
 
 <!-- Stats Grid - Main -->
@@ -99,7 +116,7 @@
 <!-- Flights Section -->
 <div class="flights-section">
     <div class="flights-header">
-        <h2 class="section-title">Live Flights - London Heathrow (LHR)</h2>
+        <h2 class="section-title">Live Flights - @selectedAirportName (@selectedAirportIata)</h2>
         <div class="direction-filters">
             <button class="filter-btn active" data-direction="all">All</button>
             <button class="filter-btn" data-direction="Departure">Departures</button>
@@ -146,11 +163,11 @@
                     // Simplified status labels
                     var statusLabel = FlightFormattingHelpers.GetStatusLabel(rawStatus);
 
-                    // Airport codes — fill in LHR for the home leg
+                    // Airport codes — fill in selected airport for the home leg
                     var depIata = flight.Departure?.Airport?.Iata
-                        ?? (isDep ? "LHR" : (flight.Departure?.Airport?.Name ?? "-"));
+                        ?? (isDep ? selectedAirportIata : (flight.Departure?.Airport?.Name ?? "-"));
                     var arrIata = flight.Arrival?.Airport?.Iata
-                        ?? (!isDep ? "LHR" : (flight.Arrival?.Airport?.Name ?? "-"));
+                        ?? (!isDep ? selectedAirportIata : (flight.Arrival?.Airport?.Name ?? "-"));
 
                     // Departure date/time with day name
                         var departureTime = FlightFormattingHelpers.FormatLocalDateTime(flight.Departure?.ScheduledTime?.Local, "ddd dd MMM HH:mm");

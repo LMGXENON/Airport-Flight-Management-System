@@ -25,3 +25,6 @@
 *.env
 *.env.example
 .vscode/
+*.db-shm
+*.db-wal
+*.db-journal

@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="~/css/flight-progress.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true"/>
+    <script>
+        (function () {
+            var savedTheme = localStorage.getItem('afms-theme');
+            if (savedTheme === 'light' || savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        })();
+    </script>
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -60,6 +68,15 @@
                 <button class="sidebar-toggle" id="sidebarToggle">☰</button>
                 <div class="top-bar-spacer"></div>
                 <div class="top-bar-right">
+                    <button
+                        type="button"
+                        id="themeToggle"
+                        class="theme-toggle-btn"
+                        aria-label="Switch to light mode"
+                        aria-pressed="false">
+                        <span class="theme-toggle-icon" aria-hidden="true">☾</span>
+                        <span class="theme-toggle-text">Dark</span>
+                    </button>
                     <div class="current-time" aria-label="Current local time">
                         <span class="time-label">Current Time</span>
                         <time class="time-value" id="currentTime" datetime="" aria-live="off">00:00:00</time>
