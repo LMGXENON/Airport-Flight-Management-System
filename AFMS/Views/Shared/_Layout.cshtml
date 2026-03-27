@@ -145,6 +145,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
         </button>
+        <div class="ai-chat-unavailable-popover" id="aiChatUnavailablePopover" role="dialog" aria-label="Assistant unavailable on this page" hidden>
+            <p class="ai-chat-unavailable-title">Flight Assistant is unavailable here</p>
+            <p class="ai-chat-unavailable-text">Use one of these pages to chat with the assistant:</p>
+            <div class="ai-chat-unavailable-actions">
+                <a href="@Url.Action("AdvancedSearch", "Home")" class="ai-chat-unavailable-link">Go to Advanced Search</a>
+                <a href="@Url.Action("Add", "Flight")" class="ai-chat-unavailable-link">Go to Add Flight</a>
+            </div>
+        </div>
     </div>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
