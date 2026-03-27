@@ -62,3 +62,46 @@ updateClock();
         }
     });
 })();
+
+// Theme toggle (dark/light)
+(function () {
+    var themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) {
+        return;
+    }
+
+    var themeIcon = themeToggle.querySelector('.theme-toggle-icon');
+    var themeText = themeToggle.querySelector('.theme-toggle-text');
+    var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    var savedTheme = localStorage.getItem('afms-theme');
+    var currentTheme = savedTheme === 'light' || savedTheme === 'dark'
+        ? savedTheme
+        : (prefersLight ? 'light' : 'dark');
+
+    function renderToggle(theme) {
+        var isLight = theme === 'light';
+        themeToggle.setAttribute('aria-pressed', isLight ? 'true' : 'false');
+        themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+
+        if (themeIcon) {
+            themeIcon.textContent = isLight ? '☀' : '☾';
+        }
+
+        if (themeText) {
+            themeText.textContent = isLight ? 'Light' : 'Dark';
+        }
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('afms-theme', theme);
+        renderToggle(theme);
+    }
+
+    applyTheme(currentTheme);
+
+    themeToggle.addEventListener('click', function () {
+        currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        applyTheme(currentTheme);
+    });
+})();
