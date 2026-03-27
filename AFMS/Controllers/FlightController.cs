@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AFMS.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AFMS.Controllers
 {
@@ -101,12 +102,30 @@ namespace AFMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                flight.IsManualEntry = true;
-                flight.Status = FlightStatusCatalog.Normalize(flight.Status);
-                _context.Flights.Add(flight);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Flight added successfully!";
-                return RedirectToAction("Index", "Home");
+                try
+                {
+                    flight.IsManualEntry = true;
+                    flight.Status = FlightStatusCatalog.Normalize(flight.Status);
+                    _context.Flights.Add(flight);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Flight added successfully!";
+                    return RedirectToAction("Index", "Home");
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Keep the user on the form and log details so production issues can be diagnosed.
+                    ModelState.AddModelError(string.Empty, "Unable to save this flight right now. Please try again.");
+                    HttpContext.RequestServices
+                        .GetRequiredService<ILogger<FlightController>>()
+                        .LogError(ex, "Failed to save manual flight {FlightNumber}.", flight.FlightNumber);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "An unexpected error occurred while saving the flight.");
+                    HttpContext.RequestServices
+                        .GetRequiredService<ILogger<FlightController>>()
+                        .LogError(ex, "Unexpected error while saving manual flight {FlightNumber}.", flight.FlightNumber);
+                }
             }
             ViewBag.Airlines = await FlightFormHelpers.GetAirlinesSelectListAsync(_context, flight.Airline);
             ViewBag.AircraftModels = FlightFormHelpers.GetAircraftModelsSelectList(flight.AircraftType);
