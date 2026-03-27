@@ -12,17 +12,18 @@
     <link rel="stylesheet" href="~/css/flight-progress.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true"/>
-    <script>
-        (function () {
-            var savedTheme = localStorage.getItem('afms-theme');
-            if (savedTheme === 'light' || savedTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-            }
-        })();
-    </script>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
+    <script>
+        (function () {
+            var savedTheme = localStorage.getItem('afms-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+        })();
+    </script>
     <div class="app-container">
         <!-- Left Sidebar -->
         <aside class="sidebar" id="sidebar">
@@ -72,10 +73,9 @@
                         type="button"
                         id="themeToggle"
                         class="theme-toggle-btn"
-                        aria-label="Switch to light mode"
+                        aria-label="Switch to dark mode"
                         aria-pressed="false">
-                        <span class="theme-toggle-icon" aria-hidden="true">☾</span>
-                        <span class="theme-toggle-text">Dark</span>
+                        <i class='bx bx-moon theme-toggle-icon' aria-hidden="true"></i>
                     </button>
                     <div class="current-time" aria-label="Current local time">
                         <span class="time-label">Current Time</span>
