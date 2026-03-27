@@ -41,6 +41,7 @@ public class FlightSearchService
         var airportCode = (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant();
         var londonTz   = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
         var londonNow  = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTz);
+        model.UsedAirportCode = airportCode;
 
         // Determine the API date window.
         // Route searches without an explicit date use the full London day so
@@ -77,10 +78,9 @@ public class FlightSearchService
             .ToListAsync();
         var allFlights = _manualFlightMergeService.MergeManualFlights(apiFlights, manualFlights);
 
-        var filtered = ApplyFilters(allFlights, model);
+        var filtered = ApplyFilters(allFlights, model, airportCode);
         var sorted   = ApplySorting(filtered, model);
 
-        model.UsedAirportCode = airportCode;
         model.TotalCount      = sorted.Count;
 
         var totalPages = Math.Max(1, (int)Math.Ceiling(model.TotalCount / (double)model.PageSize));
@@ -101,7 +101,7 @@ public class FlightSearchService
     // Private helpers
     // -------------------------------------------------------------------------
 
-    private static List<AeroDataBoxFlight> ApplyFilters(IEnumerable<AeroDataBoxFlight> flights, AdvancedSearchViewModel model)
+    private static List<AeroDataBoxFlight> ApplyFilters(IEnumerable<AeroDataBoxFlight> flights, AdvancedSearchViewModel model, string homeAirportCode)
     {
         var query = flights;
 
@@ -128,11 +128,17 @@ public class FlightSearchService
 
         // Origin airport
         if (!string.IsNullOrWhiteSpace(model.Origin))
-            query = query.Where(f => AirportMatches(f.Departure?.Airport, model.Origin.Trim()));
+        {
+            var originTerm = model.Origin.Trim();
+            query = query.Where(f => OriginMatches(f, originTerm, homeAirportCode));
+        }
 
         // Destination airport
         if (!string.IsNullOrWhiteSpace(model.Destination))
-            query = query.Where(f => AirportMatches(f.Arrival?.Airport, model.Destination.Trim()));
+        {
+            var destinationTerm = model.Destination.Trim();
+            query = query.Where(f => DestinationMatches(f, destinationTerm, homeAirportCode));
+        }
 
         // Terminal
         if (!string.IsNullOrWhiteSpace(model.Terminal))
@@ -201,6 +207,41 @@ public class FlightSearchService
         }
 
         return query.ToList();
+    }
+
+    private static bool OriginMatches(AeroDataBoxFlight flight, string term, string homeAirportCode)
+    {
+        if (AirportMatches(flight.Departure?.Airport, term))
+            return true;
+
+        // API data can omit the home leg airport details for some records.
+        // For departures, origin is the searched home airport.
+        return flight.Direction.Equals("Departure", StringComparison.OrdinalIgnoreCase)
+            && HomeAirportMatches(term, homeAirportCode);
+    }
+
+    private static bool DestinationMatches(AeroDataBoxFlight flight, string term, string homeAirportCode)
+    {
+        if (AirportMatches(flight.Arrival?.Airport, term))
+            return true;
+
+        // For arrivals with missing home leg details, destination is the searched home airport.
+        return flight.Direction.Equals("Arrival", StringComparison.OrdinalIgnoreCase)
+            && HomeAirportMatches(term, homeAirportCode);
+    }
+
+    private static bool HomeAirportMatches(string term, string homeAirportCode)
+    {
+        if (string.IsNullOrWhiteSpace(term) || string.IsNullOrWhiteSpace(homeAirportCode))
+            return false;
+
+        var homeCode = homeAirportCode.Trim().ToUpperInvariant();
+        var homeIata = (FlightFormattingHelpers.ConvertToIata(homeCode) ?? string.Empty).Trim().ToUpperInvariant();
+        var lookupTerm = term.Trim().ToUpperInvariant();
+
+        return lookupTerm.Equals(homeCode, StringComparison.OrdinalIgnoreCase)
+            || (!string.IsNullOrWhiteSpace(homeIata)
+                && lookupTerm.Equals(homeIata, StringComparison.OrdinalIgnoreCase));
     }
 
     private static List<AeroDataBoxFlight> ApplySorting(IEnumerable<AeroDataBoxFlight> flights, AdvancedSearchViewModel model)
