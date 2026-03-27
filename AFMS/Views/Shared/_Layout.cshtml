@@ -69,10 +69,11 @@
                             class="avatar-btn"
                             id="avatarMenuButton"
                             type="button"
+                            aria-label="Open user menu"
                             aria-haspopup="menu"
                             aria-expanded="false"
                             aria-controls="avatarDropdownMenu">
-                            @((User.Identity?.Name ?? "A")[0].ToString().ToUpperInvariant())
+                            <img src="~/images/AFMS Logo.png" alt="" aria-hidden="true" class="avatar-btn-icon" />
                         </button>
                         <div class="avatar-dropdown" id="avatarDropdownMenu" role="menu" aria-label="User menu" hidden>
                             <button type="button" class="avatar-dropdown-item" role="menuitem" aria-disabled="true">Profile</button>
