@@ -63,7 +63,7 @@ public class FlightSearchService
             var hasRouteFilter = !string.IsNullOrWhiteSpace(model.Origin)
                 || !string.IsNullOrWhiteSpace(model.Destination);
 
-            to = londonNow.AddHours(hasRouteFilter ? 24 : 12);
+            to = londonNow.AddHours(hasRouteFilter ? 48 : 12);
         }
 
         if (to < from) to = from.AddHours(24);
