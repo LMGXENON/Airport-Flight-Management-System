@@ -170,7 +170,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var themeIcon = themeToggle.querySelector('.theme-toggle-icon');
-    var themeText = themeToggle.querySelector('.theme-toggle-text');
     var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
     var savedTheme = localStorage.getItem('afms-theme');
     var currentTheme = savedTheme === 'light' || savedTheme === 'dark'
@@ -184,10 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (themeIcon) {
             themeIcon.textContent = isLight ? '☀' : '☾';
-        }
-
-        if (themeText) {
-            themeText.textContent = isLight ? 'Light' : 'Dark';
         }
     }
 

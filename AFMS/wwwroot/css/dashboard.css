@@ -236,14 +236,13 @@ body {
     border: 1px solid rgba(136, 145, 178, 0.35);
     background: rgba(136, 145, 178, 0.14);
     color: var(--text-primary);
-    border-radius: 999px;
-    padding: 7px 12px;
-    min-height: 38px;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    font-size: 13px;
-    font-weight: 600;
+    justify-content: center;
+    font-size: 16px;
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
@@ -260,12 +259,8 @@ body {
 }
 
 .theme-toggle-icon {
-    font-size: 14px;
+    font-size: 17px;
     line-height: 1;
-}
-
-.theme-toggle-text {
-    letter-spacing: 0.01em;
 }
 
 html[data-theme="light"] .theme-toggle-btn {
