@@ -170,24 +170,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var themeIcon = themeToggle.querySelector('.theme-toggle-icon');
-    var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
     var savedTheme = localStorage.getItem('afms-theme');
-    var currentTheme = savedTheme === 'light' || savedTheme === 'dark'
-        ? savedTheme
-        : (prefersLight ? 'light' : 'dark');
+    var currentTheme = savedTheme === 'dark' ? 'dark' : 'light';
 
     function renderToggle(theme) {
-        var isLight = theme === 'light';
-        themeToggle.setAttribute('aria-pressed', isLight ? 'true' : 'false');
-        themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+        var isDark = theme === 'dark';
+        themeToggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+        themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
 
         if (themeIcon) {
-            themeIcon.textContent = isLight ? '☀' : '☾';
+            themeIcon.classList.remove('bx-moon', 'bx-sun');
+            themeIcon.classList.add(isDark ? 'bx-sun' : 'bx-moon');
         }
     }
 
     function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
+        document.body.classList.toggle('dark-theme', theme === 'dark');
         localStorage.setItem('afms-theme', theme);
         renderToggle(theme);
     }
@@ -195,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
     applyTheme(currentTheme);
 
     themeToggle.addEventListener('click', function () {
-        currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        currentTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
         applyTheme(currentTheme);
     });
 })();
