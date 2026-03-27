@@ -8,18 +8,18 @@
     var totalArrivals = Model.Count(f => f.Direction == "Arrival");
     var totalAirlines = Model.Select(f => f.Airline?.Name).Where(n => n != null).Distinct().Count();
 
-    var totalFlightsDisplay = apiUnavailable ? "--" : Model.Count.ToString();
-    var departuresDisplay = apiUnavailable ? "--" : totalDepartures.ToString();
-    var arrivalsDisplay = apiUnavailable ? "--" : totalArrivals.ToString();
-    var airlinesDisplay = apiUnavailable ? "--" : totalAirlines.ToString();
+    var totalFlightsDisplay = apiUnavailable ? "N/A" : Model.Count.ToString();
+    var departuresDisplay = apiUnavailable ? "N/A" : totalDepartures.ToString();
+    var arrivalsDisplay = apiUnavailable ? "N/A" : totalArrivals.ToString();
+    var airlinesDisplay = apiUnavailable ? "N/A" : totalAirlines.ToString();
 
-    var statBadgeText = apiUnavailable ? "Unavailable" : "Live Data";
-    var statBadgeClass = apiUnavailable ? "neutral" : "positive";
+    var statBadgeText = apiUnavailable ? "Data Unavailable" : "Live Data";
+    var statBadgeClass = apiUnavailable ? "unavailable" : "positive";
 }
 
 <!-- Page Header -->
 <div class="page-header">
-    <h1 class="page-title">Dashboard</h1>
+    <h1 class="page-title dashboard-title">Dashboard</h1>
     <p class="page-subtitle">London Heathrow Airport (LHR/EGLL) - Live Flight Data</p>
 </div>
 
@@ -27,34 +27,72 @@
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-content">
-            <div class="stat-label">Total Flights</div>
-            <div class="stat-value">@totalFlightsDisplay</div>
+            <div class="stat-metric">
+                <div class="stat-icon stat-icon--flights" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.5 13.2L11 11V4.7c0-1.2 1.1-2.2 2.4-2l.9.2c.9.2 1.6 1 1.6 1.9v5.6l4.3-1.1c1.2-.3 2.4.4 2.7 1.5.3 1.1-.4 2.2-1.6 2.5l-5.4 1.4v4.5l1.9 1.4v1.8l-3.7-1-3.7 1v-1.8l1.9-1.4v-3.4L4 17.4l-1.5-1.2V13.2z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">Total Flights</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@totalFlightsDisplay" aria-label="Loading total flights"></div>
+                </div>
+            </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
-            <div class="stat-label">Departures</div>
-            <div class="stat-value">@departuresDisplay</div>
+            <div class="stat-metric">
+                <div class="stat-icon stat-icon--departures" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3l5 5h-3v7h-4V8H7l5-5z" fill="currentColor"/>
+                        <rect x="5" y="17" width="14" height="3" rx="1.5" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">Departures</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@departuresDisplay" aria-label="Loading departures"></div>
+                </div>
+            </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
-            <div class="stat-label">Arrivals</div>
-            <div class="stat-value">@arrivalsDisplay</div>
+            <div class="stat-metric">
+                <div class="stat-icon stat-icon--arrivals" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21l-5-5h3V9h4v7h3l-5 5z" fill="currentColor"/>
+                        <rect x="5" y="4" width="14" height="3" rx="1.5" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">Arrivals</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@arrivalsDisplay" aria-label="Loading arrivals"></div>
+                </div>
+            </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
-            <div class="stat-label">Airlines</div>
-            <div class="stat-value">@airlinesDisplay</div>
+            <div class="stat-metric">
+                <div class="stat-icon stat-icon--airlines" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 20h18v-2H3v2zm2-3h3V9H5v8zm5 0h4V5h-4v12zm6 0h3V11h-3v6z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="stat-label">Airlines</div>
+                    <div class="stat-value stat-value-skeleton" data-final-value="@airlinesDisplay" aria-label="Loading airlines"></div>
+                </div>
+            </div>
         </div>
-        <div class="stat-badge @statBadgeClass">@statBadgeText</div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
     </div>
 </div>
 
@@ -301,6 +339,27 @@
 @section Scripts {
 <script>
 (function () {
+    const statValueEls = document.querySelectorAll('.stat-value[data-final-value]');
+    const statBadgeEls = document.querySelectorAll('.stat-badge[data-final-text]');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const revealDelayMs = prefersReducedMotion ? 0 : 650;
+
+    function revealStatValues() {
+        statValueEls.forEach(function (el) {
+            el.textContent = el.getAttribute('data-final-value') || '';
+            el.classList.remove('stat-value-skeleton');
+            el.removeAttribute('aria-label');
+        });
+
+        statBadgeEls.forEach(function (el) {
+            el.textContent = el.getAttribute('data-final-text') || '';
+            el.classList.remove('stat-badge-skeleton');
+            el.removeAttribute('aria-label');
+        });
+    }
+
+    window.setTimeout(revealStatValues, revealDelayMs);
+
     const PAGE_SIZE = 25;
     const query = new URLSearchParams(window.location.search);
     const requestedPage = Number.parseInt(query.get('page') ?? '1', 10);

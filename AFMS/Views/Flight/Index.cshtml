@@ -18,13 +18,13 @@
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="flight-success-banner">
+    <div class="flight-success-banner" aria-live="polite">
         @TempData["SuccessMessage"]
     </div>
 }
 
 <!-- Flight Number Search -->
-<form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form">
+<form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form" aria-label="Search flights by flight number">
     <input type="text"
            name="search"
            value="@Model.Search"
@@ -37,7 +37,8 @@
     @if (!string.IsNullOrEmpty(Model.Search))
     {
         <a href="@Url.Action("Index", "Flight")"
-           class="flight-search-clear">
+           class="flight-search-clear"
+           aria-label="Clear search and show all flights">
             Clear
         </a>
     }
@@ -51,19 +52,19 @@
         <span class="loading-spinner-label">Loading flights…</span>
     </div>
     <div class="table-wrapper">
-        <table class="flights-table">
+        <table class="flights-table" aria-label="List of managed flights">
             <thead>
                 <tr>
-                    <th>Flight #</th>
-                    <th>Airline</th>
-                    <th>Destination</th>
-                    <th>Aircraft</th>
-                    <th>Departure</th>
-                    <th>Arrival</th>
-                    <th>Gate</th>
-                    <th>Terminal</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th scope="col">Flight #</th>
+                    <th scope="col">Airline</th>
+                    <th scope="col">Destination</th>
+                    <th scope="col">Aircraft</th>
+                    <th scope="col">Departure</th>
+                    <th scope="col">Arrival</th>
+                    <th scope="col">Gate</th>
+                    <th scope="col">Terminal</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -96,7 +97,7 @@
 
         @if (!Model.Flights.Any())
         {
-            <div class="empty-state">
+            <div class="empty-state" aria-live="polite">
                 @if (!string.IsNullOrEmpty(Model.Search))
                 {
                     <p class="empty-state-title">No flights found for "@Model.Search"</p>
@@ -113,33 +114,28 @@
 
     @if (pagination.TotalCount > 0)
     {
-        <div class="pagination" aria-label="Managed flights pagination">
+        <nav class="pagination" aria-label="Managed flights pagination">
+            @* Previous button *@
             @if (pagination.HasPreviousPage)
             {
-                <a class="page-btn"
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="@(pagination.Page - 1)">‹ Prev</a>
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pagination.Page - 1 })">‹ Prev</a>
             }
             else
             {
                 <button type="button" class="page-btn" disabled>‹ Prev</button>
             }
 
+            @* First page and ellipsis *@
             @if (pagination.VisiblePages().First() > 1)
             {
-                <a class="page-btn"
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="1">1</a>
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = 1 })">1</a>
                 @if (pagination.VisiblePages().First() > 2)
                 {
                     <span class="page-ellipsis">…</span>
                 }
             }
 
+            @* Page numbers *@
             @foreach (var pageNumber in pagination.VisiblePages())
             {
                 if (pageNumber == pagination.Page)
@@ -148,34 +144,24 @@
                 }
                 else
                 {
-                    <a class="page-btn"
-                       asp-action="Index"
-                       asp-controller="Flight"
-                       asp-route-search="@Model.Search"
-                       asp-route-page="@pageNumber">@pageNumber</a>
+                    <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pageNumber })">@pageNumber</a>
                 }
             }
 
+            @* Last page and ellipsis *@
             @if (pagination.VisiblePages().Last() < pagination.TotalPages)
             {
-                @if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
+                if (pagination.VisiblePages().Last() < pagination.TotalPages - 1)
                 {
                     <span class="page-ellipsis">…</span>
                 }
-                <a class="page-btn"
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="@pagination.TotalPages">@pagination.TotalPages</a>
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pagination.TotalPages })">@pagination.TotalPages</a>
             }
 
+            @* Next button *@
             @if (pagination.HasNextPage)
             {
-                <a class="page-btn"
-                   asp-action="Index"
-                   asp-controller="Flight"
-                   asp-route-search="@Model.Search"
-                   asp-route-page="@(pagination.Page + 1)">Next ›</a>
+                <a class="page-btn" href="@Url.Action("Index", "Flight", new { search = Model.Search, page = pagination.Page + 1 })">Next ›</a>
             }
             else
             {
@@ -183,6 +169,6 @@
             }
 
             <span class="page-info">Showing @pagination.PageStart-@pagination.PageEnd of @pagination.TotalCount</span>
-        </div>
+        </nav>
     }
 </div>

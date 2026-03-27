@@ -121,3 +121,35 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 })();
+
+// Avatar dropdown menu
+(function () {
+    var container = document.getElementById('avatarMenuContainer');
+    var button = document.getElementById('avatarMenuButton');
+    var menu = document.getElementById('avatarDropdownMenu');
+
+    if (!container || !button || !menu) {
+        return;
+    }
+
+    function setMenuOpen(isOpen) {
+        button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        menu.hidden = !isOpen;
+    }
+
+    button.addEventListener('click', function () {
+        setMenuOpen(menu.hidden);
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!container.contains(event.target)) {
+            setMenuOpen(false);
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            setMenuOpen(false);
+        }
+    });
+})();

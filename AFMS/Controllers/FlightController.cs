@@ -158,8 +158,8 @@ namespace AFMS.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Airlines = await GetAirlinesSelectListAsync(flight.Airline);
-            ViewBag.AircraftModels = GetAircraftModelsSelectList(flight.AircraftType);
+            ViewBag.Airlines = await FlightFormHelpers.GetAirlinesSelectListAsync(_context, flight.Airline);
+            ViewBag.AircraftModels = FlightFormHelpers.GetAircraftModelsSelectList(flight.AircraftType);
             return View(flight);
         }
 
