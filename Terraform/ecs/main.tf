@@ -44,6 +44,25 @@ resource "aws_efs_mount_target" "afms_dp_keys" {
   security_groups = [aws_security_group.efs_sg.id]
 }
 
+resource "aws_efs_access_point" "afms_dp_keys" {
+  file_system_id = aws_efs_file_system.afms_dp_keys.id
+
+  posix_user {
+    uid = 1000
+    gid = 1000
+  }
+
+  root_directory {
+    path = "/afms-dpkeys"
+
+    creation_info {
+      owner_uid   = 1000
+      owner_gid   = 1000
+      permissions = "0770"
+    }
+  }
+}
+
 resource "aws_ecs_task_definition" "afms-task" {
   family                   = "afms_task"
   requires_compatibilities = ["FARGATE"]
@@ -134,6 +153,11 @@ resource "aws_ecs_task_definition" "afms-task" {
       file_system_id     = aws_efs_file_system.afms_dp_keys.id
       root_directory     = "/"
       transit_encryption = "ENABLED"
+
+      authorization_config {
+        access_point_id = aws_efs_access_point.afms_dp_keys.id
+        iam             = "DISABLED"
+      }
     }
   }
 
