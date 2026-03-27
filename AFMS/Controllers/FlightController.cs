@@ -100,6 +100,8 @@ namespace AFMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(Flight flight)
         {
+            NormalizeFlightTimesToUtc(flight);
+
             if (ModelState.IsValid)
             {
                 try
@@ -156,6 +158,8 @@ namespace AFMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Flight flight)
         {
+            NormalizeFlightTimesToUtc(flight);
+
             if (id != flight.Id)
             {
                 return NotFound();
@@ -221,6 +225,22 @@ namespace AFMS.Controllers
         private bool FlightExists(int id)
         {
             return _context.Flights.Any(e => e.Id == id);
+        }
+
+        private static void NormalizeFlightTimesToUtc(Flight flight)
+        {
+            flight.DepartureTime = ToUtc(flight.DepartureTime);
+            flight.ArrivalTime = ToUtc(flight.ArrivalTime);
+        }
+
+        private static DateTime ToUtc(DateTime value)
+        {
+            return value.Kind switch
+            {
+                DateTimeKind.Utc => value,
+                DateTimeKind.Local => value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(value, DateTimeKind.Local).ToUniversalTime()
+            };
         }
 
         /// <summary>
