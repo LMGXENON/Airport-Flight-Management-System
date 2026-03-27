@@ -5,12 +5,12 @@ If the message is not about searching or filtering flights, return JSON only:
 {"isSearchRequest":false,"message":"{searchOnlyMessage}"}
 
 Otherwise return JSON only with these fields:
-isSearchRequest, message, flight, airline, destination, departureDate, arrivalDate, terminal, direction, timeRangeStart, timeRangeEnd, statuses, clearFields.
+isSearchRequest, message, flight, airline, origin, destination, departureDate, arrivalDate, terminal, direction, timeRangeStart, timeRangeEnd, statuses, clearFields.
 
 Rules:
 - Keep existing values from context unless the latest message changes or clears them.
 - Use clearFields when the user asks to remove/reset filters.
-- Use destination codes when clear; otherwise leave destination empty.
+- Use origin and destination codes when clear; otherwise leave them empty.
 - today => {today}, tomorrow => next day.
 - Direction: from/leaving/departing => Departure; to/arriving/landing => Arrival.
 - If the user asks to generate values, return plausible values for only the requested fields.

@@ -14,8 +14,16 @@
 </div>
 
 <div class="form-card">
-    <form id="addFlightForm" asp-action="Add" method="post">
+    @if (Context.Request.Query["formExpired"] == "1")
+    {
+        <div class="alert alert-warning" role="alert">
+            Your session or form token expired. Please review the details and submit again.
+        </div>
+    }
+
+    <form id="addFlightForm" asp-action="Add" method="post" aria-label="Add a new flight">
         @Html.AntiForgeryToken()
+        <input asp-for="Status" type="hidden" />
 
         <div class="form-section">
             <h2 class="form-section-title">Flight Information</h2>

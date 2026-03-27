@@ -18,7 +18,7 @@ namespace AFMS.Controllers;
 public class HomeController : Controller
 {
     private const string LondonTimeZoneId = "Europe/London";
-    private const string SearchOnlyMessage = "I can only help with flight searches. Try asking for a flight by airline, destination, flight number, date, time, terminal or status.";
+    private const string SearchOnlyMessage = "I can only help with flight searches. Try asking for a flight by airline, origin, destination, flight number, date, time, terminal or status.";
     private const string DeepSeekPromptTemplateCacheKey = "deepseek_prompt_template";
     private const string AddFlightOnlyMessage = "I can only help with adding flights here. Share flight number, airline, destination, and departure time.";
     private const string DeepSeekAddFlightPromptTemplateCacheKey = "deepseek_add_flight_prompt_template";
@@ -29,7 +29,7 @@ public class HomeController : Controller
     ];
     private static readonly HashSet<string> SearchClearableFields = new(StringComparer.OrdinalIgnoreCase)
     {
-        "flight", "airline", "destination", "departureDate", "arrivalDate",
+        "flight", "airline", "origin", "destination", "departureDate", "arrivalDate",
         "terminal", "direction", "timeRangeStart", "timeRangeEnd", "statuses"
     };
     private static readonly Dictionary<string, string> SearchClearFieldAliases = new(StringComparer.OrdinalIgnoreCase)
@@ -38,7 +38,9 @@ public class HomeController : Controller
         ["timeStart"] = "timeRangeStart",
         ["timeEnd"] = "timeRangeEnd",
         ["departure"] = "departureDate",
-        ["arrival"] = "arrivalDate"
+        ["arrival"] = "arrivalDate",
+        ["fromAirport"] = "origin",
+        ["originAirport"] = "origin"
     };
     private static readonly Dictionary<string, string> AirportAliasToIata = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -115,31 +117,44 @@ public class HomeController : Controller
             .Select(a => new KeyValuePair<string, string>(a.Icao, $"{a.Name} ({a.Iata}/{a.Icao})"))
             .ToList();
 
-        // Get London local time (GMT/BST)
         var londonTime = GetLondonNow();
-
-        // Use cache to avoid hitting API rate limits (BASIC plan has strict limits)
         var cacheKey = $"flights_{selectedAirportCode}_{londonTime:yyyyMMddHH}";
 
+        var sortedFlights = await GetSortedFlightsAsync(selectedAirportCode, londonTime, cacheKey);
+        var allDbFlights = await _context.Flights.ToListAsync();
+        ViewBag.DbFlightIds = BuildDbFlightIdLookup(allDbFlights);
+
+        OverrideApiDataWithManualFlights(sortedFlights, allDbFlights);
+        AddManualFlightsNotInApi(sortedFlights, allDbFlights, selectedAirportIata);
+        sortedFlights = _manualFlightMergeService.MergeManualFlights(sortedFlights, allDbFlights).ToList();
+        sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
+
+        if (!sortedFlights.Any())
+            ViewBag.ApiError = _cache.Get<string>(AFMS.Services.AeroDataBoxService.ApiErrorCacheKey);
+
+        return View(sortedFlights);
+    }
+
+    private async Task<List<AeroDataBoxFlight>> GetSortedFlightsAsync(string airportCode, DateTime londonTime, string cacheKey)
+    {
         var flights = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            // Cache for 2 minutes to reduce API calls
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
-            return await _aeroDataBoxService.GetAirportFlightsAsync(selectedAirportCode, londonTime);
+            return await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
         });
+        return SortFlightsByLhrLegTime(flights ?? []);
+    }
 
-        var sortedFlights = SortFlightsByLhrLegTime(flights ?? []);
-
-        // Fetch all DB flights once — used for MANAGE links and dashboard merge
-        var allDbFlights = await _context.Flights.ToListAsync();
-
-        // Build flight number → DB id lookup for the MANAGE column
-        ViewBag.DbFlightIds = allDbFlights
+    private Dictionary<string, int> BuildDbFlightIdLookup(List<Flight> allDbFlights)
+    {
+        return allDbFlights
             .Where(f => !string.IsNullOrWhiteSpace(f.FlightNumber))
             .GroupBy(f => NormalizeFlightNumber(f.FlightNumber)!)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
+    }
 
-        // Override API data with values from manually-edited DB flights
+    private void OverrideApiDataWithManualFlights(List<AeroDataBoxFlight> sortedFlights, List<Flight> allDbFlights)
+    {
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry))
         {
             var existing = sortedFlights.FirstOrDefault(f =>
@@ -149,33 +164,21 @@ public class HomeController : Controller
                 var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
                 if (lhrLeg != null)
                 {
-                    if (!string.IsNullOrEmpty(dbFlight.Gate))     lhrLeg.Gate     = dbFlight.Gate;
+                    if (!string.IsNullOrEmpty(dbFlight.Gate)) lhrLeg.Gate = dbFlight.Gate;
                     if (!string.IsNullOrEmpty(dbFlight.Terminal)) lhrLeg.Terminal = dbFlight.Terminal;
                 }
                 existing.Status = dbFlight.Status;
             }
         }
+    }
 
-        // Add manually-entered flights that the live API doesn't know about
+    private void AddManualFlightsNotInApi(List<AeroDataBoxFlight> sortedFlights, List<Flight> allDbFlights, string homeAirportIata)
+    {
         var apiNumbers = sortedFlights
             .Select(f => f.Number?.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var dbFlight in allDbFlights.Where(f => f.IsManualEntry && !apiNumbers.Contains(f.FlightNumber.Trim())))
-            sortedFlights.Add(CreateSyntheticFlight(dbFlight, selectedAirportIata));
-
-        sortedFlights = _manualFlightMergeService
-            .MergeManualFlights(sortedFlights, allDbFlights)
-            .ToList();
-
-
-        // Re-sort so manual additions land in the right chronological position
-        sortedFlights = SortFlightsByLhrLegTime(sortedFlights);
-
-        // Surface API error if the list is empty
-        if (!sortedFlights.Any())
-            ViewBag.ApiError = _cache.Get<string>(AFMS.Services.AeroDataBoxService.ApiErrorCacheKey);
-
-        return View(sortedFlights);
+            sortedFlights.Add(CreateSyntheticFlight(dbFlight, homeAirportIata));
     }
 
     private static string ResolveDashboardAirportCode(string? requestedAirport, string fallbackAirport)
@@ -232,6 +235,7 @@ public class HomeController : Controller
         string? search,
         string? flight,
         string? airline,
+        string? origin,
         string? destination,
         DateTime? departureDate,
         DateTime? arrivalDate,
@@ -245,7 +249,7 @@ public class HomeController : Controller
         int page = 1)
     {
         var model = BuildSearchModel(
-            search, flight, airline, destination,
+            search, flight, airline, origin, destination,
             departureDate, arrivalDate, terminal, direction,
             FlightStatusCatalog.NormalizeStatuses(statuses), timeRangeStart, timeRangeEnd,
             sortBy, sortOrder, page);
@@ -265,6 +269,7 @@ public class HomeController : Controller
     public async Task<IActionResult> AdvancedSearchResults(
         string? flight,
         string? airline,
+        string? origin,
         string? destination,
         DateTime? departureDate,
         DateTime? arrivalDate,
@@ -278,7 +283,7 @@ public class HomeController : Controller
         int page = 1)
     {
         var model = BuildSearchModel(
-            "1", flight, airline, destination,
+            "1", flight, airline, origin, destination,
             departureDate, arrivalDate, terminal, direction,
             statuses, timeRangeStart, timeRangeEnd,
             sortBy, sortOrder, page);
@@ -313,7 +318,11 @@ public class HomeController : Controller
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 _logger.LogError("DeepSeek API key is not configured.");
-                return StatusCode(500, new { error = "DeepSeek API key not configured" });
+                return Ok(new AiSearchFiltersResponse
+                {
+                    IsSearchRequest = false,
+                    Message = "AI key is not configured in this environment. Please use manual filters for now."
+                });
             }
 
             var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
@@ -367,10 +376,10 @@ public class HomeController : Controller
                     clientKey,
                     Truncate(errorContent, 300));
 
-                return StatusCode((int)response.StatusCode, new
+                return Ok(new AiSearchFiltersResponse
                 {
-                    error = $"DeepSeek API error: {response.StatusCode}",
-                    details = Truncate(errorContent, 300)
+                    IsSearchRequest = false,
+                    Message = "AI is temporarily unavailable. You can still use manual filters while it recovers."
                 });
             }
 
@@ -385,7 +394,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid outer JSON for client {ClientKey}.", clientKey);
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI service returned an invalid response." });
+                return Ok(new AiSearchFiltersResponse
+                {
+                    IsSearchRequest = false,
+                    Message = "AI returned an invalid response format. Please try again or use manual filters."
+                });
             }
 
             var content = jsonResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? "{}";
@@ -400,7 +413,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid search JSON for client {ClientKey}. Payload: {Payload}", clientKey, Truncate(content, 300));
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not turn that request into search filters. Please try again." });
+                return Ok(new AiSearchFiltersResponse
+                {
+                    IsSearchRequest = false,
+                    Message = "AI could not convert that request into filters. Please rephrase or use manual filters."
+                });
             }
 
             var mergedParams = MergeWithAiSearchContext(parsedParams, normalizedContext, request.Query);
@@ -416,12 +433,20 @@ public class HomeController : Controller
         catch (OperationCanceledException ex) when (!HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "DeepSeek request timed out for client {ClientKey}.", clientKey);
-            return StatusCode(StatusCodes.Status504GatewayTimeout, new { error = "DeepSeek request timed out" });
+            return Ok(new AiSearchFiltersResponse
+            {
+                IsSearchRequest = false,
+                Message = "AI timed out. Please try a shorter query or use manual filters."
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process AI query for client {ClientKey}.", clientKey);
-            return StatusCode(500, new { error = "Failed to process AI request" });
+            return Ok(new AiSearchFiltersResponse
+            {
+                IsSearchRequest = false,
+                Message = "AI is unavailable right now. Please use manual filters and try again shortly."
+            });
         }
         finally
         {
@@ -451,7 +476,11 @@ public class HomeController : Controller
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 _logger.LogError("DeepSeek API key is not configured.");
-                return StatusCode(500, new { error = "DeepSeek API key not configured" });
+                return Ok(new AiAddFlightResponse
+                {
+                    IsAddFlightRequest = false,
+                    Message = "AI key is not configured in this environment. Please fill the form manually for now."
+                });
             }
 
             var model = _configuration["DeepSeek:Model"] ?? "deepseek-chat";
@@ -505,10 +534,10 @@ public class HomeController : Controller
                     clientKey,
                     Truncate(errorContent, 300));
 
-                return StatusCode((int)response.StatusCode, new
+                return Ok(new AiAddFlightResponse
                 {
-                    error = $"DeepSeek API error: {response.StatusCode}",
-                    details = Truncate(errorContent, 300)
+                    IsAddFlightRequest = false,
+                    Message = "AI is temporarily unavailable. Please fill the Add Flight form manually for now."
                 });
             }
 
@@ -523,7 +552,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid outer JSON for add-flight request (client {ClientKey}).", clientKey);
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI service returned an invalid response." });
+                return Ok(new AiAddFlightResponse
+                {
+                    IsAddFlightRequest = false,
+                    Message = "AI returned an invalid response format. Please try again or fill fields manually."
+                });
             }
 
             var content = jsonResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? "{}";
@@ -537,7 +570,11 @@ public class HomeController : Controller
             catch (JsonException ex)
             {
                 _logger.LogWarning(ex, "DeepSeek returned invalid add-flight JSON for client {ClientKey}. Payload: {Payload}", clientKey, Truncate(content, 300));
-                return StatusCode(StatusCodes.Status502BadGateway, new { error = "The AI could not parse that into add-flight fields. Please try again." });
+                return Ok(new AiAddFlightResponse
+                {
+                    IsAddFlightRequest = false,
+                    Message = "AI could not parse that into add-flight fields. Please rephrase or continue manually."
+                });
             }
 
             var mergedParams = MergeWithAiAddFlightContext(parsedParams, normalizedContext);
@@ -554,12 +591,20 @@ public class HomeController : Controller
         catch (OperationCanceledException ex) when (!HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "DeepSeek add-flight request timed out for client {ClientKey}.", clientKey);
-            return StatusCode(StatusCodes.Status504GatewayTimeout, new { error = "DeepSeek request timed out" });
+            return Ok(new AiAddFlightResponse
+            {
+                IsAddFlightRequest = false,
+                Message = "AI timed out. Please fill required fields manually and try again."
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process add-flight AI query for client {ClientKey}.", clientKey);
-            return StatusCode(500, new { error = "Failed to process add-flight AI request" });
+            return Ok(new AiAddFlightResponse
+            {
+                IsAddFlightRequest = false,
+                Message = "AI is unavailable right now. Please continue with manual form entry."
+            });
         }
         finally
         {
@@ -569,7 +614,7 @@ public class HomeController : Controller
 
     private static AdvancedSearchViewModel BuildSearchModel(
         string? search,
-        string? flight, string? airline, string? destination,
+        string? flight, string? airline, string? origin, string? destination,
         DateTime? departureDate, DateTime? arrivalDate,
         string? terminal, string? direction,
         List<string>? statuses,
@@ -580,6 +625,7 @@ public class HomeController : Controller
         {
             Flight          = flight,
             Airline         = airline,
+            Origin          = origin,
             Destination     = destination,
             DepartureDate   = departureDate,
             ArrivalDate     = arrivalDate,
@@ -604,6 +650,7 @@ public class HomeController : Controller
         var hasAnyFilter =
             !string.IsNullOrWhiteSpace(model.Flight)
             || !string.IsNullOrWhiteSpace(model.Airline)
+            || !string.IsNullOrWhiteSpace(model.Origin)
             || !string.IsNullOrWhiteSpace(model.Destination)
             || model.DepartureDate.HasValue
             || model.ArrivalDate.HasValue
@@ -661,6 +708,9 @@ public class HomeController : Controller
         if (!string.IsNullOrWhiteSpace(model.Airline) && model.Airline.Trim().Length > 100)
             model.ValidationErrors.Add("Airline cannot exceed 100 characters.");
 
+        if (!string.IsNullOrWhiteSpace(model.Origin) && model.Origin.Trim().Length > 100)
+            model.ValidationErrors.Add("Origin cannot exceed 100 characters.");
+
         if (!string.IsNullOrWhiteSpace(model.Destination) && model.Destination.Trim().Length > 100)
             model.ValidationErrors.Add("Destination cannot exceed 100 characters.");
 
@@ -691,6 +741,7 @@ public class HomeController : Controller
     {
         response.Flight = Clean(response.Flight)?.ToUpperInvariant();
         response.Airline = Clean(response.Airline);
+        response.Origin = NormalizeDestination(response.Origin);
         response.Destination = NormalizeDestination(response.Destination);
         response.DepartureDate = NormalizeDate(response.DepartureDate);
         response.ArrivalDate = NormalizeDate(response.ArrivalDate);
@@ -808,7 +859,7 @@ public class HomeController : Controller
                 return System.IO.File.ReadAllText(promptPath);
 
             _logger.LogWarning("DeepSeek prompt file was not found at {PromptPath}. Falling back to a built-in prompt.", promptPath);
-            return "You fill Advanced Search filters for Heathrow. Not a general chatbot. If the message is not about search/filtering flights, return JSON only: {\"isSearchRequest\":false,\"message\":\"{searchOnlyMessage}\"}. Otherwise return JSON only with: isSearchRequest, message, flight, airline, destination, departureDate, arrivalDate, terminal, direction, timeRangeStart, timeRangeEnd, statuses, clearFields. Keep existing values unless changed or cleared. Use clearFields for resets. today => {today}.";
+            return "You fill Advanced Search filters for Heathrow. Not a general chatbot. If the message is not about search/filtering flights, return JSON only: {\"isSearchRequest\":false,\"message\":\"{searchOnlyMessage}\"}. Otherwise return JSON only with: isSearchRequest, message, flight, airline, origin, destination, departureDate, arrivalDate, terminal, direction, timeRangeStart, timeRangeEnd, statuses, clearFields. Keep existing values unless changed or cleared. Use clearFields for resets. today => {today}.";
         }) ?? string.Empty;
     }
 
@@ -840,6 +891,7 @@ public class HomeController : Controller
 
         if (!string.IsNullOrWhiteSpace(response.Flight)) count++;
         if (!string.IsNullOrWhiteSpace(response.Airline)) count++;
+        if (!string.IsNullOrWhiteSpace(response.Origin)) count++;
         if (!string.IsNullOrWhiteSpace(response.Destination)) count++;
         if (!string.IsNullOrWhiteSpace(response.DepartureDate)) count++;
         if (!string.IsNullOrWhiteSpace(response.ArrivalDate)) count++;
@@ -862,6 +914,7 @@ public class HomeController : Controller
     private static bool HasAnySearchFilters(AiSearchFiltersResponse response) =>
         !string.IsNullOrWhiteSpace(response.Flight)
         || !string.IsNullOrWhiteSpace(response.Airline)
+        || !string.IsNullOrWhiteSpace(response.Origin)
         || !string.IsNullOrWhiteSpace(response.Destination)
         || !string.IsNullOrWhiteSpace(response.DepartureDate)
         || !string.IsNullOrWhiteSpace(response.ArrivalDate)
@@ -894,6 +947,7 @@ public class HomeController : Controller
         context is not null
         && (!string.IsNullOrWhiteSpace(context.Flight)
             || !string.IsNullOrWhiteSpace(context.Airline)
+            || !string.IsNullOrWhiteSpace(context.Origin)
             || !string.IsNullOrWhiteSpace(context.Destination)
             || !string.IsNullOrWhiteSpace(context.DepartureDate)
             || !string.IsNullOrWhiteSpace(context.ArrivalDate)
@@ -912,6 +966,7 @@ public class HomeController : Controller
         {
             Flight = NormalizeFlightNumber(context.Flight),
             Airline = Clean(context.Airline),
+            Origin = NormalizeDestination(context.Origin),
             Destination = NormalizeDestination(context.Destination),
             DepartureDate = NormalizeDate(context.DepartureDate),
             ArrivalDate = NormalizeDate(context.ArrivalDate),
@@ -944,6 +999,10 @@ public class HomeController : Controller
         aiResponse.Airline = shouldClear("airline")
             ? null
             : string.IsNullOrWhiteSpace(aiResponse.Airline) ? context!.Airline : aiResponse.Airline;
+
+        aiResponse.Origin = shouldClear("origin")
+            ? null
+            : string.IsNullOrWhiteSpace(aiResponse.Origin) ? context!.Origin : aiResponse.Origin;
 
         aiResponse.Destination = shouldClear("destination")
             ? null
@@ -1041,6 +1100,7 @@ public class HomeController : Controller
         if (text.Contains("direction", StringComparison.OrdinalIgnoreCase) || text.Contains("arrival/departure", StringComparison.OrdinalIgnoreCase)) clearFields.Add("direction");
         if (text.Contains("flight", StringComparison.OrdinalIgnoreCase) && text.Contains("number", StringComparison.OrdinalIgnoreCase)) clearFields.Add("flight");
         if (text.Contains("airline", StringComparison.OrdinalIgnoreCase)) clearFields.Add("airline");
+        if (text.Contains("origin", StringComparison.OrdinalIgnoreCase) || text.Contains("departure airport", StringComparison.OrdinalIgnoreCase)) clearFields.Add("origin");
         if (text.Contains("destination", StringComparison.OrdinalIgnoreCase)) clearFields.Add("destination");
 
         return clearFields.ToList();
@@ -1650,6 +1710,7 @@ public class AiSearchContext
 {
     public string? Flight { get; set; }
     public string? Airline { get; set; }
+    public string? Origin { get; set; }
     public string? Destination { get; set; }
     public string? DepartureDate { get; set; }
     public string? ArrivalDate { get; set; }
@@ -1699,6 +1760,7 @@ public class AiSearchFiltersResponse
     public string? Message { get; set; }
     public string? Flight { get; set; }
     public string? Airline { get; set; }
+    public string? Origin { get; set; }
     public string? Destination { get; set; }
     public string? DepartureDate { get; set; }
     public string? ArrivalDate { get; set; }

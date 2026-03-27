@@ -11,6 +11,9 @@
     if (!string.IsNullOrWhiteSpace(Model.Airline))
         activeFilters.Add(("Airline", Model.Airline));
 
+    if (!string.IsNullOrWhiteSpace(Model.Origin))
+        activeFilters.Add(("Origin", Model.Origin));
+
     if (!string.IsNullOrWhiteSpace(Model.Destination))
         activeFilters.Add(("Destination", Model.Destination));
 
@@ -51,6 +54,7 @@
         queryItems.Add(new KeyValuePair<string, string?>("search", "1"));
         Add("flight", Model.Flight);
         Add("airline", Model.Airline);
+        Add("origin", Model.Origin);
         Add("destination", Model.Destination);
         Add("departureDate", Model.DepartureDate?.ToString("yyyy-MM-dd"));
         Add("arrivalDate", Model.ArrivalDate?.ToString("yyyy-MM-dd"));
@@ -155,7 +159,8 @@
                     </th>
                     <th>Aircraft</th>
                     <th>Type</th>
-                    <th>Route</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
                     <th class="sortable-th" data-col="departure">
                         Departure
                         @if (Model.SortBy == "departure" || string.IsNullOrEmpty(Model.SortBy))
@@ -286,7 +291,18 @@
                         <td>@(flight.Airline?.Name ?? "-")</td>
                         <td>@aircraftInfo</td>
                         <td><span class="type-badge @typeClass">@typeLabel</span></td>
-                        <td>@depIata → @arrIata</td>
+                        <td>
+                            <div class="route-airport">
+                                <span class="route-airport-code">@depIata</span>
+                                <span class="route-airport-name">@depCity</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="route-airport">
+                                <span class="route-airport-code">@arrIata</span>
+                                <span class="route-airport-name">@arrCity</span>
+                            </div>
+                        </td>
                         <td class="mono">@displayDepTime</td>
                         <td class="mono">@displayArrTime</td>
                         <td>@terminal</td>

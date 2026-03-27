@@ -1,10 +1,7 @@
-@model AFMS.Models.Flight
+@model AFMS.Models.FlightDetailsViewModel
 
 @{
     ViewData["Title"] = "Flight Details";
-
-    var statusClass = FlightFormattingHelpers.GetStatusClass(Model.Status);
-    var statusLabel = FlightFormattingHelpers.GetStatusLabel(Model.Status);
 }
 
 <div class="page-header">
@@ -18,7 +15,7 @@
             <h2 class="details-flight-number">@Model.FlightNumber</h2>
             <p class="details-airline">@Model.Airline</p>
         </div>
-        <span class="status-badge @statusClass">@statusLabel</span>
+        <span class="status-badge @Model.StatusClass">@Model.StatusLabel</span>
     </div>
 
     <div class="details-grid">
@@ -28,32 +25,27 @@
         </div>
         <div class="detail-item">
             <p class="detail-label">Aircraft Type</p>
-            <p class="detail-value">@(string.IsNullOrWhiteSpace(Model.AircraftType) ? "TBD" : Model.AircraftType)</p>
+            <p class="detail-value">@Model.AircraftType</p>
         </div>
         <div class="detail-item">
             <p class="detail-label">Departure Time</p>
-            <p class="detail-value">@FlightFormattingHelpers.FormatDateTime(Model.DepartureTime, "ddd dd MMM, HH:mm")</p>
+            <p class="detail-value">@Model.DepartureTimeFormatted</p>
         </div>
         <div class="detail-item">
             <p class="detail-label">Arrival Time</p>
-            <p class="detail-value">@FlightFormattingHelpers.FormatDateTime(Model.ArrivalTime, "ddd dd MMM, HH:mm")</p>
+            <p class="detail-value">@Model.ArrivalTimeFormatted</p>
         </div>
         <div class="detail-item">
             <p class="detail-label">Gate</p>
-            <p class="detail-value">@(Model.Gate ?? "TBD")</p>
+            <p class="detail-value">@Model.FormattedGate</p>
         </div>
         <div class="detail-item">
             <p class="detail-label">Terminal</p>
-            <p class="detail-value">Terminal @Model.Terminal</p>
+            <p class="detail-value">@Model.FormattedTerminal</p>
         </div>
         <div class="detail-item">
             <p class="detail-label">Flight Duration</p>
-            <p class="detail-value">
-                @{
-                    var duration = Model.ArrivalTime - Model.DepartureTime;
-                    @($"{(int)duration.TotalHours}h {duration.Minutes}m")
-                }
-            </p>
+            <p class="detail-value">@Model.FlightDuration</p>
         </div>
     </div>
 </div>
@@ -62,4 +54,5 @@
     <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" class="btn btn-warning">Edit Flight</a>
     <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" class="btn btn-danger">Delete Flight</a>
 </div>
+
 

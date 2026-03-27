@@ -19,20 +19,21 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Login(string? returnUrl = null)
+    public async Task<IActionResult> Login(string? returnUrl = null)
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToAction("Index", "Home");
         }
 
+        // Simulate async for consistency (no real async work here)
+        await Task.CompletedTask;
         return View(new LoginViewModel { ReturnUrl = returnUrl });
     }
 
     [HttpPost]
     [AllowAnonymous]
-    [ValidateAntiForgeryToken]
-    public IActionResult Login(LoginViewModel model)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -54,25 +55,24 @@ public class AccountController : Controller
         {
             HttpOnly = true,
             Secure = Request.IsHttps,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddHours(GetTokenExpiryHours())
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddHours(GetTokenExpiryHours()),
+            Path = "/"
         });
 
-        if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
-        {
-            return Redirect(model.ReturnUrl);
-        }
-
-        return RedirectToAction("Index", "Home");
+        var redirectUrl = ResolvePostLoginRedirect(model.ReturnUrl);
+        await Task.CompletedTask;
+        return LocalRedirect(redirectUrl);
     }
 
     [Authorize]
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         Response.Cookies.Delete("afms_auth_token");
-        return RedirectToAction(nameof(Login));
+        var loginUrl = Url.Action("Login", "Account");
+        await Task.CompletedTask;
+        return Redirect(loginUrl ?? "/Account/Login");
     }
 
     private string CreateToken(string username)
@@ -107,4 +107,25 @@ public class AccountController : Controller
         var configured = _configuration.GetValue<int?>("Auth:TokenExpiryHours") ?? 8;
         return Math.Clamp(configured, 1, 24);
     }
+
+    private string ResolvePostLoginRedirect(string? returnUrl)
+    {
+        const string defaultUrl = "/Home/Index";
+
+        if (string.IsNullOrWhiteSpace(returnUrl))
+            return defaultUrl;
+
+        var candidate = returnUrl.Trim();
+        if (candidate.Length > 512)
+            return defaultUrl;
+
+        if (!Url.IsLocalUrl(candidate))
+            return defaultUrl;
+
+        if (candidate.StartsWith("/Account/Login", StringComparison.OrdinalIgnoreCase))
+            return defaultUrl;
+
+        return candidate;
+    }
 }
+

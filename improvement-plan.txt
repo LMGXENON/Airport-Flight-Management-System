@@ -1,7 +1,0 @@
-AFMS Improvement Plan
-Date: 2026-03-18
-
-Priority 8 — Revisit startup schema patch
-- Replace the raw ALTER TABLE startup patch in Program.cs with a migration-based approach or a clearer startup migration step.
-- Keep this lower priority because the app already builds and runs.
-
