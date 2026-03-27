@@ -7,6 +7,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const toggle     = document.getElementById('aiChatToggle');
         const chatWindow = document.getElementById('aiChatWindow');
+        const chatContainer = document.querySelector('.ai-chat-container');
         const closeBtn   = document.getElementById('aiChatClose');
         const clearBtn   = document.getElementById('aiChatClear');
         const sendBtn    = document.getElementById('chatSendBtn');
@@ -107,6 +108,9 @@
         });
 
         if (!isAiEnabledPage) {
+            if (chatContainer) {
+                chatContainer.hidden = true;
+            }
             if (inputEl) {
                 inputEl.disabled = true;
                 inputEl.placeholder = getReadyPlaceholder();
