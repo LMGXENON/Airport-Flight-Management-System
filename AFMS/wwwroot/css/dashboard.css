@@ -164,8 +164,9 @@ body {
     font-size: 16px;
     font-weight: 800;
     color: var(--text-primary);
+    font-family: "Courier New", "Lucida Console", monospace;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.12em;
     line-height: 1.1;
 }
 
