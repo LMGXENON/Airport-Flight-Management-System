@@ -119,6 +119,10 @@ public class FlightSearchService
             query = query.Where(f => AirlineMatches(f.Airline, term));
         }
 
+        // Origin airport
+        if (!string.IsNullOrWhiteSpace(model.Origin))
+            query = query.Where(f => AirportMatches(f.Departure?.Airport, model.Origin.Trim()));
+
         // Destination airport
         if (!string.IsNullOrWhiteSpace(model.Destination))
             query = query.Where(f => AirportMatches(f.Arrival?.Airport, model.Destination.Trim()));

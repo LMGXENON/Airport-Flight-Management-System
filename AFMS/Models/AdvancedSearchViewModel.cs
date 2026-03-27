@@ -11,6 +11,9 @@ public class AdvancedSearchViewModel
     [StringLength(100, ErrorMessage = "Airline must be 100 characters or fewer")]
     public string? Airline { get; set; }
 
+    [StringLength(100, ErrorMessage = "Origin must be 100 characters or fewer")]
+    public string? Origin { get; set; }
+
     [StringLength(100, ErrorMessage = "Destination must be 100 characters or fewer")]
     public string? Destination { get; set; }
 
