@@ -457,6 +457,14 @@ body.dark-theme .theme-toggle-btn:hover {
     font-weight: 500;
 }
 
+body.dark-theme .airport-switcher-select {
+    border-color: #4d6191;
+}
+
+body.dark-theme .airport-switcher-select:hover {
+    border-color: #6880b8;
+}
+
 .airport-switcher-select:focus-visible {
     outline: 2px solid rgba(124, 164, 255, 0.7);
     outline-offset: 2px;
