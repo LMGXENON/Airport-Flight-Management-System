@@ -42,7 +42,9 @@ public class FlightSearchService
         var londonTz   = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
         var londonNow  = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, londonTz);
 
-        // Determine the API date window
+        // Determine the API date window.
+        // Route searches without an explicit date need a wider default window so
+        // inbound long-haul flights are not accidentally excluded.
         DateTime from, to;
 
         if (model.DepartureDate.HasValue || model.ArrivalDate.HasValue)
@@ -58,7 +60,10 @@ public class FlightSearchService
         else
         {
             from = londonNow;
-            to   = londonNow.AddHours(12);
+            var hasRouteFilter = !string.IsNullOrWhiteSpace(model.Origin)
+                || !string.IsNullOrWhiteSpace(model.Destination);
+
+            to = londonNow.AddHours(hasRouteFilter ? 24 : 12);
         }
 
         if (to < from) to = from.AddHours(24);
