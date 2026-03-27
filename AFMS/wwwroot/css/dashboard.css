@@ -406,6 +406,37 @@ html[data-theme="light"] .theme-toggle-btn:hover {
     color: var(--text-secondary);
 }
 
+.airport-switcher-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.airport-switcher-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.airport-switcher-select {
+    min-width: 260px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.airport-switcher-select:focus-visible {
+    outline: 2px solid rgba(124, 164, 255, 0.7);
+    outline-offset: 2px;
+}
+
 .flight-add-btn {
     padding: 12px 24px;
     border-radius: 8px;
