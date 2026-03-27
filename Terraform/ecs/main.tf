@@ -7,6 +7,43 @@ resource "aws_cloudwatch_log_group" "afms" {
   name              = "afms_ecs_cloudwatch"
   retention_in_days = 7
 }
+
+resource "aws_efs_file_system" "afms_dp_keys" {
+  creation_token = "afms-data-protection-keys"
+  encrypted      = true
+}
+
+resource "aws_security_group" "efs_sg" {
+  name   = "afms-efs-dpkeys"
+  vpc_id = var.vpc_id
+}
+
+resource "aws_security_group_rule" "efs_in_from_ecs" {
+  type                     = "ingress"
+  security_group_id        = aws_security_group.efs_sg.id
+  source_security_group_id = aws_security_group.ecs_sg.id
+  from_port                = 2049
+  to_port                  = 2049
+  protocol                 = "tcp"
+  description              = "Allow NFS from ECS tasks"
+}
+
+resource "aws_security_group_rule" "efs_out_all" {
+  type              = "egress"
+  security_group_id = aws_security_group.efs_sg.id
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_efs_mount_target" "afms_dp_keys" {
+  for_each        = toset(var.private_subnet_ids)
+  file_system_id  = aws_efs_file_system.afms_dp_keys.id
+  subnet_id       = each.value
+  security_groups = [aws_security_group.efs_sg.id]
+}
+
 resource "aws_ecs_task_definition" "afms-task" {
   family                   = "afms_task"
   requires_compatibilities = ["FARGATE"]
@@ -64,6 +101,18 @@ resource "aws_ecs_task_definition" "afms-task" {
         {
           name  = "DEFAULT_AIRPORT"
           value = var.default_airport
+        },
+        {
+          name  = "DATA_PROTECTION_KEYS_PATH"
+          value = var.data_protection_keys_path
+        }
+      ]
+
+      mountPoints = [
+        {
+          sourceVolume  = "data-protection-keys"
+          containerPath = var.data_protection_keys_path
+          readOnly      = false
         }
       ]
 
@@ -77,6 +126,16 @@ resource "aws_ecs_task_definition" "afms-task" {
       }
     }
   ])
+
+  volume {
+    name = "data-protection-keys"
+
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.afms_dp_keys.id
+      root_directory     = "/"
+      transit_encryption = "ENABLED"
+    }
+  }
 
 
 
@@ -108,6 +167,8 @@ resource "aws_ecs_service" "afms-service" {
     enable   = true
     rollback = true
   }
+
+  depends_on = [aws_efs_mount_target.afms_dp_keys]
 
 
 }
@@ -145,6 +206,16 @@ resource "aws_security_group_rule" "ecs_out_to_rds" {
   description       = "Allow PostgreSQL to RDS"
 }
 
+resource "aws_security_group_rule" "ecs_out_to_efs" {
+  type              = "egress"
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port         = 2049
+  to_port           = 2049
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/16"]
+  description       = "Allow NFS to EFS mount targets"
+}
+
 resource "aws_security_group_rule" "ecs_out_dns_udp" {
   type              = "egress"
   security_group_id = aws_security_group.ecs_sg.id
@@ -171,4 +242,8 @@ output "aws_ecs_task_definition_arn" {
 }
 output "ecs_sg_id" {
   value = aws_security_group.ecs_sg.id
+}
+
+output "data_protection_efs_id" {
+  value = aws_efs_file_system.afms_dp_keys.id
 }
