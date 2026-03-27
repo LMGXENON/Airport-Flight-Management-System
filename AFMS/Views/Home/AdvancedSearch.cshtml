@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Advanced Search";
     var selectedDirectionSummary = string.IsNullOrWhiteSpace(Model.Direction)
-        ? "Showing all directions"
+        ? "Showing all routes"
         : Model.Direction == "Departure"
             ? "Showing departures only"
             : "Showing arrivals only";
@@ -23,6 +23,7 @@
 <div class="page-header">
     <h1 class="page-title">Advanced Flight Search</h1>
     <p class="page-subtitle">Search and filter live flight records</p>
+    <p class="api-hint">Default window: when origin or destination is set without a date, search runs for the current London day.</p>
 </div>
 
 <!-- Search Form -->
@@ -30,8 +31,8 @@
     <form class="search-form" id="searchForm" method="get" asp-action="AdvancedSearch" asp-controller="Home" aria-label="Advanced flight search">
         <input type="hidden" name="search" value="1" />
 
-        <!-- Row 1: Flight, Airline, Destination -->
-        <div class="form-row">
+        <!-- Row 1: Flight, Airline, Origin, Destination -->
+        <div class="form-row form-row--route">
             <div class="form-group">
                 <label for="flight" class="form-label">Flight Number</label>
                 <input type="text" id="flight" name="flight" class="form-input"
@@ -72,10 +73,10 @@
                 </datalist>
             </div>
             <div class="form-group">
-                <label for="destination" class="form-label">Destination</label>
+                <label for="origin" class="form-label">Origin Airport</label>
                 <div class="choice-field">
-                    <input type="text" id="destination" name="destination" class="form-input"
-                           list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Destination" autocomplete="off" maxlength="100" />
+                    <input type="text" id="origin" name="origin" class="form-input"
+                           list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Origin" autocomplete="off" maxlength="100" />
                 </div>
                 <datalist id="airportOptions">
                     <option value="ABV">Abuja (ABV)</option>
@@ -142,6 +143,13 @@
                     <option value="YYZ">Toronto Pearson (YYZ)</option>
                     <option value="ZRH">Zurich (ZRH)</option>
                 </datalist>
+            </div>
+            <div class="form-group">
+                <label for="destination" class="form-label">Destination Airport</label>
+                <div class="choice-field">
+                    <input type="text" id="destination" name="destination" class="form-input"
+                           list="airportOptions" placeholder="e.g., MAD or Madrid" value="@Model.Destination" autocomplete="off" maxlength="100" />
+                </div>
             </div>
         </div>
 
@@ -305,7 +313,7 @@
         const validationList   = document.getElementById('searchValidationList');
 
         function describeDirection(direction) {
-            if (!direction) return 'Showing all directions';
+            if (!direction) return 'Showing all routes';
             return direction === 'Departure' ? 'Showing departures only' : 'Showing arrivals only';
         }
 
@@ -393,6 +401,7 @@
             return Boolean(
                 document.getElementById('flight')?.value.trim()
                 || document.getElementById('airline')?.value.trim()
+                || document.getElementById('origin')?.value.trim()
                 || document.getElementById('destination')?.value.trim()
                 || document.getElementById('departureDate')?.value
                 || document.getElementById('arrivalDate')?.value
@@ -564,6 +573,7 @@
             searchForm.reset();
             searchForm.querySelectorAll('input[type="text"], input[type="date"], input[type="time"]').forEach(input => input.value = '');
             document.getElementById('terminal').value = '';
+            document.getElementById('origin').value = '';
             updateDirectionButtons('');
             updateStatusButtons([]);
             clearValidationState();

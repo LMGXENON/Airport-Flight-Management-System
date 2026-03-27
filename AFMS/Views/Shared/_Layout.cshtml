@@ -45,7 +45,7 @@
             <div class="sidebar-footer">
                 <span class="user-label">Logged in as</span>
                 <div class="user-session-row">
-                    <span class="user-name">@(User.Identity?.Name ?? "Admin")</span>
+                    <span class="user-name">ADMIN</span>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-danger logout-btn">Logout</button>
@@ -60,19 +60,20 @@
                 <button class="sidebar-toggle" id="sidebarToggle">☰</button>
                 <div class="top-bar-spacer"></div>
                 <div class="top-bar-right">
-                    <div class="current-time">
+                    <div class="current-time" aria-label="Current local time">
                         <span class="time-label">Current Time</span>
-                        <span class="time-value" id="currentTime">00:00:00</span>
+                        <time class="time-value" id="currentTime" datetime="" aria-live="off">00:00:00</time>
                     </div>
                     <div class="user-avatar" id="avatarMenuContainer">
                         <button
                             class="avatar-btn"
                             id="avatarMenuButton"
                             type="button"
+                            aria-label="Open user menu"
                             aria-haspopup="menu"
                             aria-expanded="false"
                             aria-controls="avatarDropdownMenu">
-                            @((User.Identity?.Name ?? "A")[0].ToString().ToUpperInvariant())
+                            <img src="~/images/AFMS Logo.png" alt="" aria-hidden="true" class="avatar-btn-icon" />
                         </button>
                         <div class="avatar-dropdown" id="avatarDropdownMenu" role="menu" aria-label="User menu" hidden>
                             <button type="button" class="avatar-dropdown-item" role="menuitem" aria-disabled="true">Profile</button>

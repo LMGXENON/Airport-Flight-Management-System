@@ -1,4 +1,10 @@
 ﻿// Clock update
+function toLocalDateTimeValue(date) {
+    var offset = date.getTimezoneOffset();
+    var localTime = new Date(date.getTime() - offset * 60000);
+    return localTime.toISOString().slice(0, 19);
+}
+
 function updateClock() {
     var now = new Date();
     var hours = String(now.getHours()).padStart(2, '0');
@@ -7,6 +13,8 @@ function updateClock() {
     var el = document.getElementById('currentTime');
     if (el) {
         el.textContent = hours + ':' + minutes + ':' + seconds;
+        el.setAttribute('datetime', toLocalDateTimeValue(now));
+        el.setAttribute('aria-label', 'Current time ' + hours + ':' + minutes + ':' + seconds);
     }
 }
 setInterval(updateClock, 1000);
