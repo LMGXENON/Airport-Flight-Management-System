@@ -1,20 +1,12 @@
 /* Advanced Search Specific Styles */
 
 .search-form-container {
-    background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)) padding-box,
-        repeating-linear-gradient(
-            -45deg,
-            rgba(136, 145, 178, 0.08) 0,
-            rgba(136, 145, 178, 0.08) 1px,
-            transparent 1px,
-            transparent 12px
-        ),
-        var(--bg-card);
+    background: linear-gradient(180deg, rgba(37, 43, 74, 0.98), rgba(37, 43, 74, 0.94));
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 22px;
     max-width: 100%;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .search-form {
@@ -136,9 +128,7 @@
     padding: 12px;
     border: 1px solid rgba(136, 145, 178, 0.14);
     border-radius: 14px;
-    background:
-        linear-gradient(180deg, rgba(26, 31, 58, 0.4), rgba(26, 31, 58, 0.15)),
-        var(--bg-card);
+    background: rgba(26, 31, 58, 0.38);
 }
 
 .form-row--route {
@@ -617,6 +607,16 @@
 
     .form-row {
         gap: 12px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .search-form-container {
+        padding: 16px;
+    }
+
+    .form-row {
         padding: 10px;
     }
 }
