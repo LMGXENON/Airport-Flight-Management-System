@@ -3,6 +3,7 @@ using AFMS.Data;
 using AFMS.Hubs;
 using AFMS.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 AddDotEnvConfiguration(builder);
+ConfigureDataProtection(builder);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -151,6 +153,19 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseStatusCodePages(async statusCodeContext =>
+{
+    var request = statusCodeContext.HttpContext.Request;
+    var response = statusCodeContext.HttpContext.Response;
+
+    if (response.StatusCode == StatusCodes.Status400BadRequest
+        && HttpMethods.IsPost(request.Method)
+        && request.Path.Equals("/Flight/Add", StringComparison.OrdinalIgnoreCase))
+    {
+        response.Redirect("/Flight/Add?formExpired=1");
+    }
+});
+
 app.MapStaticAssets().AllowAnonymous();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
@@ -165,6 +180,24 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+static void ConfigureDataProtection(WebApplicationBuilder builder)
+{
+    // In multi-task/container deployments (like ECS), anti-forgery and auth cookies
+    // require a shared key ring so tokens created by one task can be validated by another.
+    var keysPath = builder.Configuration["DataProtection:KeysPath"]
+        ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS_PATH");
+
+    var dataProtectionBuilder = builder.Services
+        .AddDataProtection()
+        .SetApplicationName("AFMS");
+
+    if (!string.IsNullOrWhiteSpace(keysPath))
+    {
+        Directory.CreateDirectory(keysPath);
+        dataProtectionBuilder.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+    }
+}
 
 static void AddDotEnvConfiguration(WebApplicationBuilder builder)
 {
