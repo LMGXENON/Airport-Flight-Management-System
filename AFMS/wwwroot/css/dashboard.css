@@ -286,6 +286,12 @@ body.dark-theme .theme-toggle-btn:hover {
     min-width: 116px;
 }
 
+body:not(.dark-theme) .current-time {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 243, 255, 0.96));
+    border-color: #d7dff2;
+    box-shadow: 0 12px 24px rgba(22, 32, 58, 0.08);
+}
+
 .time-label {
     font-size: 9px;
     font-weight: 700;
@@ -295,6 +301,10 @@ body.dark-theme .theme-toggle-btn:hover {
     line-height: 1;
 }
 
+body:not(.dark-theme) .time-label {
+    color: #6b7aa3;
+}
+
 .time-value {
     font-size: 18px;
     font-weight: 700;
@@ -302,6 +312,10 @@ body.dark-theme .theme-toggle-btn:hover {
     font-family: 'Courier New', monospace;
     letter-spacing: 0.06em;
     line-height: 1;
+}
+
+body:not(.dark-theme) .time-value {
+    color: #16203a;
 }
 
 .avatar-btn {
@@ -1417,11 +1431,25 @@ body:not(.dark-theme) .status-scheduled {
     color: #edf2ff;
 }
 
+body:not(.dark-theme) .logout-btn.btn-danger {
+    background: var(--accent-blue);
+    color: #ffffff;
+    border-color: var(--accent-blue);
+    box-shadow: 0 8px 18px rgba(65, 105, 225, 0.18);
+}
+
 .logout-btn.btn-danger:hover {
     background: linear-gradient(180deg, rgba(65, 105, 225, 0.34), rgba(65, 105, 225, 0.22));
     border-color: rgba(136, 145, 178, 0.55);
     color: #ffffff;
     transform: translateY(-1px);
+}
+
+body:not(.dark-theme) .logout-btn.btn-danger:hover {
+    background: #5c7ff0;
+    border-color: #5c7ff0;
+    color: #ffffff;
+    box-shadow: 0 10px 20px rgba(65, 105, 225, 0.24);
 }
 
 .btn-secondary {
