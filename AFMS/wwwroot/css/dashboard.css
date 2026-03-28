@@ -1432,10 +1432,10 @@ body:not(.dark-theme) .status-scheduled {
 }
 
 body:not(.dark-theme) .logout-btn.btn-danger {
-    background: linear-gradient(180deg, #ef4444, #dc2626);
+    background: var(--accent-blue);
     color: #ffffff;
-    border-color: #c81e1e;
-    box-shadow: 0 8px 18px rgba(220, 38, 38, 0.18);
+    border-color: var(--accent-blue);
+    box-shadow: 0 8px 18px rgba(65, 105, 225, 0.18);
 }
 
 .logout-btn.btn-danger:hover {
@@ -1446,10 +1446,10 @@ body:not(.dark-theme) .logout-btn.btn-danger {
 }
 
 body:not(.dark-theme) .logout-btn.btn-danger:hover {
-    background: linear-gradient(180deg, #f87171, #ef4444);
-    border-color: #b91c1c;
+    background: #5c7ff0;
+    border-color: #5c7ff0;
     color: #ffffff;
-    box-shadow: 0 10px 20px rgba(220, 38, 38, 0.24);
+    box-shadow: 0 10px 20px rgba(65, 105, 225, 0.24);
 }
 
 .btn-secondary {
