@@ -1413,15 +1413,35 @@ body:not(.dark-theme) .status-scheduled {
 }
 
 .logout-btn.btn-danger {
-    background: linear-gradient(180deg, rgba(65, 105, 225, 0.22), rgba(65, 105, 225, 0.14));
-    color: #edf2ff;
+    font-weight: 600;
 }
 
 .logout-btn.btn-danger:hover {
-    background: linear-gradient(180deg, rgba(65, 105, 225, 0.34), rgba(65, 105, 225, 0.22));
-    border-color: rgba(136, 145, 178, 0.55);
-    color: #ffffff;
     transform: translateY(-1px);
+}
+
+body.dark-theme .logout-btn.btn-danger {
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.26), rgba(239, 68, 68, 0.16));
+    border-color: rgba(248, 113, 113, 0.42);
+    color: #ffe3e3;
+}
+
+body.dark-theme .logout-btn.btn-danger:hover {
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.36), rgba(239, 68, 68, 0.24));
+    border-color: rgba(252, 165, 165, 0.6);
+    color: #ffffff;
+}
+
+body:not(.dark-theme) .logout-btn.btn-danger {
+    background: linear-gradient(180deg, rgba(220, 38, 38, 0.12), rgba(220, 38, 38, 0.06));
+    border-color: rgba(220, 38, 38, 0.35);
+    color: #991b1b;
+}
+
+body:not(.dark-theme) .logout-btn.btn-danger:hover {
+    background: linear-gradient(180deg, rgba(220, 38, 38, 0.2), rgba(220, 38, 38, 0.12));
+    border-color: rgba(220, 38, 38, 0.52);
+    color: #7f1d1d;
 }
 
 .btn-secondary {
