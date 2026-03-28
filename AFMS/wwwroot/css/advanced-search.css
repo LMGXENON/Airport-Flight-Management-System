@@ -698,6 +698,7 @@ body:not(.dark-theme) .direction-btn:hover {
 }
 
 body:not(.dark-theme) .direction-btn.active {
+    color: #ffffff;
     box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.7), 0 8px 16px rgba(65, 105, 225, 0.18);
 }
 
