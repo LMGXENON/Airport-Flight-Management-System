@@ -457,6 +457,14 @@ body.dark-theme .theme-toggle-btn:hover {
     font-weight: 500;
 }
 
+body.dark-theme .airport-switcher-select {
+    border-color: #4d6191;
+}
+
+body.dark-theme .airport-switcher-select:hover {
+    border-color: #6880b8;
+}
+
 .airport-switcher-select:focus-visible {
     outline: 2px solid rgba(124, 164, 255, 0.7);
     outline-offset: 2px;
@@ -795,6 +803,22 @@ body:not(.dark-theme) .stat-card {
     background-color: rgba(65, 105, 225, 0.05);
 }
 
+body:not(.dark-theme) .flights-table tbody tr.flight-row {
+    border-bottom: 1px solid #d9e2f5;
+}
+
+body:not(.dark-theme) .flights-table tbody tr.flight-row:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+body:not(.dark-theme) .flights-table tbody tr.flight-row:nth-child(even) {
+    background-color: #f8f9ff;
+}
+
+body:not(.dark-theme) .flights-table tbody tr.flight-row:hover {
+    background-color: #eef2ff;
+}
+
 .flights-table td {
     padding: 16px;
     font-size: 14px;
@@ -859,6 +883,11 @@ body:not(.dark-theme) .stat-card {
 .status-scheduled {
     background-color: rgba(16, 185, 129, 0.15);
     color: var(--success);
+}
+
+body:not(.dark-theme) .status-scheduled {
+    background-color: rgba(5, 150, 105, 0.22);
+    color: #065f46;
 }
 
 /* Monospace for times */
