@@ -143,6 +143,10 @@ body {
     color: var(--text-primary);
 }
 
+body:not(.dark-theme) .nav-item {
+    color: #7688b2;
+}
+
 .nav-label {
     flex: 1;
 }
