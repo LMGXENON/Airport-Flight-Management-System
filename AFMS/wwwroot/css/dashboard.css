@@ -955,19 +955,27 @@ body:not(.dark-theme) .status-scheduled {
     min-width: 110px;
 }
 
+.manage-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .manage-link {
-    display: inline-block;
-    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
     border-radius: 5px;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 16px;
     text-decoration: none;
-    margin-right: 4px;
-    transition: opacity 0.15s;
+    transition: opacity 0.15s, transform 0.15s;
 }
 
 .manage-link:hover {
     opacity: 0.8;
+    transform: translateY(-1px);
 }
 
 .manage-edit {
@@ -980,6 +988,16 @@ body:not(.dark-theme) .status-scheduled {
     background: #dc262622;
     color: #f87171;
     border: 1px solid #dc262655;
+}
+
+.manage-link--placeholder {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.manage-link--placeholder:hover {
+    opacity: 0.45;
+    transform: none;
 }
 
 /* Flight Details Modal */

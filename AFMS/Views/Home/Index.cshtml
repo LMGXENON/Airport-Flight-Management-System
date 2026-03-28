@@ -318,8 +318,25 @@
                             @if (dbIds != null && dbIds.ContainsKey(fNum))
                             {
                                 var dbId = dbIds[fNum];
-                                <a href="/Flight/Edit/@dbId"   class="manage-link manage-edit">Edit</a>
-                                <a href="/Flight/Delete/@dbId" class="manage-link manage-delete">Delete</a>
+                                <div class="manage-actions" role="group" aria-label="Manage flight @fNum">
+                                    <a href="/Flight/Edit/@dbId" class="manage-link manage-edit" title="Edit flight">
+                                        <i class='bx bx-edit-alt' aria-hidden="true"></i>
+                                    </a>
+                                    <a href="/Flight/Delete/@dbId" class="manage-link manage-delete" title="Delete flight">
+                                        <i class='bx bx-trash' aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="manage-actions" role="group" aria-label="Manage flight unavailable for @fNum">
+                                    <span class="manage-link manage-edit manage-link--placeholder" aria-disabled="true" title="Edit unavailable">
+                                        <i class='bx bx-edit-alt' aria-hidden="true"></i>
+                                    </span>
+                                    <span class="manage-link manage-delete manage-link--placeholder" aria-disabled="true" title="Delete unavailable">
+                                        <i class='bx bx-trash' aria-hidden="true"></i>
+                                    </span>
+                                </div>
                             }
                         </td>
                     </tr>
