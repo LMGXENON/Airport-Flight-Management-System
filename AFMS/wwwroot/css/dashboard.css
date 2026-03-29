@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&display=swap');
+
 /* CSS Variables */
 :root {
     --bg-primary: #f3f7ff;
@@ -32,7 +34,7 @@ body.dark-theme {
 }
 
 body {
-    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oxanium', sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     overflow-x: hidden;
@@ -40,7 +42,16 @@ body {
 
 .app-container,
 .app-container * {
-    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oxanium', sans-serif;
+}
+
+.app-container input,
+.app-container select,
+.app-container textarea,
+.app-container button,
+.app-container th,
+.app-container td {
+    font-family: 'Oxanium', sans-serif;
 }
 
 /* Main Container */
@@ -197,7 +208,7 @@ body:not(.dark-theme) .sidebar .nav-item.active {
     font-size: 16px;
     font-weight: 800;
     color: var(--text-primary);
-    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oxanium', sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     line-height: 1.1;
@@ -319,7 +330,7 @@ body.dark-theme .theme-toggle-btn:hover {
     font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
-    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oxanium', sans-serif;
     letter-spacing: 0.06em;
     line-height: 1;
 }
@@ -1014,7 +1025,7 @@ body:not(.dark-theme) .status-scheduled {
 
 /* Monospace for times */
 .mono {
-    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oxanium', sans-serif;
     font-weight: 600;
 }
 
@@ -1048,7 +1059,7 @@ body:not(.dark-theme) .status-scheduled {
 
 /* Table column styling */
 .time-col {
-    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oxanium', sans-serif;
     font-weight: 600;
     font-size: 15px;
     min-width: 60px;
