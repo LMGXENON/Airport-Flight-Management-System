@@ -123,6 +123,32 @@
             <button class="filter-btn" data-direction="Arrival" data-label="Arrivals">Arrivals</button>
         </div>
     </div>
+    <div class="table-filter-bar" role="search" aria-label="Filter flights in table">
+        <input
+            type="text"
+            id="filterFlightNumber"
+            class="table-filter-input"
+            placeholder="Filter by flight number"
+            aria-label="Filter by flight number" />
+        <input
+            type="text"
+            id="filterAirline"
+            class="table-filter-input"
+            placeholder="Filter by airline"
+            aria-label="Filter by airline" />
+        <select id="filterStatus" class="table-filter-select" aria-label="Filter by status">
+            <option value="">All statuses</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="boarding">Boarding</option>
+            <option value="departed">Departed</option>
+            <option value="arrived">Arrived</option>
+            <option value="delayed">Delayed</option>
+            <option value="canceled">Canceled</option>
+            <option value="in flight">In Flight</option>
+            <option value="approaching">Approaching</option>
+        </select>
+        <button type="button" id="clearTableFilters" class="table-filter-clear">Clear</button>
+    </div>
     <div class="table-wrapper">
         <table class="flights-table" id="flightsTable">
             <thead>
@@ -426,6 +452,10 @@
     const dateHeaderRows = allRows.filter(r => r.classList.contains('date-header-row'));
     const buttons = document.querySelectorAll('.filter-btn');
     const pagination = document.getElementById('pagination');
+    const filterFlightNumber = document.getElementById('filterFlightNumber');
+    const filterAirline = document.getElementById('filterAirline');
+    const filterStatus = document.getElementById('filterStatus');
+    const clearTableFilters = document.getElementById('clearTableFilters');
 
     function setDirectionCounts() {
         const counts = {
@@ -454,10 +484,26 @@
     }
 
     function getFilteredRows() {
-        if (currentDir === 'all') {
-            return flightRows;
-        }
-        return flightRows.filter(r => r.getAttribute('data-direction') === currentDir);
+        const flightQuery = (filterFlightNumber?.value || '').trim().toLowerCase();
+        const airlineQuery = (filterAirline?.value || '').trim().toLowerCase();
+        const statusQuery = (filterStatus?.value || '').trim().toLowerCase();
+
+        return flightRows.filter(r => {
+            if (currentDir !== 'all' && r.getAttribute('data-direction') !== currentDir) {
+                return false;
+            }
+
+            const rowFlightNumber = (r.getAttribute('data-flight-number') || '').toLowerCase();
+            const rowAirline = (r.getAttribute('data-airline') || '').toLowerCase();
+            const rowStatusLabel = (r.getAttribute('data-status-label') || '').toLowerCase();
+            const rowRawStatus = (r.getAttribute('data-raw-status') || '').toLowerCase();
+
+            const matchesFlight = !flightQuery || rowFlightNumber.includes(flightQuery);
+            const matchesAirline = !airlineQuery || rowAirline.includes(airlineQuery);
+            const matchesStatus = !statusQuery || rowStatusLabel.includes(statusQuery) || rowRawStatus.includes(statusQuery);
+
+            return matchesFlight && matchesAirline && matchesStatus;
+        });
     }
 
     function render() {
@@ -543,6 +589,31 @@
             render();
         });
     });
+
+    [filterFlightNumber, filterAirline].forEach(control => {
+        if (!control) return;
+        control.addEventListener('input', function () {
+            currentPage = 1;
+            render();
+        });
+    });
+
+    if (filterStatus) {
+        filterStatus.addEventListener('change', function () {
+            currentPage = 1;
+            render();
+        });
+    }
+
+    if (clearTableFilters) {
+        clearTableFilters.addEventListener('click', function () {
+            if (filterFlightNumber) filterFlightNumber.value = '';
+            if (filterAirline) filterAirline.value = '';
+            if (filterStatus) filterStatus.value = '';
+            currentPage = 1;
+            render();
+        });
+    }
 
     // Pagination clicks
     pagination.addEventListener('click', function (e) {
