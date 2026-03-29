@@ -145,7 +145,16 @@ Review and customise:
 - Route53 domain and subdomain defaults
 - RDS password and instance size
 - Sensitive variables (API keys, JWT secrets)
+## Automation & CI/CD
 
+Currently, deployment and infrastructure provisioning are manual processes. Future enhancements may include:
+
+- GitHub Actions workflows for automated testing and container image builds
+- Automated Terraform apply/destroy pipelines triggered on branch merges
+- Container image registry integration (AWS ECR or Docker Hub)
+- Staged deployments (dev, staging, production) with approval gates
+
+For now, see the [Running locally](#running-locally), [Docker](#docker), and [Infrastructure (Terraform)](#infrastructure-terraform) sections for manual deployment steps.
 
 
 ## Security notes
