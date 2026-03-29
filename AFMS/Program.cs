@@ -231,6 +231,7 @@ static void AddDotEnvConfiguration(WebApplicationBuilder builder)
 
     // Map environment variables that were set externally (e.g. by Docker env_file)
     // even when no .env file exists on disk inside the container.
+    // Keep this explicit so config keys remain predictable across environments.
     string[] knownEnvVars =
     [
         "AERODATABOX_API_KEY", "AERODATABOX_API_HOST", "DEFAULT_AIRPORT",
@@ -357,6 +358,7 @@ static void InitializeDatabaseWithRetry(ApplicationDbContext dbContext, ILogger 
 {
     const int maxAttempts = 5;
 
+    // Short backoff helps on cold starts where the DB accepts connections late.
     for (var attempt = 1; attempt <= maxAttempts; attempt++)
     {
         try
