@@ -120,7 +120,8 @@ public class HomeController : Controller
         var londonTime = GetLondonNow();
         var cacheKey = $"flights_{selectedAirportCode}_{londonTime:yyyyMMddHH}";
 
-        var sortedFlights = await GetSortedFlightsAsync(selectedAirportCode, londonTime, cacheKey);
+        var (sortedFlights, lastSyncedAt) = await GetSortedFlightsWithLastSyncedAsync(selectedAirportCode, londonTime, cacheKey);
+        ViewBag.LastSyncedDisplay = lastSyncedAt.ToString("HH:mm");
         var allDbFlights = await _context.Flights.ToListAsync();
         ViewBag.DbFlightIds = BuildDbFlightIdLookup(allDbFlights);
 
@@ -135,14 +136,25 @@ public class HomeController : Controller
         return View(sortedFlights);
     }
 
-    private async Task<List<AeroDataBoxFlight>> GetSortedFlightsAsync(string airportCode, DateTime londonTime, string cacheKey)
+    private async Task<(List<AeroDataBoxFlight> Flights, DateTime LastSyncedAt)> GetSortedFlightsWithLastSyncedAsync(string airportCode, DateTime londonTime, string cacheKey)
     {
-        var flights = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+        var lastSyncCacheKey = $"{cacheKey}_last_sync";
+        DateTime lastSyncedAt;
+
+        if (!_cache.TryGetValue(cacheKey, out List<AeroDataBoxFlight>? flights))
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
-            return await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
-        });
-        return SortFlightsByLhrLegTime(flights ?? []);
+            flights = await _aeroDataBoxService.GetAirportFlightsAsync(airportCode, londonTime);
+            _cache.Set(cacheKey, flights ?? [], TimeSpan.FromMinutes(2));
+
+            lastSyncedAt = londonTime;
+            _cache.Set(lastSyncCacheKey, lastSyncedAt, TimeSpan.FromMinutes(2));
+        }
+        else
+        {
+            lastSyncedAt = _cache.Get<DateTime?>(lastSyncCacheKey) ?? londonTime;
+        }
+
+        return (SortFlightsByLhrLegTime(flights ?? []), lastSyncedAt);
     }
 
     private Dictionary<string, int> BuildDbFlightIdLookup(List<Flight> allDbFlights)
