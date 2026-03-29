@@ -1,8 +1,12 @@
 # Airport Flight Management System (AFMS)
 
-AFMS is an ASP.NET Core MVC application for managing and monitoring flights, combining live AeroDataBox data with manual flight entries.
+## Overview
 
-The system includes a dashboard, advanced search, manual flight CRUD, a lightweight AI assistant for search and add-flight flows, and near real-time updates via SignalR.
+AFMS is a flight management dashboard built for airports and flight operations teams. It allows users to view real-time flight information, search for specific flights, manually add or edit flight details, and receive live updates as flight statuses change.
+
+The system pulls live flight data from the AeroDataBox service but also allows teams to make their own adjustments and overrides—ensuring that critical manual edits are never lost when new data arrives.
+
+Behind the scenes, AFMS is built on ASP.NET Core MVC, with a database backend and live notifications powered by SignalR.
 
 ## What this repository contains
 
@@ -48,6 +52,10 @@ The system includes a dashboard, advanced search, manual flight CRUD, a lightwei
 - `ManualFlightMergeService` applies manual overrides and creates synthetic rows when needed.
 - `FlightSearchService` performs advanced search filtering/sorting/pagination.
 - `FlightDetailsService` centralises details-page formatting and validation helpers.
+
+## Architecture diagram
+
+(Diagram to be added)
 
 ## Prerequisites
 
@@ -119,21 +127,35 @@ Container runs on port `8080`.
 
 ## Infrastructure (Terraform)
 
-Terraform configuration is under `Terraform/` and composes modules for:
+Terraform configuration is under `Terraform/` and composes the following AWS services:
 
-- VPC
-- ECS
-- ALB
-- RDS
-- Route53
+- **VPC** (Virtual Private Cloud): Creates an isolated network environment, defining subnets and routes for secure communication.
+- **ECS** (Elastic Container Service): Container orchestration service that runs the AFMS application in Docker containers across multiple instances, with auto-scaling support.
+- **ALB** (Application Load Balancer): Routes incoming HTTP/HTTPS traffic to healthy ECS tasks, enabling high availability and zero-downtime deployments.
+- **RDS** (Relational Database Service): Managed PostgreSQL database, handling persistence for flights, users, and application state.
+- **Route53**: AWS DNS service that routes domain requests to the ALB, providing a stable endpoint for users.
 
-Provider region is `eu-west-2`, with an S3 backend configured in `Terraform/provider.tf`.
+All infrastructure is provisioned in the `eu-west-2` (London) region. Terraform state is stored in S3 for team collaboration.
 
-Before applying Terraform, review:
+### Before applying Terraform
 
-- backend configuration
-- Route53 defaults
-- sensitive variables such as `rds_password` and API keys
+Review and customise:
+
+- Backend configuration in `provider.tf` (S3 bucket, DynamoDB lock table)
+- Route53 domain and subdomain defaults
+- RDS password and instance size
+- Sensitive variables (API keys, JWT secrets)
+## Automation & CI/CD
+
+Currently, deployment and infrastructure provisioning are manual processes. Future enhancements may include:
+
+- GitHub Actions workflows for automated testing and container image builds
+- Automated Terraform apply/destroy pipelines triggered on branch merges
+- Container image registry integration (AWS ECR or Docker Hub)
+- Staged deployments (dev, staging, production) with approval gates
+
+For now, see the [Running locally](#running-locally), [Docker](#docker), and [Infrastructure (Terraform)](#infrastructure-terraform) sections for manual deployment steps.
+
 
 ## Security notes
 
