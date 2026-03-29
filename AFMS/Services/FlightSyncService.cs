@@ -80,7 +80,7 @@ public class FlightSyncService
 
                 var status = FlightStatusCatalog.Normalize(extFlight.Status);
 
-                // Check if flight exists in database
+                // Match by flight number + departure day to avoid duplicates across daily refreshes.
                 var departureDateStart = departureTime.Date;
                 var departureDateEnd = departureDateStart.AddDays(1);
 
@@ -95,7 +95,7 @@ public class FlightSyncService
                     if (existingFlight.IsManualEntry)
                         continue;
 
-                    // Update existing flight
+                    // Track a change flag so we only broadcast flights that actually changed.
                     var hasChanged = false;
 
                     if (existingFlight.Status != status)
@@ -161,6 +161,7 @@ public class FlightSyncService
             if (updatedFlights.Any())
             {
                 _logger.LogInformation("Sending {UpdatedFlightCount} flight updates to clients", updatedFlights.Count);
+                // Push deltas only, so connected dashboards can patch rows in place.
                 await _hubContext.Clients.Group("FlightUpdates")
                     .SendAsync("FlightUpdated", updatedFlights);
             }

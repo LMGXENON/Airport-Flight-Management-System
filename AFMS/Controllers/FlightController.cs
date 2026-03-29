@@ -235,10 +235,12 @@ namespace AFMS.Controllers
 
         private static DateTime ToUtc(DateTime value)
         {
+            // Handle all DateTime kinds explicitly to prevent silent time-zone drift.
             return value.Kind switch
             {
                 DateTimeKind.Utc => value,
                 DateTimeKind.Local => value.ToUniversalTime(),
+                // Unspecified is treated as local user input from HTML datetime fields.
                 _ => DateTime.SpecifyKind(value, DateTimeKind.Local).ToUniversalTime()
             };
         }

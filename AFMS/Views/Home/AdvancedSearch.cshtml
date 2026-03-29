@@ -299,9 +299,7 @@
 
 @section Scripts {
     <script>
-        // -------------------------------------------------------------------
-        // State
-        // -------------------------------------------------------------------
+        // Search state used by AJAX refresh + URL sync.
         let currentSortBy  = '@(Model.SortBy ?? "")';
         let currentSortOrd = '@(Model.SortOrder ?? "asc")';
         const directionInput   = document.getElementById('directionInput');
@@ -441,9 +439,7 @@
             };
         }
 
-        // -------------------------------------------------------------------
-        // Direction toggle
-        // -------------------------------------------------------------------
+        // Direction toggle.
         document.querySelectorAll('.direction-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 clearValidationState();
@@ -451,9 +447,7 @@
             });
         });
 
-        // -------------------------------------------------------------------
-        // Status multi-select
-        // -------------------------------------------------------------------
+        // Status multi-select.
         document.querySelectorAll('#statusButtons .status-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 clearValidationState();
@@ -462,9 +456,7 @@
             });
         });
 
-        // -------------------------------------------------------------------
-        // Build URLSearchParams from the form + current sort/page
-        // -------------------------------------------------------------------
+        // Build query params from form state plus current sort/page.
         function buildParams(page = 1, sortBy = currentSortBy, sortOrd = currentSortOrd) {
             const form   = document.getElementById('searchForm');
             const data   = new FormData(form);
@@ -490,9 +482,7 @@
             window.history.replaceState({}, '', `/Home/AdvancedSearch?${nextParams.toString()}`);
         }
 
-        // -------------------------------------------------------------------
-        // AJAX: replace results container
-        // -------------------------------------------------------------------
+        // Replace results with partial HTML from the server.
         async function fetchResults(params) {
             const container = document.getElementById('results-container');
             clearValidationState();
