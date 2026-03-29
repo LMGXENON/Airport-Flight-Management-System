@@ -796,7 +796,7 @@ body:not(.dark-theme) .stat-card {
 
 .flights-table tbody tr {
     border-bottom: 1px solid rgba(45, 52, 84, 0.5);
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .flights-table tbody tr:last-child {
@@ -805,6 +805,11 @@ body:not(.dark-theme) .stat-card {
 
 .flights-table tbody tr:hover {
     background-color: rgba(65, 105, 225, 0.05);
+}
+
+body.dark-theme .flights-table tbody tr.flight-row:hover {
+    background-color: rgba(99, 140, 255, 0.14);
+    box-shadow: inset 3px 0 0 rgba(124, 164, 255, 0.7);
 }
 
 body:not(.dark-theme) .flights-table tbody tr.flight-row {
@@ -820,7 +825,8 @@ body:not(.dark-theme) .flights-table tbody tr.flight-row:nth-child(even) {
 }
 
 body:not(.dark-theme) .flights-table tbody tr.flight-row:hover {
-    background-color: #eef2ff;
+    background-color: #e7eeff;
+    box-shadow: inset 3px 0 0 #7a9bdf;
 }
 
 .flights-table td {
@@ -903,7 +909,7 @@ body:not(.dark-theme) .status-scheduled {
 /* Flight row cursor */
 .flight-row {
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .flight-row:hover {
