@@ -155,13 +155,15 @@
                     var isDep = flight.Direction == "Departure";
                     // Use movement-level status: departure.status for departures, arrival.status for arrivals
                     var movementStatus = isDep ? flight.Departure?.Status : flight.Arrival?.Status;
-                    var rawStatus = (movementStatus ?? flight.Status ?? "Unknown").ToLower();
+                    var rawStatusSource = (movementStatus ?? flight.Status ?? flight.CodeshareStatus ?? "Unknown").Trim();
+                    var normalizedStatus = FlightStatusCatalog.Normalize(rawStatusSource);
+                    var rawStatus = rawStatusSource.ToLowerInvariant();
 
                     // Simplified status mapping for user-friendly display
-                    var statusClass = FlightFormattingHelpers.GetStatusClass(rawStatus);
+                    var statusClass = FlightFormattingHelpers.GetStatusClass(normalizedStatus);
 
                     // Simplified status labels
-                    var statusLabel = FlightFormattingHelpers.GetStatusLabel(rawStatus);
+                    var statusLabel = FlightFormattingHelpers.GetStatusLabel(normalizedStatus);
 
                     // Airport codes — fill in selected airport for the home leg
                     var depIata = flight.Departure?.Airport?.Iata
@@ -212,7 +214,7 @@
 
                     // Build detailed status with time information - use raw status to determine state
                     var detailedStatus = statusLabel;
-                    var hasActuallyDeparted = !string.IsNullOrEmpty(runwayDepUtc) || rawStatus == "enroute" || rawStatus == "approaching" || rawStatus == "departed" || rawStatus == "gateclosed";
+                    var hasActuallyDeparted = !string.IsNullOrEmpty(runwayDepUtc) || normalizedStatus == "Departed" || rawStatus == "enroute" || rawStatus == "approaching" || rawStatus == "gateclosed";
                     var hasActuallyArrived = !string.IsNullOrEmpty(runwayArrUtc) || rawStatus == "arrived";
                     
                     if (hasActuallyArrived)
@@ -248,15 +250,15 @@
                         statusLabel = detailedStatus;
                         statusClass = "status-departed";
                     }
-                    else if (rawStatus == "delayed")
+                    else if (normalizedStatus == "Delayed")
                     {
                         detailedStatus = "Delayed";
                     }
-                    else if (rawStatus == "boarding")
+                    else if (normalizedStatus == "Boarding")
                     {
                         detailedStatus = "Boarding";
                     }
-                    else if (rawStatus == "canceled")
+                    else if (normalizedStatus == "Canceled")
                     {
                         detailedStatus = "Canceled";
                     }
