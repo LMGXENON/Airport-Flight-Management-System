@@ -2,7 +2,11 @@
 
 ## Overview
 
+AFMS is a flight management dashboard built for airports and flight operations teams. It allows users to view real-time flight information, search for specific flights, manually add or edit flight details, and receive live updates as flight statuses change.
 
+The system pulls live flight data from the AeroDataBox service but also allows teams to make their own adjustments and overrides—ensuring that critical manual edits are never lost when new data arrives.
+
+Behind the scenes, AFMS is built on ASP.NET Core MVC, with a database backend and live notifications powered by SignalR.
 
 ## What this repository contains
 
