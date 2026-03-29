@@ -195,6 +195,7 @@ public class HomeController : Controller
 
     private static string ResolveDashboardAirportCode(string? requestedAirport, string fallbackAirport)
     {
+        // Always resolve to ICAO because upstream API calls use ICAO airport codes.
         var fallback = string.IsNullOrWhiteSpace(fallbackAirport)
             ? "EGLL"
             : fallbackAirport.Trim().ToUpperInvariant();
@@ -1306,6 +1307,7 @@ public class HomeController : Controller
 
     private static string? TryExtractDestination(string text)
     {
+        // Prefer explicit "A to B" phrasing before trying looser regex extraction.
         var segments = text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         foreach (var segment in segments)
         {
@@ -1352,6 +1354,7 @@ public class HomeController : Controller
         if (string.IsNullOrWhiteSpace(cleaned))
             return null;
 
+        // Normalise common aliases/city names first so filters get a stable IATA value.
         var normalizedAliasKey = cleaned.ToLowerInvariant();
         if (AirportAliasToIata.TryGetValue(normalizedAliasKey, out var aliasIata))
             return aliasIata;
@@ -1364,6 +1367,7 @@ public class HomeController : Controller
             return cleaned.ToUpperInvariant();
 
         if (Regex.IsMatch(cleaned, @"^[A-Za-z]{4}$"))
+            // 4-letter codes are usually ICAO, so convert to IATA for UI consistency.
             return FlightFormattingHelpers.ConvertToIata(cleaned.ToUpperInvariant());
 
         return cleaned;
