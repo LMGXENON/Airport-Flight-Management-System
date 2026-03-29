@@ -3,6 +3,7 @@ using AFMS.Hubs;
 using AFMS.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace AFMS.Services;
 
@@ -184,8 +185,12 @@ public class FlightSyncService
         if (string.IsNullOrWhiteSpace(utcValue))
             return fallback;
 
-        return DateTime.TryParse(utcValue, out var parsedUtc)
-            ? parsedUtc
+        return DateTimeOffset.TryParse(
+                utcValue,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out var parsedUtc)
+            ? parsedUtc.UtcDateTime
             : fallback;
     }
 }
