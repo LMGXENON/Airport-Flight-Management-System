@@ -8,6 +8,7 @@
     var selectedAirportIcao = ViewBag.SelectedAirportIcao as string ?? "EGLL";
     var airportOptions = ViewBag.AirportOptions as IEnumerable<KeyValuePair<string, string>>
         ?? Enumerable.Empty<KeyValuePair<string, string>>();
+    var lastSyncedDisplay = ViewBag.LastSyncedDisplay as string ?? "--:--";
 
     var apiUnavailable = ViewBag.ApiError != null;
     var totalDepartures = Model.Count(f => f.Direction == "Departure");
@@ -116,7 +117,10 @@
 <!-- Flights Section -->
 <div class="flights-section">
     <div class="flights-header">
-        <h2 class="section-title">Live Flights - @selectedAirportName (@selectedAirportIata)</h2>
+        <div class="section-title-wrap">
+            <h2 class="section-title">Live Flights - @selectedAirportName (@selectedAirportIata)</h2>
+            <span class="section-meta">Last updated @lastSyncedDisplay</span>
+        </div>
         <div class="direction-filters">
             <button class="filter-btn active" data-direction="all" data-label="All">All</button>
             <button class="filter-btn" data-direction="Departure" data-label="Departures">Departures</button>
