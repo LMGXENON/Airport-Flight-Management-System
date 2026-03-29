@@ -118,9 +118,9 @@
     <div class="flights-header">
         <h2 class="section-title">Live Flights - @selectedAirportName (@selectedAirportIata)</h2>
         <div class="direction-filters">
-            <button class="filter-btn active" data-direction="all">All</button>
-            <button class="filter-btn" data-direction="Departure">Departures</button>
-            <button class="filter-btn" data-direction="Arrival">Arrivals</button>
+            <button class="filter-btn active" data-direction="all" data-label="All">All</button>
+            <button class="filter-btn" data-direction="Departure" data-label="Departures">Departures</button>
+            <button class="filter-btn" data-direction="Arrival" data-label="Arrivals">Arrivals</button>
         </div>
     </div>
     <div class="table-wrapper">
@@ -427,6 +427,21 @@
     const buttons = document.querySelectorAll('.filter-btn');
     const pagination = document.getElementById('pagination');
 
+    function setDirectionCounts() {
+        const counts = {
+            all: flightRows.length,
+            Departure: flightRows.filter(r => r.getAttribute('data-direction') === 'Departure').length,
+            Arrival: flightRows.filter(r => r.getAttribute('data-direction') === 'Arrival').length
+        };
+
+        buttons.forEach(btn => {
+            const direction = btn.getAttribute('data-direction') || 'all';
+            const label = btn.getAttribute('data-label') || btn.textContent || '';
+            const count = counts[direction] ?? 0;
+            btn.textContent = `${label} (${count})`;
+        });
+    }
+
     function syncQueryState() {
         const nextUrl = new URL(window.location.href);
         if (currentPage > 1) nextUrl.searchParams.set('page', currentPage);
@@ -513,6 +528,8 @@
     }
 
     // Direction filter
+    setDirectionCounts();
+
     buttons.forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-direction') === currentDir);
     });
