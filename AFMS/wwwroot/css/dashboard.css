@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&display=swap');
+
 /* CSS Variables */
 :root {
     --bg-primary: #f3f7ff;
@@ -32,10 +34,24 @@ body.dark-theme {
 }
 
 body {
-    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oxanium', sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     overflow-x: hidden;
+}
+
+.app-container,
+.app-container * {
+    font-family: 'Oxanium', sans-serif;
+}
+
+.app-container input,
+.app-container select,
+.app-container textarea,
+.app-container button,
+.app-container th,
+.app-container td {
+    font-family: 'Oxanium', sans-serif;
 }
 
 /* Main Container */
@@ -147,6 +163,17 @@ body:not(.dark-theme) .nav-item {
     color: #7688b2;
 }
 
+body:not(.dark-theme) .sidebar .app-title,
+body:not(.dark-theme) .sidebar .nav-item,
+body:not(.dark-theme) .sidebar .user-label,
+body:not(.dark-theme) .sidebar .user-name {
+    color: #111111;
+}
+
+body:not(.dark-theme) .sidebar .nav-item.active {
+    color: #ffffff;
+}
+
 .nav-label {
     flex: 1;
 }
@@ -181,7 +208,7 @@ body:not(.dark-theme) .nav-item {
     font-size: 16px;
     font-weight: 800;
     color: var(--text-primary);
-    font-family: "Courier New", "Lucida Console", monospace;
+    font-family: 'Oxanium', sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     line-height: 1.1;
@@ -303,7 +330,7 @@ body.dark-theme .theme-toggle-btn:hover {
     font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
-    font-family: 'Courier New', monospace;
+    font-family: 'Oxanium', sans-serif;
     letter-spacing: 0.06em;
     line-height: 1;
 }
@@ -699,6 +726,12 @@ body:not(.dark-theme) .stat-card {
     color: #fca5a5;
 }
 
+body:not(.dark-theme) .stat-badge.unavailable {
+    background-color: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #991b1b;
+}
+
 .stat-badge.neutral {
     background-color: rgba(136, 145, 178, 0.2);
     color: var(--text-secondary);
@@ -742,6 +775,10 @@ body:not(.dark-theme) .stat-card {
     font-size: 12px;
     color: var(--text-secondary);
     letter-spacing: 0.02em;
+}
+
+body:not(.dark-theme) .section-meta {
+    color: #3f4f78;
 }
 
 .section-title {
@@ -800,9 +837,21 @@ body:not(.dark-theme) .stat-card {
     font-size: 13px;
 }
 
+body:not(.dark-theme) .table-filter-input,
+body:not(.dark-theme) .table-filter-select {
+    border-color: #b9c7e8;
+    color: #111111;
+    background: #ffffff;
+}
+
 .table-filter-input::placeholder {
     color: var(--text-secondary);
     opacity: 0.8;
+}
+
+body:not(.dark-theme) .table-filter-input::placeholder {
+    color: #586b97;
+    opacity: 0.9;
 }
 
 .table-filter-input:focus,
@@ -821,6 +870,12 @@ body:not(.dark-theme) .stat-card {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+}
+
+body:not(.dark-theme) .table-filter-clear {
+    border-color: #b6c6ea;
+    color: #2d3d67;
+    background: #f3f6ff;
 }
 
 .table-filter-clear:hover {
@@ -843,6 +898,11 @@ body:not(.dark-theme) .stat-card {
     background: rgba(65, 105, 225, 0.08);
 }
 
+body:not(.dark-theme) .flights-table thead {
+    border-bottom: 1px solid #c4d1ef;
+    background: #eef3ff;
+}
+
 .flights-table th {
     padding: 13px 16px;
     text-align: left;
@@ -851,6 +911,10 @@ body:not(.dark-theme) .stat-card {
     color: #d7dff6;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+body:not(.dark-theme) .flights-table th {
+    color: #4f5f88;
 }
 
 .flights-table tbody tr {
@@ -961,7 +1025,7 @@ body:not(.dark-theme) .status-scheduled {
 
 /* Monospace for times */
 .mono {
-    font-family: 'Courier New', monospace;
+    font-family: 'Oxanium', sans-serif;
     font-weight: 600;
 }
 
@@ -995,7 +1059,7 @@ body:not(.dark-theme) .status-scheduled {
 
 /* Table column styling */
 .time-col {
-    font-family: 'Courier New', monospace;
+    font-family: 'Oxanium', sans-serif;
     font-weight: 600;
     font-size: 15px;
     min-width: 60px;
@@ -1392,9 +1456,21 @@ body:not(.dark-theme) .status-scheduled {
     transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
+body:not(.dark-theme) .empty-state-retry-btn {
+    background: #e4ecff;
+    border-color: #8ba8ea;
+    color: #24365f;
+}
+
 .empty-state-retry-btn:hover {
     background: rgba(65, 105, 225, 0.24);
     border-color: rgba(124, 164, 255, 0.7);
+}
+
+body:not(.dark-theme) .empty-state-retry-btn:hover {
+    background: #d4e1ff;
+    border-color: #6689d8;
+    color: #1a2748;
 }
 
 .empty-state-retry-btn:disabled {
@@ -1521,13 +1597,13 @@ body.dark-theme .logout-btn.btn-danger:hover {
 
 body:not(.dark-theme) .logout-btn.btn-danger {
     background: linear-gradient(180deg, rgba(220, 38, 38, 0.12), rgba(220, 38, 38, 0.06));
-    border-color: rgba(220, 38, 38, 0.35);
+    border-color: #111111;
     color: #991b1b;
 }
 
 body:not(.dark-theme) .logout-btn.btn-danger:hover {
     background: linear-gradient(180deg, rgba(220, 38, 38, 0.2), rgba(220, 38, 38, 0.12));
-    border-color: rgba(220, 38, 38, 0.52);
+    border-color: #111111;
     color: #7f1d1d;
 }
 
