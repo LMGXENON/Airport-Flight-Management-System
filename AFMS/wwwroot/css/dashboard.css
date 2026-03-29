@@ -192,7 +192,7 @@ body:not(.dark-theme) .sidebar .nav-item.active {
     font-size: 16px;
     font-weight: 800;
     color: var(--text-primary);
-    font-family: "Courier New", "Lucida Console", monospace;
+    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     line-height: 1.1;
@@ -314,7 +314,7 @@ body.dark-theme .theme-toggle-btn:hover {
     font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
-    font-family: 'Courier New', monospace;
+    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
     letter-spacing: 0.06em;
     line-height: 1;
 }
@@ -1009,7 +1009,7 @@ body:not(.dark-theme) .status-scheduled {
 
 /* Monospace for times */
 .mono {
-    font-family: 'Courier New', monospace;
+    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
     font-weight: 600;
 }
 
@@ -1043,7 +1043,7 @@ body:not(.dark-theme) .status-scheduled {
 
 /* Table column styling */
 .time-col {
-    font-family: 'Courier New', monospace;
+    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
     font-weight: 600;
     font-size: 15px;
     min-width: 60px;
