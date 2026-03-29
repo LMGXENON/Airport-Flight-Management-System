@@ -53,6 +53,10 @@ Behind the scenes, AFMS is built on ASP.NET Core MVC, with a database backend an
 - `FlightSearchService` performs advanced search filtering/sorting/pagination.
 - `FlightDetailsService` centralises details-page formatting and validation helpers.
 
+## Architecture diagram
+
+(Diagram to be added)
+
 ## Prerequisites
 
 - .NET 10 SDK
@@ -141,6 +145,8 @@ Review and customise:
 - Route53 domain and subdomain defaults
 - RDS password and instance size
 - Sensitive variables (API keys, JWT secrets)
+
+
 
 ## Security notes
 
