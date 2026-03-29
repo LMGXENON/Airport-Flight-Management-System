@@ -699,6 +699,12 @@ body:not(.dark-theme) .stat-card {
     color: #fca5a5;
 }
 
+body:not(.dark-theme) .stat-badge.unavailable {
+    background-color: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #991b1b;
+}
+
 .stat-badge.neutral {
     background-color: rgba(136, 145, 178, 0.2);
     color: var(--text-secondary);
@@ -742,6 +748,10 @@ body:not(.dark-theme) .stat-card {
     font-size: 12px;
     color: var(--text-secondary);
     letter-spacing: 0.02em;
+}
+
+body:not(.dark-theme) .section-meta {
+    color: #3f4f78;
 }
 
 .section-title {
@@ -800,9 +810,21 @@ body:not(.dark-theme) .stat-card {
     font-size: 13px;
 }
 
+body:not(.dark-theme) .table-filter-input,
+body:not(.dark-theme) .table-filter-select {
+    border-color: #b9c7e8;
+    color: #111111;
+    background: #ffffff;
+}
+
 .table-filter-input::placeholder {
     color: var(--text-secondary);
     opacity: 0.8;
+}
+
+body:not(.dark-theme) .table-filter-input::placeholder {
+    color: #586b97;
+    opacity: 0.9;
 }
 
 .table-filter-input:focus,
@@ -821,6 +843,12 @@ body:not(.dark-theme) .stat-card {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+}
+
+body:not(.dark-theme) .table-filter-clear {
+    border-color: #b6c6ea;
+    color: #2d3d67;
+    background: #f3f6ff;
 }
 
 .table-filter-clear:hover {
@@ -843,6 +871,11 @@ body:not(.dark-theme) .stat-card {
     background: rgba(65, 105, 225, 0.08);
 }
 
+body:not(.dark-theme) .flights-table thead {
+    border-bottom: 1px solid #c4d1ef;
+    background: #eef3ff;
+}
+
 .flights-table th {
     padding: 13px 16px;
     text-align: left;
@@ -851,6 +884,10 @@ body:not(.dark-theme) .stat-card {
     color: #d7dff6;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+body:not(.dark-theme) .flights-table th {
+    color: #4f5f88;
 }
 
 .flights-table tbody tr {
@@ -1392,9 +1429,21 @@ body:not(.dark-theme) .status-scheduled {
     transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
+body:not(.dark-theme) .empty-state-retry-btn {
+    background: #e4ecff;
+    border-color: #8ba8ea;
+    color: #24365f;
+}
+
 .empty-state-retry-btn:hover {
     background: rgba(65, 105, 225, 0.24);
     border-color: rgba(124, 164, 255, 0.7);
+}
+
+body:not(.dark-theme) .empty-state-retry-btn:hover {
+    background: #d4e1ff;
+    border-color: #6689d8;
+    color: #1a2748;
 }
 
 .empty-state-retry-btn:disabled {
