@@ -38,6 +38,11 @@ body {
     overflow-x: hidden;
 }
 
+.app-container,
+.app-container * {
+    font-family: "Oxanium", "Segoe UI", Roboto, sans-serif;
+}
+
 /* Main Container */
 .app-container {
     display: flex;
