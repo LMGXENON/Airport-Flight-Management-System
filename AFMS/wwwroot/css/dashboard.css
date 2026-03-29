@@ -147,6 +147,17 @@ body:not(.dark-theme) .nav-item {
     color: #7688b2;
 }
 
+body:not(.dark-theme) .sidebar .app-title,
+body:not(.dark-theme) .sidebar .nav-item,
+body:not(.dark-theme) .sidebar .user-label,
+body:not(.dark-theme) .sidebar .user-name {
+    color: #111111;
+}
+
+body:not(.dark-theme) .sidebar .nav-item.active {
+    color: #ffffff;
+}
+
 .nav-label {
     flex: 1;
 }
@@ -1570,13 +1581,13 @@ body.dark-theme .logout-btn.btn-danger:hover {
 
 body:not(.dark-theme) .logout-btn.btn-danger {
     background: linear-gradient(180deg, rgba(220, 38, 38, 0.12), rgba(220, 38, 38, 0.06));
-    border-color: rgba(220, 38, 38, 0.35);
+    border-color: #111111;
     color: #991b1b;
 }
 
 body:not(.dark-theme) .logout-btn.btn-danger:hover {
     background: linear-gradient(180deg, rgba(220, 38, 38, 0.2), rgba(220, 38, 38, 0.12));
-    border-color: rgba(220, 38, 38, 0.52);
+    border-color: #111111;
     color: #7f1d1d;
 }
 
