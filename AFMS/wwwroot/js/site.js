@@ -21,7 +21,7 @@ function getCookieValue(name) {
 
 function updateClock() {
     var now = new Date();
-    var configuredFormat = (localStorage.getItem('afms-time-format') || getCookieValue('afms_time_format') || '24').trim();
+    var configuredFormat = (getCookieValue('afms_time_format') || localStorage.getItem('afms-time-format') || '24').trim();
     if (configuredFormat !== '12' && configuredFormat !== '24') {
         configuredFormat = '24';
     }

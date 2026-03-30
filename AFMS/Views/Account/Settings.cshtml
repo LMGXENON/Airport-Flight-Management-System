@@ -137,10 +137,7 @@
 
             if (timeFormatSelect) {
                 timeFormatSelect.addEventListener('change', function () {
-                    localStorage.setItem('afms-time-format', timeFormatSelect.value);
-                    if (typeof updateClock === 'function') {
-                        updateClock();
-                    }
+                    // Persist is deferred until user submits the form.
                 });
             }
 
