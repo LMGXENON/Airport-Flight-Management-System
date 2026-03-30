@@ -43,6 +43,8 @@ public static class FlightFormattingHelpers
         var parsed = ParseLocalDate(value);
         if (!parsed.HasValue)
             return fallback;
+        if (string.IsNullOrWhiteSpace(format))
+            return fallback;
         if (HasUnsupportedFormatTokens(format))
             return fallback;
 
@@ -59,6 +61,8 @@ public static class FlightFormattingHelpers
     public static string FormatDateTime(DateTime? value, string format, string fallback = "-")
     {
         if (!value.HasValue)
+            return fallback;
+        if (string.IsNullOrWhiteSpace(format))
             return fallback;
         if (HasUnsupportedFormatTokens(format))
             return fallback;

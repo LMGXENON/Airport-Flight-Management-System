@@ -70,4 +70,26 @@ public class FlightFormattingHelpersTests
 
         Assert.Equal("n/a", result);
     }
+
+    [Fact]
+    public void FormatDateTime_ReturnsFallbackWhenFormatIsEmpty()
+    {
+        var result = FlightFormattingHelpers.FormatDateTime(
+            new DateTime(2026, 3, 20, 14, 30, 0),
+            string.Empty,
+            "n/a");
+
+        Assert.Equal("n/a", result);
+    }
+
+    [Fact]
+    public void FormatLocalDateTime_ReturnsFallbackWhenFormatIsNull()
+    {
+        var result = FlightFormattingHelpers.FormatLocalDateTime(
+            "2026-03-20T14:30:00+00:00",
+            null!,
+            "n/a");
+
+        Assert.Equal("n/a", result);
+    }
 }
