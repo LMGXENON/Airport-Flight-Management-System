@@ -43,4 +43,12 @@ public class FlightStatusCatalogTests
         Assert.Contains("Scheduled", result);
         Assert.Contains("Delayed", result);
     }
+
+    [Fact]
+    public void GetCssClass_ReturnsDelayedCssForDelayedAlias()
+    {
+        var css = FlightStatusCatalog.GetCssClass("delayed");
+
+        Assert.Equal("status-delayed", css);
+    }
 }
