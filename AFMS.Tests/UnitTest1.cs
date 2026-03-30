@@ -306,4 +306,44 @@ public class ManualFlightMergeServiceTests
         var flight = Assert.Single(merged);
         Assert.Equal("Canceled", flight.Status);
     }
+
+    [Fact]
+    public void MergeManualFlights_UpdatesArrivalLegForArrivalDirection()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "LX900",
+                Status = "Expected",
+                Direction = "Arrival",
+                Arrival = new FlightMovement
+                {
+                    Gate = "A01",
+                    Terminal = "2",
+                    Status = "Expected"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "LX900",
+                Gate = "B11",
+                Terminal = "5",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        // arrival side should be changed for arrival flights
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("B11", flight.Arrival?.Gate);
+        Assert.Equal("5", flight.Arrival?.Terminal);
+    }
 }
