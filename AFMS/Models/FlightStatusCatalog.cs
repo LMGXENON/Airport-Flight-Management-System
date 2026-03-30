@@ -35,6 +35,8 @@ public static class FlightStatusCatalog
             ["en route"] = "Departed",
             ["gateclosed"] = "Departed",
             ["gate closed"] = "Departed",
+            ["gateclose"] = "Departed",
+            ["gateclosing"] = "Departed",
             ["approaching"] = "Departed",
 
             ["arrived"] = "Arrived",

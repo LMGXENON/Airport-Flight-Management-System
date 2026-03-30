@@ -21,6 +21,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsDepartedForGateCloseAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("gate-close");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCanceledUncertainAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("canceled uncertain");
@@ -112,6 +120,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForOnScheduleAlias()
     {
         var result = FlightStatusCatalog.IsKnown("on schedule");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForGateClosingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("gate closing");
 
         Assert.True(result);
     }
