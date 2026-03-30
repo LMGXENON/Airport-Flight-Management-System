@@ -45,6 +45,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsDepartedForInFlightAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("in-flight");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsDelayedForLateAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("late");
@@ -184,6 +192,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForAirborneAlias()
     {
         var result = FlightStatusCatalog.IsKnown("airborne");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForInFlightAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("in flight");
 
         Assert.True(result);
     }
