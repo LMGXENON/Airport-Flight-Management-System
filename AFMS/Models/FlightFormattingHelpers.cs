@@ -43,6 +43,8 @@ public static class FlightFormattingHelpers
         var parsed = ParseLocalDate(value);
         if (!parsed.HasValue)
             return fallback;
+        if (HasUnsupportedFormatTokens(format))
+            return fallback;
 
         try
         {
@@ -57,6 +59,8 @@ public static class FlightFormattingHelpers
     public static string FormatDateTime(DateTime? value, string format, string fallback = "-")
     {
         if (!value.HasValue)
+            return fallback;
+        if (HasUnsupportedFormatTokens(format))
             return fallback;
 
         try
@@ -74,4 +78,7 @@ public static class FlightFormattingHelpers
 
     public static string FormatLocalDateHeader(string? value, string fallback = "-") =>
         FormatLocalDateTime(value, "dddd, MMM dd", fallback);
+
+    private static bool HasUnsupportedFormatTokens(string format) =>
+        format.Contains('[') || format.Contains(']');
 }

@@ -37,6 +37,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsArrivedForLandingAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("landing");
+
+        Assert.Equal("Arrived", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCanceledUncertainAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("canceled uncertain");
@@ -144,6 +152,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForRunningLateAlias()
     {
         var result = FlightStatusCatalog.IsKnown("running late");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForLandingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("landing");
 
         Assert.True(result);
     }
