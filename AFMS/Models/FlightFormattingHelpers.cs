@@ -12,7 +12,10 @@ public static class FlightFormattingHelpers
     {
         if (string.IsNullOrWhiteSpace(code)) return string.Empty;
 
-        var normalizedCode = code.Trim().ToUpperInvariant();
+        var normalizedCode = new string(code
+            .Where(c => !char.IsWhiteSpace(c))
+            .ToArray())
+            .ToUpperInvariant();
 
         return normalizedCode switch
         {
