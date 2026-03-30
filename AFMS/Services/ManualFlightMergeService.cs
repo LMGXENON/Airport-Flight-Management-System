@@ -95,7 +95,7 @@ public class ManualFlightMergeService
         if (string.IsNullOrWhiteSpace(value))
             return null;
 
-        return value.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
+        return new string(value.Where(c => !char.IsWhiteSpace(c)).ToArray()).ToUpperInvariant();
     }
 
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight)
