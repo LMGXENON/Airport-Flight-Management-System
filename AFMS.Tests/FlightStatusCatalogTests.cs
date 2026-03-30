@@ -147,6 +147,20 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void NormalizeStatuses_IgnoresBlankAndNullItems()
+    {
+        var result = FlightStatusCatalog.NormalizeStatuses(new[]
+        {
+            " ",
+            null,
+            "Delayed"
+        }!);
+
+        Assert.Single(result);
+        Assert.Equal("Delayed", result[0]);
+    }
+
+    [Fact]
     public void GetLabel_UsesScheduledForUnknownValue()
     {
         // unknown label should fall back
