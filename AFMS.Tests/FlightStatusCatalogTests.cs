@@ -27,4 +27,20 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Scheduled", normalized);
     }
+
+    [Fact]
+    public void NormalizeStatuses_RemovesDuplicatesAndNormalizesValues()
+    {
+        var result = FlightStatusCatalog.NormalizeStatuses(new[]
+        {
+            "on time",
+            "Expected",
+            "delayed",
+            "Delayed"
+        });
+
+        Assert.Equal(2, result.Count);
+        Assert.Contains("Scheduled", result);
+        Assert.Contains("Delayed", result);
+    }
 }
