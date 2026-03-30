@@ -12,7 +12,10 @@ public static class FlightFormattingHelpers
     {
         if (string.IsNullOrWhiteSpace(code)) return string.Empty;
 
-        var normalizedCode = code.Trim().ToUpperInvariant();
+        var normalizedCode = new string(code
+            .Where(char.IsLetterOrDigit)
+            .ToArray())
+            .ToUpperInvariant();
 
         return normalizedCode switch
         {
@@ -38,12 +41,40 @@ public static class FlightFormattingHelpers
     public static string FormatLocalDateTime(string? value, string format, string fallback = "-")
     {
         var parsed = ParseLocalDate(value);
-        return parsed.HasValue ? parsed.Value.ToString(format, CultureInfo.InvariantCulture) : fallback;
+        if (!parsed.HasValue)
+            return fallback;
+        if (string.IsNullOrWhiteSpace(format))
+            return fallback;
+        if (HasUnsupportedFormatTokens(format))
+            return fallback;
+
+        try
+        {
+            return parsed.Value.ToString(format, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return fallback;
+        }
     }
 
     public static string FormatDateTime(DateTime? value, string format, string fallback = "-")
     {
-        return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : fallback;
+        if (!value.HasValue)
+            return fallback;
+        if (string.IsNullOrWhiteSpace(format))
+            return fallback;
+        if (HasUnsupportedFormatTokens(format))
+            return fallback;
+
+        try
+        {
+            return value.Value.ToString(format, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return fallback;
+        }
     }
 
     public static string FormatLocalTime(string? value, string fallback = "-") =>
@@ -51,4 +82,7 @@ public static class FlightFormattingHelpers
 
     public static string FormatLocalDateHeader(string? value, string fallback = "-") =>
         FormatLocalDateTime(value, "dddd, MMM dd", fallback);
+
+    private static bool HasUnsupportedFormatTokens(string format) =>
+        format.Contains('[') || format.Contains(']');
 }

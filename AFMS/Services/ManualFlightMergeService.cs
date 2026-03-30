@@ -26,7 +26,9 @@ public class ManualFlightMergeService
             var manualAircraftType = Clean(manualFlight.AircraftType);
             var normalizedStatus = string.IsNullOrWhiteSpace(manualFlight.Status)
                 ? null
-                : FlightStatusCatalog.Normalize(manualFlight.Status);
+                : FlightStatusCatalog.IsKnown(manualFlight.Status)
+                    ? FlightStatusCatalog.Normalize(manualFlight.Status)
+                    : null;
             var flightNumberKey = NormalizeFlightNumberKey(manualFlight.FlightNumber);
 
             if (flightNumberKey == null)
@@ -95,7 +97,8 @@ public class ManualFlightMergeService
         if (string.IsNullOrWhiteSpace(value))
             return null;
 
-        return new string(value.Where(c => !char.IsWhiteSpace(c)).ToArray()).ToUpperInvariant();
+        var normalized = new string(value.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+        return normalized.Length == 0 ? null : normalized;
     }
 
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight)

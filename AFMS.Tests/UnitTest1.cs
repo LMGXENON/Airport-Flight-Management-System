@@ -212,6 +212,81 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_MatchesFlightNumberWhenApiValueContainsHyphen()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "BA-123",
+                Status = "Expected",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Gate = "A01",
+                    Terminal = "2",
+                    Status = "Expected"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "BA123",
+                Gate = "F20",
+                Terminal = "5",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("F20", flight.Departure?.Gate);
+        Assert.Equal("5", flight.Departure?.Terminal);
+    }
+
+    [Fact]
+    public void MergeManualFlights_DoesNotCollidePunctuationOnlyFlightNumbers()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "---",
+                Gate = "A01",
+                Destination = "MAD",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-04-01T08:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-04-01T10:00:00+00:00"),
+                IsManualEntry = true
+            },
+            new()
+            {
+                FlightNumber = "///",
+                Gate = "B02",
+                Destination = "FRA",
+                Status = "Delayed",
+                DepartureTime = DateTime.Parse("2026-04-01T09:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-04-01T11:00:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        Assert.Equal(2, merged.Count);
+        Assert.Contains(merged, flight => flight.Departure?.Gate == "A01" && flight.Status == "Boarding");
+        Assert.Contains(merged, flight => flight.Departure?.Gate == "B02" && flight.Status == "Delayed");
+    }
+
+    [Fact]
     public void MergeManualFlights_NormalizesStatusWhenUpdatingExistingFlight()
     {
         var apiFlights = new List<AeroDataBoxFlight>
@@ -679,6 +754,42 @@ public class ManualFlightMergeServiceTests
         var merged = _service.MergeManualFlights(apiFlights, manualFlights);
 
         // blank manual status should not downgrade api value
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("Delayed", flight.Departure?.Status);
+    }
+
+    [Fact]
+    public void MergeManualFlights_KeepsApiStatusWhenManualStatusIsUnknown()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "AF11",
+                Status = "Delayed",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Status = "Delayed",
+                    Gate = "B03",
+                    Terminal = "3"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "AF11",
+                Status = "super-late-but-unknown",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
         var flight = Assert.Single(merged);
         Assert.Equal("Delayed", flight.Status);
         Assert.Equal("Delayed", flight.Departure?.Status);

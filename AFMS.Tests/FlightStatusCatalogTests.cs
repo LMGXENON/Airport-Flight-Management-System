@@ -13,6 +13,46 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsScheduledForOnScheduleAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("on schedule");
+
+        Assert.Equal("Scheduled", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsDepartedForGateCloseAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("gate-close");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsDelayedForLateAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("late");
+
+        Assert.Equal("Delayed", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsArrivedForLandingAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("landing");
+
+        Assert.Equal("Arrived", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsCanceledForCancellationAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("cancellation");
+
+        Assert.Equal("Canceled", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCanceledUncertainAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("canceled uncertain");
@@ -96,6 +136,46 @@ public class FlightStatusCatalogTests
     {
         // basic check for alias support
         var result = FlightStatusCatalog.IsKnown("check-in");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForOnScheduleAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("on schedule");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForGateClosingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("gate closing");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForRunningLateAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("running late");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForLandingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("landing");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForCancelationAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("cancelation");
 
         Assert.True(result);
     }

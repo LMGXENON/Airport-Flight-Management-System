@@ -14,6 +14,22 @@ public class FlightFormattingHelpersTests
     }
 
     [Fact]
+    public void ConvertToIata_MapsKnownIcaoCodesWithEmbeddedWhitespace()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("e g l l");
+
+        Assert.Equal("LHR", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsKnownIcaoCodesWithPunctuation()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("egll-");
+
+        Assert.Equal("LHR", result);
+    }
+
+    [Fact]
     public void ConvertToIata_UppercasesUnknownCodes()
     {
         var result = FlightFormattingHelpers.ConvertToIata("  lax  ");
@@ -39,5 +55,49 @@ public class FlightFormattingHelpersTests
         {
             CultureInfo.CurrentCulture = originalCulture;
         }
+    }
+
+    [Fact]
+    public void FormatDateTime_ReturnsFallbackWhenFormatIsInvalid()
+    {
+        var result = FlightFormattingHelpers.FormatDateTime(
+            new DateTime(2026, 3, 20, 14, 30, 0),
+            "yyyy-MM-dd[",
+            "n/a");
+
+        Assert.Equal("n/a", result);
+    }
+
+    [Fact]
+    public void FormatLocalDateTime_ReturnsFallbackWhenFormatIsInvalid()
+    {
+        var result = FlightFormattingHelpers.FormatLocalDateTime(
+            "2026-03-20T14:30:00+00:00",
+            "HH:mm[",
+            "n/a");
+
+        Assert.Equal("n/a", result);
+    }
+
+    [Fact]
+    public void FormatDateTime_ReturnsFallbackWhenFormatIsEmpty()
+    {
+        var result = FlightFormattingHelpers.FormatDateTime(
+            new DateTime(2026, 3, 20, 14, 30, 0),
+            string.Empty,
+            "n/a");
+
+        Assert.Equal("n/a", result);
+    }
+
+    [Fact]
+    public void FormatLocalDateTime_ReturnsFallbackWhenFormatIsNull()
+    {
+        var result = FlightFormattingHelpers.FormatLocalDateTime(
+            "2026-03-20T14:30:00+00:00",
+            null!,
+            "n/a");
+
+        Assert.Equal("n/a", result);
     }
 }
