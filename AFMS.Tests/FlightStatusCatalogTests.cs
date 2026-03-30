@@ -82,4 +82,13 @@ public class FlightStatusCatalogTests
 
         Assert.False(result);
     }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForKnownAlias()
+    {
+        // basic check for alias support
+        var result = FlightStatusCatalog.IsKnown("check-in");
+
+        Assert.True(result);
+    }
 }
