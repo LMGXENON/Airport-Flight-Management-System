@@ -181,4 +181,13 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Scheduled", label);
     }
+
+    [Fact]
+    public void Normalize_ReturnsScheduledForCheckInAlias()
+    {
+        // check in alias should map to scheduled
+        var normalized = FlightStatusCatalog.Normalize("check in");
+
+        Assert.Equal("Scheduled", normalized);
+    }
 }
