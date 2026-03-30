@@ -91,4 +91,13 @@ public class FlightStatusCatalogTests
 
         Assert.True(result);
     }
+
+    [Fact]
+    public void GetLabel_ReturnsCanonicalLabelForAlias()
+    {
+        // check alias to label mapping
+        var label = FlightStatusCatalog.GetLabel("on-time");
+
+        Assert.Equal("Scheduled", label);
+    }
 }
