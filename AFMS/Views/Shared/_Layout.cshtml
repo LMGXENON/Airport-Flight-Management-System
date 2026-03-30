@@ -19,6 +19,10 @@
     <script>
         (function () {
             var savedTheme = localStorage.getItem('afms-theme');
+            if (!savedTheme) {
+                var match = document.cookie.match(/(?:^|; )afms_theme=([^;]+)/);
+                savedTheme = match ? decodeURIComponent(match[1]) : null;
+            }
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-theme');
             }
@@ -93,8 +97,8 @@
                             <img src="~/images/AFMS Logo.png" alt="" aria-hidden="true" class="avatar-btn-icon" />
                         </button>
                         <div class="avatar-dropdown" id="avatarDropdownMenu" role="menu" aria-label="User menu" hidden>
-                            <button type="button" class="avatar-dropdown-item" role="menuitem" aria-disabled="true">Profile</button>
-                            <button type="button" class="avatar-dropdown-item" role="menuitem" aria-disabled="true">Settings</button>
+                            <a asp-controller="Account" asp-action="Profile" class="avatar-dropdown-item" role="menuitem">Profile</a>
+                            <a asp-controller="Account" asp-action="Settings" class="avatar-dropdown-item" role="menuitem">Settings</a>
                             <form asp-controller="Account" asp-action="Logout" method="post" class="avatar-dropdown-form">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="avatar-dropdown-item avatar-dropdown-item--danger" role="menuitem">Logout</button>

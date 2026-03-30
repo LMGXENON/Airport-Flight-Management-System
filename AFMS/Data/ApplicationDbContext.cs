@@ -11,5 +11,9 @@ namespace AFMS.Data
         }
 
         public DbSet<Flight> Flights { get; set; }
+
+        public DbSet<AuthCredential> AuthCredentials { get; set; }
+
+        public DbSet<LoginAuditEntry> LoginAuditEntries { get; set; }
     }
 }
