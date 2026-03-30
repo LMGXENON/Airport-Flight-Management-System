@@ -243,4 +243,43 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("Delayed", flight.Status);
         Assert.Equal("A03", flight.Departure?.Gate);
     }
+
+    [Fact]
+    public void MergeManualFlights_KeepsApiGateWhenManualGateIsBlank()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "KL701",
+                Status = "Scheduled",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Gate = "B05",
+                    Terminal = "4",
+                    Status = "Scheduled"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "KL701",
+                Gate = " ",
+                Terminal = "",
+                Status = "Boarding",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Boarding", flight.Status);
+        Assert.Equal("B05", flight.Departure?.Gate);
+        Assert.Equal("4", flight.Departure?.Terminal);
+    }
 }
