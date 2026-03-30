@@ -77,6 +77,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsArrivedForAtGateAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("at gate");
+
+        Assert.Equal("Arrived", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCancellationAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("cancellation");
@@ -232,6 +240,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForArrivingAlias()
     {
         var result = FlightStatusCatalog.IsKnown("arriving");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForAtGateAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("at-gate");
 
         Assert.True(result);
     }

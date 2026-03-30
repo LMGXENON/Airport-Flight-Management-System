@@ -46,6 +46,7 @@ public static class FlightStatusCatalog
             ["arriving"] = "Arrived",
             ["landed"] = "Arrived",
             ["landing"] = "Arrived",
+            ["atgate"] = "Arrived",
 
             ["delayed"] = "Delayed",
             ["late"] = "Delayed",
