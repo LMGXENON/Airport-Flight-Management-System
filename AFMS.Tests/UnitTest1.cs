@@ -465,6 +465,47 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_TrimsManualTextFieldsBeforeApplying()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "EK5",
+                Status = "Expected",
+                Direction = "Departure",
+                Aircraft = new Aircraft { Model = "Airbus A380" },
+                Departure = new FlightMovement
+                {
+                    Gate = "A10",
+                    Terminal = "3",
+                    Status = "Expected"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "EK5",
+                Gate = "  C21  ",
+                Terminal = "  5  ",
+                AircraftType = "  Boeing 777-300ER  ",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("C21", flight.Departure?.Gate);
+        Assert.Equal("5", flight.Departure?.Terminal);
+        Assert.Equal("Boeing 777-300ER", flight.Aircraft?.Model);
+    }
+
+    [Fact]
     public void MergeManualFlights_DoesNotOverwriteAircraftWhenManualTypeIsBlank()
     {
         var apiFlights = new List<AeroDataBoxFlight>

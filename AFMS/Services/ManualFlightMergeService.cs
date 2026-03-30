@@ -21,6 +21,9 @@ public class ManualFlightMergeService
 
         foreach (var manualFlight in manualFlights.Where(f => f.IsManualEntry))
         {
+            var manualGate = Clean(manualFlight.Gate);
+            var manualTerminal = Clean(manualFlight.Terminal);
+            var manualAircraftType = Clean(manualFlight.AircraftType);
             var normalizedStatus = string.IsNullOrWhiteSpace(manualFlight.Status)
                 ? null
                 : FlightStatusCatalog.Normalize(manualFlight.Status);
@@ -44,10 +47,10 @@ public class ManualFlightMergeService
                         : existing.Departure ?? existing.Arrival;
                 if (lhrLeg != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Gate))
-                        lhrLeg.Gate = manualFlight.Gate;
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Terminal))
-                        lhrLeg.Terminal = manualFlight.Terminal;
+                    if (!string.IsNullOrWhiteSpace(manualGate))
+                        lhrLeg.Gate = manualGate;
+                    if (!string.IsNullOrWhiteSpace(manualTerminal))
+                        lhrLeg.Terminal = manualTerminal;
                     if (!string.IsNullOrWhiteSpace(normalizedStatus))
                         lhrLeg.Status = normalizedStatus;
                 }
@@ -55,10 +58,10 @@ public class ManualFlightMergeService
                 if (!string.IsNullOrWhiteSpace(normalizedStatus))
                     existing.Status = normalizedStatus;
 
-                if (!string.IsNullOrWhiteSpace(manualFlight.AircraftType))
+                if (!string.IsNullOrWhiteSpace(manualAircraftType))
                 {
                     existing.Aircraft ??= new Aircraft();
-                    existing.Aircraft.Model = manualFlight.AircraftType;
+                    existing.Aircraft.Model = manualAircraftType;
                 }
 
                 continue;
@@ -87,22 +90,28 @@ public class ManualFlightMergeService
 
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight)
     {
+        var flightNumber = Clean(flight.FlightNumber);
+        var airline = Clean(flight.Airline);
+        var aircraftType = Clean(flight.AircraftType);
+        var gate = Clean(flight.Gate);
+        var terminal = Clean(flight.Terminal);
+        var destination = Clean(flight.Destination);
         var normalizedStatus = FlightStatusCatalog.Normalize(flight.Status);
 
         return new AeroDataBoxFlight
         {
-            Number = flight.FlightNumber,
+            Number = flightNumber,
             Status = normalizedStatus,
             Direction = "Departure",
-            Airline = new Airline { Name = flight.Airline },
-            Aircraft = string.IsNullOrWhiteSpace(flight.AircraftType)
+            Airline = new Airline { Name = airline },
+            Aircraft = string.IsNullOrWhiteSpace(aircraftType)
                 ? null
-                : new Aircraft { Model = flight.AircraftType },
+                : new Aircraft { Model = aircraftType },
             Departure = new FlightMovement
             {
                 Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
-                Gate = flight.Gate,
-                Terminal = flight.Terminal,
+                Gate = gate,
+                Terminal = terminal,
                 Status = normalizedStatus,
                 ScheduledTime = new ScheduledTime
                 {
@@ -112,7 +121,7 @@ public class ManualFlightMergeService
             },
             Arrival = new FlightMovement
             {
-                Airport = new Airport { Iata = flight.Destination, Name = flight.Destination },
+                Airport = new Airport { Iata = destination, Name = destination },
                 ScheduledTime = new ScheduledTime
                 {
                     Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
@@ -121,4 +130,7 @@ public class ManualFlightMergeService
             }
         };
     }
+
+    private static string? Clean(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
