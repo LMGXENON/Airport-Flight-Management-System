@@ -41,12 +41,32 @@ public static class FlightFormattingHelpers
     public static string FormatLocalDateTime(string? value, string format, string fallback = "-")
     {
         var parsed = ParseLocalDate(value);
-        return parsed.HasValue ? parsed.Value.ToString(format, CultureInfo.InvariantCulture) : fallback;
+        if (!parsed.HasValue)
+            return fallback;
+
+        try
+        {
+            return parsed.Value.ToString(format, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return fallback;
+        }
     }
 
     public static string FormatDateTime(DateTime? value, string format, string fallback = "-")
     {
-        return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : fallback;
+        if (!value.HasValue)
+            return fallback;
+
+        try
+        {
+            return value.Value.ToString(format, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return fallback;
+        }
     }
 
     public static string FormatLocalTime(string? value, string fallback = "-") =>
