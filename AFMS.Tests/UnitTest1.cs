@@ -308,6 +308,31 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_NormalizesSyntheticDepartureLegStatus()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "KL1401",
+                Destination = "AMS",
+                Status = "on time",
+                DepartureTime = DateTime.Parse("2026-03-20T14:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-20T15:30:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Scheduled", flight.Status);
+        Assert.Equal("Scheduled", flight.Departure?.Status);
+    }
+
+    [Fact]
     public void MergeManualFlights_UpdatesArrivalLegForArrivalDirection()
     {
         var apiFlights = new List<AeroDataBoxFlight>

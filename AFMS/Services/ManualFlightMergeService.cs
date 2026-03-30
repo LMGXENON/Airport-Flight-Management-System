@@ -80,35 +80,40 @@ public class ManualFlightMergeService
         return value.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
     }
 
-    private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight) => new()
+    private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight)
     {
-        Number = flight.FlightNumber,
-        Status = FlightStatusCatalog.Normalize(flight.Status),
-        Direction = "Departure",
-        Airline = new Airline { Name = flight.Airline },
-        Aircraft = string.IsNullOrWhiteSpace(flight.AircraftType)
-            ? null
-            : new Aircraft { Model = flight.AircraftType },
-        Departure = new FlightMovement
+        var normalizedStatus = FlightStatusCatalog.Normalize(flight.Status);
+
+        return new AeroDataBoxFlight
         {
-            Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
-            Gate = flight.Gate,
-            Terminal = flight.Terminal,
-            Status = flight.Status,
-            ScheduledTime = new ScheduledTime
+            Number = flight.FlightNumber,
+            Status = normalizedStatus,
+            Direction = "Departure",
+            Airline = new Airline { Name = flight.Airline },
+            Aircraft = string.IsNullOrWhiteSpace(flight.AircraftType)
+                ? null
+                : new Aircraft { Model = flight.AircraftType },
+            Departure = new FlightMovement
             {
-                Local = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc = flight.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        },
-        Arrival = new FlightMovement
-        {
-            Airport = new Airport { Iata = flight.Destination, Name = flight.Destination },
-            ScheduledTime = new ScheduledTime
+                Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
+                Gate = flight.Gate,
+                Terminal = flight.Terminal,
+                Status = normalizedStatus,
+                ScheduledTime = new ScheduledTime
+                {
+                    Local = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                    Utc = flight.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                }
+            },
+            Arrival = new FlightMovement
             {
-                Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc = flight.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                Airport = new Airport { Iata = flight.Destination, Name = flight.Destination },
+                ScheduledTime = new ScheduledTime
+                {
+                    Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                    Utc = flight.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                }
             }
-        }
-    };
+        };
+    }
 }
