@@ -135,15 +135,49 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('avatarMenuContainer');
     var button = document.getElementById('avatarMenuButton');
     var menu = document.getElementById('avatarDropdownMenu');
+    var closeTimer = null;
 
     if (!container || !button || !menu) {
         return;
     }
 
+    function clearCloseTimer() {
+        if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+    }
+
+    function scheduleClose() {
+        clearCloseTimer();
+        closeTimer = setTimeout(function () {
+            setMenuOpen(false);
+        }, 120);
+    }
+
     function setMenuOpen(isOpen) {
+        clearCloseTimer();
         button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         menu.hidden = !isOpen;
     }
+
+    container.addEventListener('mouseenter', function () {
+        setMenuOpen(true);
+    });
+
+    container.addEventListener('mouseleave', function () {
+        scheduleClose();
+    });
+
+    container.addEventListener('focusin', function () {
+        setMenuOpen(true);
+    });
+
+    container.addEventListener('focusout', function (event) {
+        if (!container.contains(event.relatedTarget)) {
+            setMenuOpen(false);
+        }
+    });
 
     button.addEventListener('click', function () {
         setMenuOpen(menu.hidden);
