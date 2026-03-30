@@ -93,4 +93,43 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("JFK", synthetic.Arrival?.Airport?.Iata);
         Assert.Equal("Airbus A350-1000", synthetic.Aircraft?.Model);
     }
+
+    [Fact]
+    public void MergeManualFlights_IgnoresNonManualEntries()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "LH100",
+                Status = "Scheduled",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Gate = "A10",
+                    Terminal = "2",
+                    Status = "Scheduled"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "LH100",
+                Gate = "C99",
+                Terminal = "5",
+                Status = "Delayed",
+                IsManualEntry = false
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Scheduled", flight.Status);
+        Assert.Equal("A10", flight.Departure?.Gate);
+        Assert.Equal("2", flight.Departure?.Terminal);
+    }
 }
