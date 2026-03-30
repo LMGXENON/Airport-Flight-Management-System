@@ -12,7 +12,9 @@ public static class FlightFormattingHelpers
     {
         if (string.IsNullOrWhiteSpace(code)) return string.Empty;
 
-        return code.ToUpperInvariant() switch
+        var normalizedCode = code.Trim().ToUpperInvariant();
+
+        return normalizedCode switch
         {
             "EGLL" => "LHR",
             "KJFK" => "JFK",
@@ -20,7 +22,7 @@ public static class FlightFormattingHelpers
             "OMDB" => "DXB",
             "EDDF" => "FRA",
             "RJTT" => "HND",
-            _ => code
+            _ => normalizedCode
         };
     }
 
