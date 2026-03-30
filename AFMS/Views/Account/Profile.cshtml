@@ -24,8 +24,12 @@
     </section>
 
     <section class="account-card">
-        <h3 class="account-card-title">Session</h3>
+        <h3 class="account-card-title">Session and Security</h3>
         <dl class="account-list">
+            <div class="account-list-row">
+                <dt>Last Login</dt>
+                <dd>@(Model.LastLoginUtc.HasValue ? Model.LastLoginUtc.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "Not available yet")</dd>
+            </div>
             <div class="account-list-row">
                 <dt>Session Duration</dt>
                 <dd>@Model.SessionExpiryHours hours</dd>
@@ -33,20 +37,6 @@
             <div class="account-list-row">
                 <dt>Last Refreshed</dt>
                 <dd>@Model.LastUpdatedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
-            </div>
-        </dl>
-    </section>
-
-    <section class="account-card account-card--wide">
-        <h3 class="account-card-title">Token Configuration</h3>
-        <dl class="account-list">
-            <div class="account-list-row">
-                <dt>Issuer</dt>
-                <dd>@Model.Issuer</dd>
-            </div>
-            <div class="account-list-row">
-                <dt>Audience</dt>
-                <dd>@Model.Audience</dd>
             </div>
         </dl>
     </section>

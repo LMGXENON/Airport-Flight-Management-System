@@ -65,6 +65,15 @@ public class AccountController : Controller
             Path = "/"
         });
 
+        Response.Cookies.Append("afms_last_login_utc", DateTime.UtcNow.ToString("O"), new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(180),
+            Path = "/"
+        });
+
         var redirectUrl = ResolvePostLoginRedirect(model.ReturnUrl);
         await Task.CompletedTask;
         return LocalRedirect(redirectUrl);
@@ -86,14 +95,19 @@ public class AccountController : Controller
     {
         var username = User.Identity?.Name ?? "Admin";
         var role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value ?? "User";
+        DateTime? lastLoginUtc = null;
+        var lastLoginRaw = Request.Cookies["afms_last_login_utc"];
+        if (!string.IsNullOrWhiteSpace(lastLoginRaw) && DateTime.TryParse(lastLoginRaw, out var parsedLastLogin))
+        {
+            lastLoginUtc = parsedLastLogin.ToUniversalTime();
+        }
 
         var model = new AccountProfileViewModel
         {
             Username = username,
             Role = role,
-            Issuer = _configuration["Auth:Issuer"] ?? "AFMS",
-            Audience = _configuration["Auth:Audience"] ?? "AFMS.Users",
             SessionExpiryHours = GetTokenExpiryHours(),
+            LastLoginUtc = lastLoginUtc,
             LastUpdatedUtc = DateTime.UtcNow
         };
 
