@@ -67,6 +67,7 @@ public static class FlightStatusCatalog
     public static List<string> NormalizeStatuses(IEnumerable<string>? statuses) =>
         (statuses ?? Array.Empty<string>())
             .Where(status => !string.IsNullOrWhiteSpace(status))
+            .Where(IsKnown)
             .Select(Normalize)
             .Where(status => !string.IsNullOrWhiteSpace(status))
             .Distinct(StringComparer.OrdinalIgnoreCase)

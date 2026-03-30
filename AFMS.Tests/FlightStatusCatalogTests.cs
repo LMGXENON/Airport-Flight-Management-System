@@ -161,6 +161,19 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void NormalizeStatuses_IgnoresUnknownStatusItems()
+    {
+        var result = FlightStatusCatalog.NormalizeStatuses(new[]
+        {
+            "not-real-status",
+            "Boarding"
+        });
+
+        Assert.Single(result);
+        Assert.Equal("Boarding", result[0]);
+    }
+
+    [Fact]
     public void GetLabel_UsesScheduledForUnknownValue()
     {
         // unknown label should fall back
