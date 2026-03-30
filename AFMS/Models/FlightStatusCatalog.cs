@@ -43,6 +43,8 @@ public static class FlightStatusCatalog
             ["landed"] = "Arrived",
 
             ["delayed"] = "Delayed",
+            ["late"] = "Delayed",
+            ["runninglate"] = "Delayed",
 
             ["canceled"] = "Canceled",
             ["cancelled"] = "Canceled",
