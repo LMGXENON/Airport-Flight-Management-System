@@ -282,4 +282,28 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("B05", flight.Departure?.Gate);
         Assert.Equal("4", flight.Departure?.Terminal);
     }
+
+    [Fact]
+    public void MergeManualFlights_NormalizesCanceledAliasForSyntheticFlight()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "TK501",
+                Destination = "IST",
+                Status = "canceled uncertain",
+                DepartureTime = DateTime.Parse("2026-03-20T14:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-20T18:30:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Canceled", flight.Status);
+    }
 }
