@@ -100,4 +100,13 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Scheduled", label);
     }
+
+    [Fact]
+    public void IsKnown_ReturnsFalseForBlankInput()
+    {
+        // blank value should not be known
+        var result = FlightStatusCatalog.IsKnown(" ");
+
+        Assert.False(result);
+    }
 }
