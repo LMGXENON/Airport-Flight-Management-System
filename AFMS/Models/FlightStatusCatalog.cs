@@ -42,7 +42,9 @@ public static class FlightStatusCatalog
 
             ["canceled"] = "Canceled",
             ["cancelled"] = "Canceled",
+            ["canceluncertain"] = "Canceled",
             ["canceleduncertain"] = "Canceled",
+            ["cancelleduncertain"] = "Canceled",
             ["diverted"] = "Canceled"
         };
 
