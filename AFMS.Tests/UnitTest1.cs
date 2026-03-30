@@ -758,4 +758,40 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("Delayed", flight.Status);
         Assert.Equal("Delayed", flight.Departure?.Status);
     }
+
+    [Fact]
+    public void MergeManualFlights_KeepsApiStatusWhenManualStatusIsUnknown()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "AF11",
+                Status = "Delayed",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Status = "Delayed",
+                    Gate = "B03",
+                    Terminal = "3"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "AF11",
+                Status = "super-late-but-unknown",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("Delayed", flight.Departure?.Status);
+    }
 }

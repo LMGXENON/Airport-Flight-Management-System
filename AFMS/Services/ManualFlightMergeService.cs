@@ -26,7 +26,9 @@ public class ManualFlightMergeService
             var manualAircraftType = Clean(manualFlight.AircraftType);
             var normalizedStatus = string.IsNullOrWhiteSpace(manualFlight.Status)
                 ? null
-                : FlightStatusCatalog.Normalize(manualFlight.Status);
+                : FlightStatusCatalog.IsKnown(manualFlight.Status)
+                    ? FlightStatusCatalog.Normalize(manualFlight.Status)
+                    : null;
             var flightNumberKey = NormalizeFlightNumberKey(manualFlight.FlightNumber);
 
             if (flightNumberKey == null)
