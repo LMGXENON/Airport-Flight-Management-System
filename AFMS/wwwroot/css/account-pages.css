@@ -4,6 +4,21 @@
     gap: 16px;
 }
 
+.account-alert {
+    border: 1px solid rgba(50, 184, 135, 0.45);
+    background: rgba(46, 165, 121, 0.14);
+    color: #d5f8ea;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.account-settings-form {
+    margin: 0;
+}
+
 .account-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -21,6 +36,64 @@
     font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
+}
+
+.account-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+}
+
+.account-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.account-field label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.account-select {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 9px 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.account-select:focus-visible {
+    outline: 2px solid rgba(124, 164, 255, 0.7);
+    outline-offset: 2px;
+}
+
+.account-actions {
+    margin-top: 16px;
+}
+
+.account-save-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(180deg, #4f73ff, #3457d6);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.account-save-btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
 }
 
 .account-list {

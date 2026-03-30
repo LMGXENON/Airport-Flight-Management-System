@@ -19,6 +19,10 @@
     <script>
         (function () {
             var savedTheme = localStorage.getItem('afms-theme');
+            if (!savedTheme) {
+                var match = document.cookie.match(/(?:^|; )afms_theme=([^;]+)/);
+                savedTheme = match ? decodeURIComponent(match[1]) : null;
+            }
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-theme');
             }

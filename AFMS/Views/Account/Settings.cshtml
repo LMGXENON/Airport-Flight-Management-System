@@ -5,47 +5,113 @@
 
 <div class="page-header">
     <h2 class="page-title">Settings</h2>
-    <p class="page-subtitle">Current account and authentication settings for your AFMS session.</p>
+    <p class="page-subtitle">Manage your AFMS user preferences.</p>
 </div>
 
-<div class="account-grid">
-    <section class="account-card">
-        <h3 class="account-card-title">Experience</h3>
-        <dl class="account-list">
-            <div class="account-list-row">
-                <dt>Theme Preference</dt>
-                <dd>@Model.ThemePreference</dd>
-            </div>
-            <div class="account-list-row">
-                <dt>Session Length</dt>
-                <dd>@Model.SessionExpiryHours hours</dd>
-            </div>
-        </dl>
-    </section>
+@if (Model.Saved)
+{
+    <div class="account-alert" role="status" aria-live="polite">Settings saved.</div>
+}
 
-    <section class="account-card">
-        <h3 class="account-card-title">Authentication</h3>
-        <dl class="account-list">
-            <div class="account-list-row">
-                <dt>Cookie Name</dt>
-                <dd>@Model.AuthCookieName</dd>
+<form asp-controller="Account" asp-action="Settings" method="post" class="account-settings-form">
+    @Html.AntiForgeryToken()
+
+    <section class="account-card account-card--wide">
+        <h3 class="account-card-title">Preferences</h3>
+
+        <div class="account-form-grid">
+            <div class="account-field">
+                <label for="Theme">Theme</label>
+                <select id="Theme" name="Theme" class="account-select" data-setting="theme">
+                    <option value="light" selected="@(Model.Theme == "light")">Light</option>
+                    <option value="dark" selected="@(Model.Theme == "dark")">Dark</option>
+                </select>
             </div>
-            <div class="account-list-row">
-                <dt>Issuer</dt>
-                <dd>@Model.JwtIssuer</dd>
+
+            <div class="account-field">
+                <label for="DefaultAirport">Default airport</label>
+                <select id="DefaultAirport" name="DefaultAirport" class="account-select">
+                    <option value="EGLL" selected="@(Model.DefaultAirport == "EGLL")">London Heathrow (LHR/EGLL)</option>
+                    <option value="EGKK" selected="@(Model.DefaultAirport == "EGKK")">London Gatwick (LGW/EGKK)</option>
+                    <option value="EGSS" selected="@(Model.DefaultAirport == "EGSS")">London Stansted (STN/EGSS)</option>
+                    <option value="KJFK" selected="@(Model.DefaultAirport == "KJFK")">New York JFK (JFK/KJFK)</option>
+                    <option value="KLAX" selected="@(Model.DefaultAirport == "KLAX")">Los Angeles (LAX/KLAX)</option>
+                </select>
             </div>
-            <div class="account-list-row">
-                <dt>Audience</dt>
-                <dd>@Model.JwtAudience</dd>
+
+            <div class="account-field">
+                <label for="TimeFormat">Time format</label>
+                <select id="TimeFormat" name="TimeFormat" class="account-select" data-setting="time-format">
+                    <option value="24" selected="@(Model.TimeFormat == "24")">24-hour</option>
+                    <option value="12" selected="@(Model.TimeFormat == "12")">12-hour</option>
+                </select>
             </div>
-            <div class="account-list-row">
-                <dt>Last Reviewed</dt>
-                <dd>@Model.LastReviewedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+
+            <div class="account-field">
+                <label for="Language">Language</label>
+                <select id="Language" name="Language" class="account-select">
+                    <option value="en" selected="@(Model.Language == "en")">English</option>
+                </select>
             </div>
-        </dl>
+        </div>
+
+        <div class="account-actions">
+            <button type="submit" class="account-save-btn">Save Settings</button>
+        </div>
     </section>
-</div>
+</form>
 
 @section Styles {
     <link rel="stylesheet" href="~/css/account-pages.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var themeSelect = document.getElementById('Theme');
+            var timeFormatSelect = document.getElementById('TimeFormat');
+            var themeToggle = document.getElementById('themeToggle');
+
+            function applyTheme(theme) {
+                var dark = theme === 'dark';
+                document.body.classList.toggle('dark-theme', dark);
+                localStorage.setItem('afms-theme', dark ? 'dark' : 'light');
+
+                if (themeToggle) {
+                    themeToggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+                    themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+                    var icon = themeToggle.querySelector('.theme-toggle-icon');
+                    if (icon) {
+                        icon.classList.remove('bx-moon', 'bx-sun');
+                        icon.classList.add(dark ? 'bx-sun' : 'bx-moon');
+                    }
+                }
+            }
+
+            if (themeSelect) {
+                themeSelect.addEventListener('change', function () {
+                    applyTheme(themeSelect.value);
+                });
+            }
+
+            if (timeFormatSelect) {
+                timeFormatSelect.addEventListener('change', function () {
+                    localStorage.setItem('afms-time-format', timeFormatSelect.value);
+                    if (typeof updateClock === 'function') {
+                        updateClock();
+                    }
+                });
+            }
+
+            if (themeSelect) {
+                applyTheme(themeSelect.value);
+            }
+            if (timeFormatSelect) {
+                localStorage.setItem('afms-time-format', timeFormatSelect.value);
+                if (typeof updateClock === 'function') {
+                    updateClock();
+                }
+            }
+        })();
+    </script>
 }

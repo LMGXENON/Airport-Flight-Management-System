@@ -2,15 +2,13 @@ namespace AFMS.Models;
 
 public class AccountSettingsViewModel
 {
-    public string ThemePreference { get; set; } = string.Empty;
+    public string Theme { get; set; } = "light";
 
-    public int SessionExpiryHours { get; set; }
+    public string DefaultAirport { get; set; } = "EGLL";
 
-    public string AuthCookieName { get; set; } = string.Empty;
+    public string TimeFormat { get; set; } = "24";
 
-    public string JwtIssuer { get; set; } = string.Empty;
+    public string Language { get; set; } = "en";
 
-    public string JwtAudience { get; set; } = string.Empty;
-
-    public DateTime LastReviewedUtc { get; set; }
+    public bool Saved { get; set; }
 }

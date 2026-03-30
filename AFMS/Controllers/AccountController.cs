@@ -10,6 +10,11 @@ namespace AFMS.Controllers;
 
 public class AccountController : Controller
 {
+    private static readonly HashSet<string> AllowedThemes = new(StringComparer.OrdinalIgnoreCase) { "light", "dark" };
+    private static readonly HashSet<string> AllowedAirports = new(StringComparer.OrdinalIgnoreCase) { "EGLL", "EGKK", "EGSS", "KJFK", "KLAX" };
+    private static readonly HashSet<string> AllowedTimeFormats = new(StringComparer.OrdinalIgnoreCase) { "12", "24" };
+    private static readonly HashSet<string> AllowedLanguages = new(StringComparer.OrdinalIgnoreCase) { "en" };
+
     private readonly IConfiguration _configuration;
 
     public AccountController(IConfiguration configuration)
@@ -101,15 +106,48 @@ public class AccountController : Controller
     {
         var model = new AccountSettingsViewModel
         {
-            ThemePreference = "Stored locally in your browser",
-            SessionExpiryHours = GetTokenExpiryHours(),
-            AuthCookieName = "afms_auth_token",
-            JwtIssuer = _configuration["Auth:Issuer"] ?? "AFMS",
-            JwtAudience = _configuration["Auth:Audience"] ?? "AFMS.Users",
-            LastReviewedUtc = DateTime.UtcNow
+            Theme = GetAllowedValue(Request.Cookies["afms_theme"], AllowedThemes, "light"),
+            DefaultAirport = GetAllowedValue(
+                Request.Cookies["afms_default_airport"],
+                AllowedAirports,
+                (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant()),
+            TimeFormat = GetAllowedValue(Request.Cookies["afms_time_format"], AllowedTimeFormats, "24"),
+            Language = GetAllowedValue(Request.Cookies["afms_language"], AllowedLanguages, "en"),
+            Saved = TempData["SettingsSaved"] as bool? == true
         };
 
         return View(model);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Settings(AccountSettingsViewModel model)
+    {
+        var normalizedTheme = GetAllowedValue(model.Theme, AllowedThemes, "light");
+        var normalizedAirport = GetAllowedValue(
+            model.DefaultAirport,
+            AllowedAirports,
+            (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant());
+        var normalizedTimeFormat = GetAllowedValue(model.TimeFormat, AllowedTimeFormats, "24");
+        var normalizedLanguage = GetAllowedValue(model.Language, AllowedLanguages, "en");
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(180),
+            Path = "/"
+        };
+
+        Response.Cookies.Append("afms_theme", normalizedTheme, cookieOptions);
+        Response.Cookies.Append("afms_default_airport", normalizedAirport, cookieOptions);
+        Response.Cookies.Append("afms_time_format", normalizedTimeFormat, cookieOptions);
+        Response.Cookies.Append("afms_language", normalizedLanguage, cookieOptions);
+
+        TempData["SettingsSaved"] = true;
+        return RedirectToAction(nameof(Settings));
     }
 
     private string CreateToken(string username)
@@ -163,6 +201,15 @@ public class AccountController : Controller
             return defaultUrl;
 
         return candidate;
+    }
+
+    private static string GetAllowedValue(string? value, HashSet<string> allowedValues, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return fallback;
+
+        var normalized = value.Trim();
+        return allowedValues.Contains(normalized) ? normalized : fallback;
     }
 }
 

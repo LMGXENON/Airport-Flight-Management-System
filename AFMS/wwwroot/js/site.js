@@ -5,16 +5,49 @@ function toLocalDateTimeValue(date) {
     return localTime.toISOString().slice(0, 19);
 }
 
+function getCookieValue(name) {
+    var encodedName = encodeURIComponent(name) + '=';
+    var cookieParts = document.cookie ? document.cookie.split(';') : [];
+
+    for (var i = 0; i < cookieParts.length; i++) {
+        var cookie = cookieParts[i].trim();
+        if (cookie.indexOf(encodedName) === 0) {
+            return decodeURIComponent(cookie.substring(encodedName.length));
+        }
+    }
+
+    return null;
+}
+
 function updateClock() {
     var now = new Date();
-    var hours = String(now.getHours()).padStart(2, '0');
-    var minutes = String(now.getMinutes()).padStart(2, '0');
-    var seconds = String(now.getSeconds()).padStart(2, '0');
+    var configuredFormat = (localStorage.getItem('afms-time-format') || getCookieValue('afms_time_format') || '24').trim();
+    if (configuredFormat !== '12' && configuredFormat !== '24') {
+        configuredFormat = '24';
+    }
+    localStorage.setItem('afms-time-format', configuredFormat);
+    var useTwelveHour = configuredFormat === '12';
+    var timeText;
+
+    if (useTwelveHour) {
+        timeText = now.toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+    } else {
+        var hours = String(now.getHours()).padStart(2, '0');
+        var minutes = String(now.getMinutes()).padStart(2, '0');
+        var seconds = String(now.getSeconds()).padStart(2, '0');
+        timeText = hours + ':' + minutes + ':' + seconds;
+    }
+
     var el = document.getElementById('currentTime');
     if (el) {
-        el.textContent = hours + ':' + minutes + ':' + seconds;
+        el.textContent = timeText;
         el.setAttribute('datetime', toLocalDateTimeValue(now));
-        el.setAttribute('aria-label', 'Current time ' + hours + ':' + minutes + ':' + seconds);
+        el.setAttribute('aria-label', 'Current time ' + timeText);
     }
 }
 setInterval(updateClock, 1000);
