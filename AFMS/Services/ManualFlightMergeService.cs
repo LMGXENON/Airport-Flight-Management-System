@@ -21,7 +21,12 @@ public class ManualFlightMergeService
 
         foreach (var manualFlight in manualFlights.Where(f => f.IsManualEntry))
         {
-            var normalizedStatus = FlightStatusCatalog.Normalize(manualFlight.Status);
+            var manualGate = Clean(manualFlight.Gate);
+            var manualTerminal = Clean(manualFlight.Terminal);
+            var manualAircraftType = Clean(manualFlight.AircraftType);
+            var normalizedStatus = string.IsNullOrWhiteSpace(manualFlight.Status)
+                ? null
+                : FlightStatusCatalog.Normalize(manualFlight.Status);
             var flightNumberKey = NormalizeFlightNumberKey(manualFlight.FlightNumber);
 
             if (flightNumberKey == null)
@@ -34,13 +39,18 @@ public class ManualFlightMergeService
 
             if (existing != null)
             {
-                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
+                var direction = existing.Direction?.Trim();
+                var lhrLeg = string.Equals(direction, "Arrival", StringComparison.OrdinalIgnoreCase)
+                    ? existing.Arrival
+                    : string.Equals(direction, "Departure", StringComparison.OrdinalIgnoreCase)
+                        ? existing.Departure
+                        : existing.Departure ?? existing.Arrival;
                 if (lhrLeg != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Gate))
-                        lhrLeg.Gate = manualFlight.Gate;
-                    if (!string.IsNullOrWhiteSpace(manualFlight.Terminal))
-                        lhrLeg.Terminal = manualFlight.Terminal;
+                    if (!string.IsNullOrWhiteSpace(manualGate))
+                        lhrLeg.Gate = manualGate;
+                    if (!string.IsNullOrWhiteSpace(manualTerminal))
+                        lhrLeg.Terminal = manualTerminal;
                     if (!string.IsNullOrWhiteSpace(normalizedStatus))
                         lhrLeg.Status = normalizedStatus;
                 }
@@ -48,10 +58,10 @@ public class ManualFlightMergeService
                 if (!string.IsNullOrWhiteSpace(normalizedStatus))
                     existing.Status = normalizedStatus;
 
-                if (!string.IsNullOrWhiteSpace(manualFlight.AircraftType))
+                if (!string.IsNullOrWhiteSpace(manualAircraftType))
                 {
                     existing.Aircraft ??= new Aircraft();
-                    existing.Aircraft.Model = manualFlight.AircraftType;
+                    existing.Aircraft.Model = manualAircraftType;
                 }
 
                 continue;
@@ -78,35 +88,49 @@ public class ManualFlightMergeService
         return value.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
     }
 
-    private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight) => new()
+    private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight)
     {
-        Number = flight.FlightNumber,
-        Status = FlightStatusCatalog.Normalize(flight.Status),
-        Direction = "Departure",
-        Airline = new Airline { Name = flight.Airline },
-        Aircraft = string.IsNullOrWhiteSpace(flight.AircraftType)
-            ? null
-            : new Aircraft { Model = flight.AircraftType },
-        Departure = new FlightMovement
+        var flightNumber = Clean(flight.FlightNumber);
+        var airline = Clean(flight.Airline);
+        var aircraftType = Clean(flight.AircraftType);
+        var gate = Clean(flight.Gate);
+        var terminal = Clean(flight.Terminal);
+        var destination = Clean(flight.Destination);
+        var normalizedStatus = FlightStatusCatalog.Normalize(flight.Status);
+
+        return new AeroDataBoxFlight
         {
-            Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
-            Gate = flight.Gate,
-            Terminal = flight.Terminal,
-            Status = flight.Status,
-            ScheduledTime = new ScheduledTime
+            Number = flightNumber,
+            Status = normalizedStatus,
+            Direction = "Departure",
+            Airline = new Airline { Name = airline },
+            Aircraft = string.IsNullOrWhiteSpace(aircraftType)
+                ? null
+                : new Aircraft { Model = aircraftType },
+            Departure = new FlightMovement
             {
-                Local = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc = flight.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
-            }
-        },
-        Arrival = new FlightMovement
-        {
-            Airport = new Airport { Iata = flight.Destination, Name = flight.Destination },
-            ScheduledTime = new ScheduledTime
+                Airport = new Airport { Iata = "LHR", Icao = "EGLL", Name = "London Heathrow" },
+                Gate = gate,
+                Terminal = terminal,
+                Status = normalizedStatus,
+                ScheduledTime = new ScheduledTime
+                {
+                    Local = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                    Utc = flight.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                }
+            },
+            Arrival = new FlightMovement
             {
-                Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                Utc = flight.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                Airport = new Airport { Iata = destination, Name = destination },
+                ScheduledTime = new ScheduledTime
+                {
+                    Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
+                    Utc = flight.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                }
             }
-        }
-    };
+        };
+    }
+
+    private static string? Clean(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

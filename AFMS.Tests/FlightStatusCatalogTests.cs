@@ -145,4 +145,72 @@ public class FlightStatusCatalogTests
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public void NormalizeStatuses_IgnoresBlankAndNullItems()
+    {
+        var result = FlightStatusCatalog.NormalizeStatuses(new[]
+        {
+            " ",
+            null,
+            "Delayed"
+        }!);
+
+        Assert.Single(result);
+        Assert.Equal("Delayed", result[0]);
+    }
+
+    [Fact]
+    public void GetLabel_UsesScheduledForUnknownValue()
+    {
+        // unknown label should fall back
+        var label = FlightStatusCatalog.GetLabel("not-valid");
+
+        Assert.Equal("Scheduled", label);
+    }
+
+    [Fact]
+    public void GetCssClass_MapsCanceledAliasToCanceledClass()
+    {
+        // canceled alias should map to canceled class
+        var css = FlightStatusCatalog.GetCssClass("diverted");
+
+        Assert.Equal("status-cancelled", css);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsFalseWhenValueIsNull()
+    {
+        // null should not be treated as known
+        var result = FlightStatusCatalog.IsKnown(null);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void GetLabel_ReturnsScheduledForNullValue()
+    {
+        // null label should return default
+        var label = FlightStatusCatalog.GetLabel(null);
+
+        Assert.Equal("Scheduled", label);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsScheduledForCheckInAlias()
+    {
+        // check in alias should map to scheduled
+        var normalized = FlightStatusCatalog.Normalize("check in");
+
+        Assert.Equal("Scheduled", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsCanceledForDivertedAlias()
+    {
+        // diverted should map to canceled
+        var normalized = FlightStatusCatalog.Normalize("diverted");
+
+        Assert.Equal("Canceled", normalized);
+    }
 }
