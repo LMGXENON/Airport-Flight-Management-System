@@ -346,4 +346,43 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("B11", flight.Arrival?.Gate);
         Assert.Equal("5", flight.Arrival?.Terminal);
     }
+
+    [Fact]
+    public void MergeManualFlights_DoesNotOverwriteAircraftWhenManualTypeIsBlank()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "AC700",
+                Status = "Expected",
+                Direction = "Departure",
+                Aircraft = new Aircraft { Model = "Airbus A321" },
+                Departure = new FlightMovement
+                {
+                    Gate = "C03",
+                    Terminal = "2",
+                    Status = "Expected"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "AC700",
+                AircraftType = " ",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        // blank manual model should not replace api model
+        var flight = Assert.Single(merged);
+        Assert.Equal("Airbus A321", flight.Aircraft?.Model);
+        Assert.Equal("Delayed", flight.Status);
+    }
 }
