@@ -723,6 +723,31 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_DoesNotCreateEmptyAirlineObjectForSyntheticFlight()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "VS1",
+                Airline = " ",
+                Destination = "JFK",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-03-22T09:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-22T17:30:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Null(flight.Airline);
+    }
+
+    [Fact]
     public void MergeManualFlights_KeepsApiStatusWhenManualStatusIsBlank()
     {
         var apiFlights = new List<AeroDataBoxFlight>
