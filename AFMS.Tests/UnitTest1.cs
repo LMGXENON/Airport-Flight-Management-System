@@ -93,4 +93,217 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("JFK", synthetic.Arrival?.Airport?.Iata);
         Assert.Equal("Airbus A350-1000", synthetic.Aircraft?.Model);
     }
+
+    [Fact]
+    public void MergeManualFlights_IgnoresNonManualEntries()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "LH100",
+                Status = "Scheduled",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Gate = "A10",
+                    Terminal = "2",
+                    Status = "Scheduled"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "LH100",
+                Gate = "C99",
+                Terminal = "5",
+                Status = "Delayed",
+                IsManualEntry = false
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Scheduled", flight.Status);
+        Assert.Equal("A10", flight.Departure?.Gate);
+        Assert.Equal("2", flight.Departure?.Terminal);
+    }
+
+    [Fact]
+    public void MergeManualFlights_MatchesFlightNumberIgnoringCaseAndSpaces()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "ba 123",
+                Status = "Expected",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Gate = "A01",
+                    Terminal = "2",
+                    Status = "Expected"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "BA123",
+                Gate = "D20",
+                Terminal = "5",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("D20", flight.Departure?.Gate);
+        Assert.Equal("5", flight.Departure?.Terminal);
+    }
+
+    [Fact]
+    public void MergeManualFlights_NormalizesStatusWhenUpdatingExistingFlight()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "AZ200",
+                Status = "Delayed",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Status = "Delayed",
+                    Gate = "B12",
+                    Terminal = "4"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "AZ200",
+                Status = "on time",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Scheduled", flight.Status);
+        Assert.Equal("Scheduled", flight.Departure?.Status);
+    }
+
+    [Fact]
+    public void MergeManualFlights_DoesNotDuplicateSyntheticFlightForSameNumber()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "IB316",
+                Gate = "A02",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-03-18T08:30:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-18T10:00:00+00:00"),
+                Destination = "MAD",
+                IsManualEntry = true
+            },
+            new()
+            {
+                FlightNumber = "IB 316",
+                Gate = "A03",
+                Status = "Delayed",
+                DepartureTime = DateTime.Parse("2026-03-18T08:30:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-18T10:00:00+00:00"),
+                Destination = "MAD",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("A03", flight.Departure?.Gate);
+    }
+
+    [Fact]
+    public void MergeManualFlights_KeepsApiGateWhenManualGateIsBlank()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "KL701",
+                Status = "Scheduled",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Gate = "B05",
+                    Terminal = "4",
+                    Status = "Scheduled"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "KL701",
+                Gate = " ",
+                Terminal = "",
+                Status = "Boarding",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Boarding", flight.Status);
+        Assert.Equal("B05", flight.Departure?.Gate);
+        Assert.Equal("4", flight.Departure?.Terminal);
+    }
+
+    [Fact]
+    public void MergeManualFlights_NormalizesCanceledAliasForSyntheticFlight()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "TK501",
+                Destination = "IST",
+                Status = "canceled uncertain",
+                DepartureTime = DateTime.Parse("2026-03-20T14:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-20T18:30:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Canceled", flight.Status);
+    }
 }
