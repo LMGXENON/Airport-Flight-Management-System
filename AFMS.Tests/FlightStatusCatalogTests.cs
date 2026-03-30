@@ -85,6 +85,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsBoardingForFinalCallAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("final call");
+
+        Assert.Equal("Boarding", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCancellationAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("cancellation");
@@ -248,6 +256,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForAtGateAlias()
     {
         var result = FlightStatusCatalog.IsKnown("at-gate");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForFinalCallAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("final call");
 
         Assert.True(result);
     }

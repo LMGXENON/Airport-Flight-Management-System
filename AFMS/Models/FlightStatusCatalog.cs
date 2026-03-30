@@ -29,6 +29,7 @@ public static class FlightStatusCatalog
             ["check-in"] = "Scheduled",
 
             ["boarding"] = "Boarding",
+            ["finalcall"] = "Boarding",
 
             ["departed"] = "Departed",
             ["departing"] = "Departed",
