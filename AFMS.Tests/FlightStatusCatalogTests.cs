@@ -190,4 +190,13 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Scheduled", normalized);
     }
+
+    [Fact]
+    public void Normalize_ReturnsCanceledForDivertedAlias()
+    {
+        // diverted should map to canceled
+        var normalized = FlightStatusCatalog.Normalize("diverted");
+
+        Assert.Equal("Canceled", normalized);
+    }
 }
