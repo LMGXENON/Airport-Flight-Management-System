@@ -118,4 +118,13 @@ public class FlightStatusCatalogTests
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public void GetCssClass_UsesScheduledClassForUnknownValue()
+    {
+        // unknown status should use default class
+        var css = FlightStatusCatalog.GetCssClass("not-real");
+
+        Assert.Equal("status-scheduled", css);
+    }
 }
