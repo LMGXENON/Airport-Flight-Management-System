@@ -36,7 +36,11 @@ public class ManualFlightMergeService
 
             if (existing != null)
             {
-                var lhrLeg = existing.Direction == "Departure" ? existing.Departure : existing.Arrival;
+                var isDeparture = string.Equals(
+                    existing.Direction?.Trim(),
+                    "Departure",
+                    StringComparison.OrdinalIgnoreCase);
+                var lhrLeg = isDeparture ? existing.Departure : existing.Arrival;
                 if (lhrLeg != null)
                 {
                     if (!string.IsNullOrWhiteSpace(manualFlight.Gate))

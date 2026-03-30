@@ -373,6 +373,52 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_UpdatesDepartureLegWhenDirectionHasSpacesAndDifferentCase()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "BA222",
+                Status = "Expected",
+                Direction = " departure ",
+                Departure = new FlightMovement
+                {
+                    Gate = "A08",
+                    Terminal = "2",
+                    Status = "Expected"
+                },
+                Arrival = new FlightMovement
+                {
+                    Gate = "Z99",
+                    Terminal = "9",
+                    Status = "Expected"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "BA222",
+                Gate = "C14",
+                Terminal = "5",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("C14", flight.Departure?.Gate);
+        Assert.Equal("5", flight.Departure?.Terminal);
+        Assert.Equal("Z99", flight.Arrival?.Gate);
+        Assert.Equal("9", flight.Arrival?.Terminal);
+    }
+
+    [Fact]
     public void MergeManualFlights_DoesNotOverwriteAircraftWhenManualTypeIsBlank()
     {
         var apiFlights = new List<AeroDataBoxFlight>
