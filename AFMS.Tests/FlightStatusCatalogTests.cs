@@ -93,6 +93,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsBoardingForLastCallAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("last call");
+
+        Assert.Equal("Boarding", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCancellationAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("cancellation");
@@ -264,6 +272,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForFinalCallAlias()
     {
         var result = FlightStatusCatalog.IsKnown("final call");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForLastCallAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("last-call");
 
         Assert.True(result);
     }

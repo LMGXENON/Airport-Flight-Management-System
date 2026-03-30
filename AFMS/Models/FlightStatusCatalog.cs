@@ -30,6 +30,7 @@ public static class FlightStatusCatalog
 
             ["boarding"] = "Boarding",
             ["finalcall"] = "Boarding",
+            ["lastcall"] = "Boarding",
 
             ["departed"] = "Departed",
             ["departing"] = "Departed",
