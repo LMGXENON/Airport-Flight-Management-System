@@ -72,6 +72,11 @@
             var timeFormatSelect = document.getElementById('TimeFormat');
             var themeToggle = document.getElementById('themeToggle');
 
+            function readCookie(name) {
+                var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]+)'));
+                return match ? decodeURIComponent(match[1]) : null;
+            }
+
             function applyTheme(theme) {
                 var dark = theme === 'dark';
                 document.body.classList.toggle('dark-theme', dark);
@@ -86,6 +91,42 @@
                         icon.classList.add(dark ? 'bx-sun' : 'bx-moon');
                     }
                 }
+            }
+
+            function getCurrentTheme() {
+                var localTheme = localStorage.getItem('afms-theme');
+                if (localTheme === 'dark' || localTheme === 'light') {
+                    return localTheme;
+                }
+
+                var cookieTheme = readCookie('afms_theme');
+                if (cookieTheme === 'dark' || cookieTheme === 'light') {
+                    return cookieTheme;
+                }
+
+                return document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            }
+
+            function getCurrentTimeFormat() {
+                var localFormat = localStorage.getItem('afms-time-format');
+                if (localFormat === '12' || localFormat === '24') {
+                    return localFormat;
+                }
+
+                var cookieFormat = readCookie('afms_time_format');
+                if (cookieFormat === '12' || cookieFormat === '24') {
+                    return cookieFormat;
+                }
+
+                return '24';
+            }
+
+            if (themeSelect) {
+                themeSelect.value = getCurrentTheme();
+            }
+
+            if (timeFormatSelect) {
+                timeFormatSelect.value = getCurrentTimeFormat();
             }
 
             if (themeSelect) {
@@ -103,14 +144,8 @@
                 });
             }
 
-            if (themeSelect) {
-                applyTheme(themeSelect.value);
-            }
-            if (timeFormatSelect) {
-                localStorage.setItem('afms-time-format', timeFormatSelect.value);
-                if (typeof updateClock === 'function') {
-                    updateClock();
-                }
+            if (typeof updateClock === 'function') {
+                updateClock();
             }
         })();
     </script>

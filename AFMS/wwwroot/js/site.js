@@ -238,7 +238,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var themeIcon = themeToggle.querySelector('.theme-toggle-icon');
     var savedTheme = localStorage.getItem('afms-theme');
-    var currentTheme = savedTheme === 'dark' ? 'dark' : 'light';
+    var cookieTheme = getCookieValue('afms_theme');
+    var currentTheme = savedTheme === 'dark' || savedTheme === 'light'
+        ? savedTheme
+        : (cookieTheme === 'dark' || cookieTheme === 'light'
+            ? cookieTheme
+            : (document.body.classList.contains('dark-theme') ? 'dark' : 'light'));
 
     function renderToggle(theme) {
         var isDark = theme === 'dark';
@@ -254,6 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function applyTheme(theme) {
         document.body.classList.toggle('dark-theme', theme === 'dark');
         localStorage.setItem('afms-theme', theme);
+        document.cookie = 'afms_theme=' + encodeURIComponent(theme) + '; path=/; max-age=15552000; SameSite=Lax';
         renderToggle(theme);
     }
 
