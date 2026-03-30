@@ -506,6 +506,43 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_CreatesMissingDepartureLegBeforeApplyingManualUpdates()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "IB77",
+                Status = "Expected",
+                Direction = "Departure",
+                Departure = null,
+                Arrival = null
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "IB77",
+                Gate = "D11",
+                Terminal = "4",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.NotNull(flight.Departure);
+        Assert.Equal("D11", flight.Departure?.Gate);
+        Assert.Equal("4", flight.Departure?.Terminal);
+        Assert.Equal("Delayed", flight.Departure?.Status);
+        Assert.Equal("Delayed", flight.Status);
+    }
+
+    [Fact]
     public void MergeManualFlights_DoesNotOverwriteAircraftWhenManualTypeIsBlank()
     {
         var apiFlights = new List<AeroDataBoxFlight>
