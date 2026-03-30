@@ -75,6 +75,43 @@ public class AccountController : Controller
         return Redirect(loginUrl ?? "/Account/Login");
     }
 
+    [Authorize]
+    [HttpGet]
+    public IActionResult Profile()
+    {
+        var username = User.Identity?.Name ?? "Admin";
+        var role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value ?? "User";
+
+        var model = new AccountProfileViewModel
+        {
+            Username = username,
+            Role = role,
+            Issuer = _configuration["Auth:Issuer"] ?? "AFMS",
+            Audience = _configuration["Auth:Audience"] ?? "AFMS.Users",
+            SessionExpiryHours = GetTokenExpiryHours(),
+            LastUpdatedUtc = DateTime.UtcNow
+        };
+
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public IActionResult Settings()
+    {
+        var model = new AccountSettingsViewModel
+        {
+            ThemePreference = "Stored locally in your browser",
+            SessionExpiryHours = GetTokenExpiryHours(),
+            AuthCookieName = "afms_auth_token",
+            JwtIssuer = _configuration["Auth:Issuer"] ?? "AFMS",
+            JwtAudience = _configuration["Auth:Audience"] ?? "AFMS.Users",
+            LastReviewedUtc = DateTime.UtcNow
+        };
+
+        return View(model);
+    }
+
     private string CreateToken(string username)
     {
         var issuer = _configuration["Auth:Issuer"] ?? "AFMS";

@@ -1,0 +1,57 @@
+@model AFMS.Models.AccountProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="page-header">
+    <h2 class="page-title">Profile</h2>
+    <p class="page-subtitle">Your authenticated account details in AFMS.</p>
+</div>
+
+<div class="account-grid">
+    <section class="account-card">
+        <h3 class="account-card-title">User Identity</h3>
+        <dl class="account-list">
+            <div class="account-list-row">
+                <dt>Username</dt>
+                <dd>@Model.Username</dd>
+            </div>
+            <div class="account-list-row">
+                <dt>Role</dt>
+                <dd>@Model.Role</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="account-card">
+        <h3 class="account-card-title">Session</h3>
+        <dl class="account-list">
+            <div class="account-list-row">
+                <dt>Session Duration</dt>
+                <dd>@Model.SessionExpiryHours hours</dd>
+            </div>
+            <div class="account-list-row">
+                <dt>Last Refreshed</dt>
+                <dd>@Model.LastUpdatedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="account-card account-card--wide">
+        <h3 class="account-card-title">Token Configuration</h3>
+        <dl class="account-list">
+            <div class="account-list-row">
+                <dt>Issuer</dt>
+                <dd>@Model.Issuer</dd>
+            </div>
+            <div class="account-list-row">
+                <dt>Audience</dt>
+                <dd>@Model.Audience</dd>
+            </div>
+        </dl>
+    </section>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/account-pages.css" asp-append-version="true" />
+}

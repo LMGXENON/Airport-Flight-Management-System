@@ -1,0 +1,51 @@
+@model AFMS.Models.AccountSettingsViewModel
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="page-header">
+    <h2 class="page-title">Settings</h2>
+    <p class="page-subtitle">Current account and authentication settings for your AFMS session.</p>
+</div>
+
+<div class="account-grid">
+    <section class="account-card">
+        <h3 class="account-card-title">Experience</h3>
+        <dl class="account-list">
+            <div class="account-list-row">
+                <dt>Theme Preference</dt>
+                <dd>@Model.ThemePreference</dd>
+            </div>
+            <div class="account-list-row">
+                <dt>Session Length</dt>
+                <dd>@Model.SessionExpiryHours hours</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="account-card">
+        <h3 class="account-card-title">Authentication</h3>
+        <dl class="account-list">
+            <div class="account-list-row">
+                <dt>Cookie Name</dt>
+                <dd>@Model.AuthCookieName</dd>
+            </div>
+            <div class="account-list-row">
+                <dt>Issuer</dt>
+                <dd>@Model.JwtIssuer</dd>
+            </div>
+            <div class="account-list-row">
+                <dt>Audience</dt>
+                <dd>@Model.JwtAudience</dd>
+            </div>
+            <div class="account-list-row">
+                <dt>Last Reviewed</dt>
+                <dd>@Model.LastReviewedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+            </div>
+        </dl>
+    </section>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/account-pages.css" asp-append-version="true" />
+}

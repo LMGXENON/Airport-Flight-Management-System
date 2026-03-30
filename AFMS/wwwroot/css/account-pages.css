@@ -1,0 +1,72 @@
+.account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.account-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+}
+
+.account-card--wide {
+    grid-column: 1 / -1;
+}
+
+.account-card-title {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.account-list {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.account-list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(136, 145, 178, 0.25);
+}
+
+.account-list-row:last-child {
+    border-bottom: none;
+}
+
+.account-list-row dt {
+    margin: 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+}
+
+.account-list-row dd {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    text-align: right;
+}
+
+@media (max-width: 640px) {
+    .account-list-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .account-list-row dd {
+        text-align: left;
+    }
+}
