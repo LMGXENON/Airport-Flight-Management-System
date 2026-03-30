@@ -19,4 +19,12 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Canceled", normalized);
     }
+
+    [Fact]
+    public void Normalize_ReturnsScheduledForUnknownStatus()
+    {
+        var normalized = FlightStatusCatalog.Normalize("random-status");
+
+        Assert.Equal("Scheduled", normalized);
+    }
 }
