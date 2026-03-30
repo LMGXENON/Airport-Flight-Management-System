@@ -154,4 +154,13 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Scheduled", label);
     }
+
+    [Fact]
+    public void GetCssClass_MapsCanceledAliasToCanceledClass()
+    {
+        // canceled alias should map to canceled class
+        var css = FlightStatusCatalog.GetCssClass("diverted");
+
+        Assert.Equal("status-cancelled", css);
+    }
 }
