@@ -15,6 +15,12 @@
     font-weight: 600;
 }
 
+.account-alert--error {
+    border-color: rgba(239, 68, 68, 0.45);
+    background: rgba(239, 68, 68, 0.16);
+    color: #ffd6d6;
+}
+
 .account-settings-form {
     margin: 0;
 }
@@ -94,6 +100,35 @@
 .account-save-btn:hover {
     transform: translateY(-1px);
     opacity: 0.95;
+}
+
+.session-countdown {
+    font-weight: 700;
+}
+
+.account-history-table-wrapper {
+    overflow-x: auto;
+}
+
+.account-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.account-history-table th,
+.account-history-table td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px dashed rgba(136, 145, 178, 0.25);
+    color: var(--text-primary);
+}
+
+.account-history-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
 }
 
 .account-list {
