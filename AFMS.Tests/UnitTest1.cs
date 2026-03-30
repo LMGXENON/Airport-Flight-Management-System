@@ -207,4 +207,40 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("Scheduled", flight.Status);
         Assert.Equal("Scheduled", flight.Departure?.Status);
     }
+
+    [Fact]
+    public void MergeManualFlights_DoesNotDuplicateSyntheticFlightForSameNumber()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "IB316",
+                Gate = "A02",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-03-18T08:30:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-18T10:00:00+00:00"),
+                Destination = "MAD",
+                IsManualEntry = true
+            },
+            new()
+            {
+                FlightNumber = "IB 316",
+                Gate = "A03",
+                Status = "Delayed",
+                DepartureTime = DateTime.Parse("2026-03-18T08:30:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-18T10:00:00+00:00"),
+                Destination = "MAD",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("A03", flight.Departure?.Gate);
+    }
 }
