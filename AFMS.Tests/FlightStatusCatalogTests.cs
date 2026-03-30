@@ -64,4 +64,13 @@ public class FlightStatusCatalogTests
         Assert.Contains("Delayed", values);
         Assert.Contains("Canceled", values);
     }
+
+    [Fact]
+    public void Normalize_ReturnsScheduledForBlankInput()
+    {
+        // quick check for blank status
+        var normalized = FlightStatusCatalog.Normalize(" ");
+
+        Assert.Equal("Scheduled", normalized);
+    }
 }
