@@ -251,6 +251,42 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_DoesNotCollidePunctuationOnlyFlightNumbers()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "---",
+                Gate = "A01",
+                Destination = "MAD",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-04-01T08:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-04-01T10:00:00+00:00"),
+                IsManualEntry = true
+            },
+            new()
+            {
+                FlightNumber = "///",
+                Gate = "B02",
+                Destination = "FRA",
+                Status = "Delayed",
+                DepartureTime = DateTime.Parse("2026-04-01T09:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-04-01T11:00:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        Assert.Equal(2, merged.Count);
+        Assert.Contains(merged, flight => flight.Departure?.Gate == "A01" && flight.Status == "Boarding");
+        Assert.Contains(merged, flight => flight.Departure?.Gate == "B02" && flight.Status == "Delayed");
+    }
+
+    [Fact]
     public void MergeManualFlights_NormalizesStatusWhenUpdatingExistingFlight()
     {
         var apiFlights = new List<AeroDataBoxFlight>
