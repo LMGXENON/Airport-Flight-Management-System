@@ -21,7 +21,9 @@ public class ManualFlightMergeService
 
         foreach (var manualFlight in manualFlights.Where(f => f.IsManualEntry))
         {
-            var normalizedStatus = FlightStatusCatalog.Normalize(manualFlight.Status);
+            var normalizedStatus = string.IsNullOrWhiteSpace(manualFlight.Status)
+                ? null
+                : FlightStatusCatalog.Normalize(manualFlight.Status);
             var flightNumberKey = NormalizeFlightNumberKey(manualFlight.FlightNumber);
 
             if (flightNumberKey == null)

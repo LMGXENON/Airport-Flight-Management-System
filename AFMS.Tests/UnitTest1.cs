@@ -412,4 +412,41 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("Departure", flight.Direction);
         Assert.Equal("LAX", flight.Arrival?.Airport?.Iata);
     }
+
+    [Fact]
+    public void MergeManualFlights_KeepsApiStatusWhenManualStatusIsBlank()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "AF10",
+                Status = "Delayed",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Status = "Delayed",
+                    Gate = "B02",
+                    Terminal = "3"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "AF10",
+                Status = " ",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        // blank manual status should not downgrade api value
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("Delayed", flight.Departure?.Status);
+    }
 }
