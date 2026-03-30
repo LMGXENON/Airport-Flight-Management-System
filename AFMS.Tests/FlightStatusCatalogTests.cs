@@ -136,4 +136,13 @@ public class FlightStatusCatalogTests
 
         Assert.True(result);
     }
+
+    [Fact]
+    public void NormalizeStatuses_ReturnsEmptyForEmptyInput()
+    {
+        // empty source should stay empty
+        var result = FlightStatusCatalog.NormalizeStatuses(Array.Empty<string>());
+
+        Assert.Empty(result);
+    }
 }
