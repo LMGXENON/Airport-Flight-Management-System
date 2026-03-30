@@ -21,6 +21,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsCanceledForCancelledUncertainAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("cancelled uncertain");
+
+        Assert.Equal("Canceled", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsScheduledForUnknownStatus()
     {
         var normalized = FlightStatusCatalog.Normalize("random-status");
@@ -158,6 +166,19 @@ public class FlightStatusCatalogTests
 
         Assert.Single(result);
         Assert.Equal("Delayed", result[0]);
+    }
+
+    [Fact]
+    public void NormalizeStatuses_IgnoresUnknownStatusItems()
+    {
+        var result = FlightStatusCatalog.NormalizeStatuses(new[]
+        {
+            "not-real-status",
+            "Boarding"
+        });
+
+        Assert.Single(result);
+        Assert.Equal("Boarding", result[0]);
     }
 
     [Fact]

@@ -42,7 +42,9 @@ public static class FlightStatusCatalog
 
             ["canceled"] = "Canceled",
             ["cancelled"] = "Canceled",
+            ["canceluncertain"] = "Canceled",
             ["canceleduncertain"] = "Canceled",
+            ["cancelleduncertain"] = "Canceled",
             ["diverted"] = "Canceled"
         };
 
@@ -67,6 +69,7 @@ public static class FlightStatusCatalog
     public static List<string> NormalizeStatuses(IEnumerable<string>? statuses) =>
         (statuses ?? Array.Empty<string>())
             .Where(status => !string.IsNullOrWhiteSpace(status))
+            .Where(IsKnown)
             .Select(Normalize)
             .Where(status => !string.IsNullOrWhiteSpace(status))
             .Distinct(StringComparer.OrdinalIgnoreCase)

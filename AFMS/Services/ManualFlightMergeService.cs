@@ -45,6 +45,16 @@ public class ManualFlightMergeService
                     : string.Equals(direction, "Departure", StringComparison.OrdinalIgnoreCase)
                         ? existing.Departure
                         : existing.Departure ?? existing.Arrival;
+
+                if (lhrLeg == null)
+                {
+                    lhrLeg = new FlightMovement();
+                    if (string.Equals(direction, "Arrival", StringComparison.OrdinalIgnoreCase))
+                        existing.Arrival = lhrLeg;
+                    else
+                        existing.Departure = lhrLeg;
+                }
+
                 if (lhrLeg != null)
                 {
                     if (!string.IsNullOrWhiteSpace(manualGate))
@@ -85,7 +95,7 @@ public class ManualFlightMergeService
         if (string.IsNullOrWhiteSpace(value))
             return null;
 
-        return value.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
+        return new string(value.Where(c => !char.IsWhiteSpace(c)).ToArray()).ToUpperInvariant();
     }
 
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight flight)

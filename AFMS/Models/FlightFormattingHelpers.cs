@@ -12,7 +12,9 @@ public static class FlightFormattingHelpers
     {
         if (string.IsNullOrWhiteSpace(code)) return string.Empty;
 
-        return code.ToUpperInvariant() switch
+        var normalizedCode = code.Trim().ToUpperInvariant();
+
+        return normalizedCode switch
         {
             "EGLL" => "LHR",
             "KJFK" => "JFK",
@@ -20,7 +22,7 @@ public static class FlightFormattingHelpers
             "OMDB" => "DXB",
             "EDDF" => "FRA",
             "RJTT" => "HND",
-            _ => code
+            _ => normalizedCode
         };
     }
 
@@ -36,12 +38,12 @@ public static class FlightFormattingHelpers
     public static string FormatLocalDateTime(string? value, string format, string fallback = "-")
     {
         var parsed = ParseLocalDate(value);
-        return parsed.HasValue ? parsed.Value.ToString(format) : fallback;
+        return parsed.HasValue ? parsed.Value.ToString(format, CultureInfo.InvariantCulture) : fallback;
     }
 
     public static string FormatDateTime(DateTime? value, string format, string fallback = "-")
     {
-        return value.HasValue ? value.Value.ToString(format) : fallback;
+        return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : fallback;
     }
 
     public static string FormatLocalTime(string? value, string fallback = "-") =>
