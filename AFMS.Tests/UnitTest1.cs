@@ -171,4 +171,40 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("D20", flight.Departure?.Gate);
         Assert.Equal("5", flight.Departure?.Terminal);
     }
+
+    [Fact]
+    public void MergeManualFlights_NormalizesStatusWhenUpdatingExistingFlight()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "AZ200",
+                Status = "Delayed",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Status = "Delayed",
+                    Gate = "B12",
+                    Terminal = "4"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "AZ200",
+                Status = "on time",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Scheduled", flight.Status);
+        Assert.Equal("Scheduled", flight.Departure?.Status);
+    }
 }
