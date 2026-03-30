@@ -127,4 +127,13 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("status-scheduled", css);
     }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForCanonicalValue()
+    {
+        // direct known status should pass
+        var result = FlightStatusCatalog.IsKnown("Arrived");
+
+        Assert.True(result);
+    }
 }
