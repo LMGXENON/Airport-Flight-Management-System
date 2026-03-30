@@ -32,6 +32,7 @@ public static class FlightStatusCatalog
 
             ["departed"] = "Departed",
             ["departing"] = "Departed",
+            ["airborne"] = "Departed",
             ["enroute"] = "Departed",
             ["en route"] = "Departed",
             ["gateclosed"] = "Departed",
