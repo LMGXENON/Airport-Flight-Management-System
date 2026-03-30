@@ -385,4 +385,31 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("Airbus A321", flight.Aircraft?.Model);
         Assert.Equal("Delayed", flight.Status);
     }
+
+    [Fact]
+    public void MergeManualFlights_AddsSyntheticWhenFlightNumberIsBlank()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = " ",
+                Airline = "Test Airline",
+                Destination = "LAX",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-03-22T09:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-22T17:30:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        // blank number still produces one manual synthetic row
+        var flight = Assert.Single(merged);
+        Assert.Equal("Departure", flight.Direction);
+        Assert.Equal("LAX", flight.Arrival?.Airport?.Iata);
+    }
 }
