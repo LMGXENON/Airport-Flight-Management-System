@@ -30,6 +30,14 @@ public class FlightFormattingHelpersTests
     }
 
     [Fact]
+    public void ConvertToIata_ReturnsEmptyForPunctuationOnlyInput()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("---");
+
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
     public void ConvertToIata_UppercasesUnknownCodes()
     {
         var result = FlightFormattingHelpers.ConvertToIata("  lax  ");

@@ -29,8 +29,14 @@ public static class FlightStatusCatalog
             ["check-in"] = "Scheduled",
 
             ["boarding"] = "Boarding",
+            ["finalcall"] = "Boarding",
+            ["lastcall"] = "Boarding",
+            ["boardingnow"] = "Boarding",
 
             ["departed"] = "Departed",
+            ["departing"] = "Departed",
+            ["airborne"] = "Departed",
+            ["inflight"] = "Departed",
             ["enroute"] = "Departed",
             ["en route"] = "Departed",
             ["gateclosed"] = "Departed",
@@ -40,8 +46,10 @@ public static class FlightStatusCatalog
             ["approaching"] = "Departed",
 
             ["arrived"] = "Arrived",
+            ["arriving"] = "Arrived",
             ["landed"] = "Arrived",
             ["landing"] = "Arrived",
+            ["atgate"] = "Arrived",
 
             ["delayed"] = "Delayed",
             ["late"] = "Delayed",

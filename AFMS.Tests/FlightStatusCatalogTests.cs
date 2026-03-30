@@ -29,6 +29,30 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsDepartedForDepartingAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("departing");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsDepartedForAirborneAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("airborne");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsDepartedForInFlightAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("in-flight");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsDelayedForLateAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("late");
@@ -42,6 +66,46 @@ public class FlightStatusCatalogTests
         var normalized = FlightStatusCatalog.Normalize("landing");
 
         Assert.Equal("Arrived", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsArrivedForArrivingAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("arriving");
+
+        Assert.Equal("Arrived", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsArrivedForAtGateAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("at gate");
+
+        Assert.Equal("Arrived", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsBoardingForFinalCallAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("final call");
+
+        Assert.Equal("Boarding", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsBoardingForLastCallAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("last call");
+
+        Assert.Equal("Boarding", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsBoardingForBoardingNowAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("boarding now");
+
+        Assert.Equal("Boarding", normalized);
     }
 
     [Fact]
@@ -157,6 +221,30 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void IsKnown_ReturnsTrueForDepartingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("departing");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForAirborneAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("airborne");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForInFlightAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("in flight");
+
+        Assert.True(result);
+    }
+
+    [Fact]
     public void IsKnown_ReturnsTrueForRunningLateAlias()
     {
         var result = FlightStatusCatalog.IsKnown("running late");
@@ -168,6 +256,46 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForLandingAlias()
     {
         var result = FlightStatusCatalog.IsKnown("landing");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForArrivingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("arriving");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForAtGateAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("at-gate");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForFinalCallAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("final call");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForLastCallAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("last-call");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForBoardingNowAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("boarding-now");
 
         Assert.True(result);
     }

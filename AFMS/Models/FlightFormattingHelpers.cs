@@ -16,6 +16,8 @@ public static class FlightFormattingHelpers
             .Where(char.IsLetterOrDigit)
             .ToArray())
             .ToUpperInvariant();
+        if (normalizedCode.Length == 0)
+            return string.Empty;
 
         return normalizedCode switch
         {

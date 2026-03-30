@@ -116,7 +116,9 @@ public class ManualFlightMergeService
             Number = flightNumber,
             Status = normalizedStatus,
             Direction = "Departure",
-            Airline = new Airline { Name = airline },
+            Airline = string.IsNullOrWhiteSpace(airline)
+                ? null
+                : new Airline { Name = airline },
             Aircraft = string.IsNullOrWhiteSpace(aircraftType)
                 ? null
                 : new Aircraft { Model = aircraftType },
