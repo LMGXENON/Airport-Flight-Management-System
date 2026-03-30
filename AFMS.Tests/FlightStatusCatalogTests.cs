@@ -163,4 +163,13 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("status-cancelled", css);
     }
+
+    [Fact]
+    public void IsKnown_ReturnsFalseWhenValueIsNull()
+    {
+        // null should not be treated as known
+        var result = FlightStatusCatalog.IsKnown(null);
+
+        Assert.False(result);
+    }
 }
