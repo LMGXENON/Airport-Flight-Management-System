@@ -13,6 +13,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsScheduledForOnScheduleAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("on schedule");
+
+        Assert.Equal("Scheduled", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCanceledUncertainAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("canceled uncertain");
@@ -96,6 +104,14 @@ public class FlightStatusCatalogTests
     {
         // basic check for alias support
         var result = FlightStatusCatalog.IsKnown("check-in");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForOnScheduleAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("on schedule");
 
         Assert.True(result);
     }

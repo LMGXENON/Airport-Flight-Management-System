@@ -22,6 +22,8 @@ public static class FlightStatusCatalog
             ["ontime"] = "Scheduled",
             ["on time"] = "Scheduled",
             ["on-time"] = "Scheduled",
+            ["onschedule"] = "Scheduled",
+            ["on schedule"] = "Scheduled",
             ["checkin"] = "Scheduled",
             ["check in"] = "Scheduled",
             ["check-in"] = "Scheduled",
