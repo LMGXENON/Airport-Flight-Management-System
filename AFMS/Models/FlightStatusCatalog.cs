@@ -31,6 +31,7 @@ public static class FlightStatusCatalog
             ["boarding"] = "Boarding",
 
             ["departed"] = "Departed",
+            ["departing"] = "Departed",
             ["enroute"] = "Departed",
             ["en route"] = "Departed",
             ["gateclosed"] = "Departed",

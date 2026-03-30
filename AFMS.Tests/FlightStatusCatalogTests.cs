@@ -29,6 +29,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsDepartedForDepartingAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("departing");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsDelayedForLateAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("late");
@@ -152,6 +160,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForGateClosingAlias()
     {
         var result = FlightStatusCatalog.IsKnown("gate closing");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForDepartingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("departing");
 
         Assert.True(result);
     }
