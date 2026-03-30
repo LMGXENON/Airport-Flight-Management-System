@@ -172,4 +172,13 @@ public class FlightStatusCatalogTests
 
         Assert.False(result);
     }
+
+    [Fact]
+    public void GetLabel_ReturnsScheduledForNullValue()
+    {
+        // null label should return default
+        var label = FlightStatusCatalog.GetLabel(null);
+
+        Assert.Equal("Scheduled", label);
+    }
 }
