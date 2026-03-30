@@ -13,7 +13,7 @@ public static class FlightFormattingHelpers
         if (string.IsNullOrWhiteSpace(code)) return string.Empty;
 
         var normalizedCode = new string(code
-            .Where(c => !char.IsWhiteSpace(c))
+            .Where(char.IsLetterOrDigit)
             .ToArray())
             .ToUpperInvariant();
 

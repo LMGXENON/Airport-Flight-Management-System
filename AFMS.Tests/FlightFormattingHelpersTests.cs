@@ -22,6 +22,14 @@ public class FlightFormattingHelpersTests
     }
 
     [Fact]
+    public void ConvertToIata_MapsKnownIcaoCodesWithPunctuation()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("egll-");
+
+        Assert.Equal("LHR", result);
+    }
+
+    [Fact]
     public void ConvertToIata_UppercasesUnknownCodes()
     {
         var result = FlightFormattingHelpers.ConvertToIata("  lax  ");
