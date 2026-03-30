@@ -212,6 +212,45 @@ public class ManualFlightMergeServiceTests
     }
 
     [Fact]
+    public void MergeManualFlights_MatchesFlightNumberWhenApiValueContainsHyphen()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>
+        {
+            new()
+            {
+                Number = "BA-123",
+                Status = "Expected",
+                Direction = "Departure",
+                Departure = new FlightMovement
+                {
+                    Gate = "A01",
+                    Terminal = "2",
+                    Status = "Expected"
+                }
+            }
+        };
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "BA123",
+                Gate = "F20",
+                Terminal = "5",
+                Status = "Delayed",
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("Delayed", flight.Status);
+        Assert.Equal("F20", flight.Departure?.Gate);
+        Assert.Equal("5", flight.Departure?.Terminal);
+    }
+
+    [Fact]
     public void MergeManualFlights_NormalizesStatusWhenUpdatingExistingFlight()
     {
         var apiFlights = new List<AeroDataBoxFlight>
