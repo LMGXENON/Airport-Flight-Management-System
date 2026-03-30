@@ -145,4 +145,13 @@ public class FlightStatusCatalogTests
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public void GetLabel_UsesScheduledForUnknownValue()
+    {
+        // unknown label should fall back
+        var label = FlightStatusCatalog.GetLabel("not-valid");
+
+        Assert.Equal("Scheduled", label);
+    }
 }
