@@ -51,4 +51,17 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("status-delayed", css);
     }
+
+    [Fact]
+    public void Values_ContainsExpectedCoreStatuses()
+    {
+        var values = FlightStatusCatalog.Values;
+
+        Assert.Contains("Scheduled", values);
+        Assert.Contains("Boarding", values);
+        Assert.Contains("Departed", values);
+        Assert.Contains("Arrived", values);
+        Assert.Contains("Delayed", values);
+        Assert.Contains("Canceled", values);
+    }
 }
