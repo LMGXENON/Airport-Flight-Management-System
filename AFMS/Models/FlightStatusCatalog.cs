@@ -75,8 +75,15 @@ public static class FlightStatusCatalog
 
     public static string GetCssClass(string? value) => GetOption(value).CssClass;
 
-    public static bool IsKnown(string? value) =>
-        AllStatuses.Any(status => status.Value.Equals(Normalize(value), StringComparison.OrdinalIgnoreCase));
+    public static bool IsKnown(string? value)
+    {
+        var key = NormalizeKey(value);
+        if (string.IsNullOrWhiteSpace(key))
+            return false;
+
+        return AliasToCanonical.ContainsKey(key)
+            || AllStatuses.Any(status => NormalizeKey(status.Value).Equals(key, StringComparison.OrdinalIgnoreCase));
+    }
 
     private static StatusOption GetOption(string? value)
     {

@@ -73,4 +73,13 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Scheduled", normalized);
     }
+
+    [Fact]
+    public void IsKnown_ReturnsFalseForUnknownStatus()
+    {
+        // this should stay false for random value
+        var result = FlightStatusCatalog.IsKnown("something-new");
+
+        Assert.False(result);
+    }
 }
