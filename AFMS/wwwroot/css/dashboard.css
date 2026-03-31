@@ -1152,11 +1152,12 @@ body:not(.dark-theme) .flights-table th {
     border-bottom: none;
 }
 
-.flights-table tbody tr:hover {
-    background-color: rgba(65, 105, 225, 0.05);
+.flights-table tbody tr:not(.date-header-row) {
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+    cursor: default;
 }
 
-body.dark-theme .flights-table tbody tr.flight-row:hover {
+body.dark-theme .flights-table tbody tr:not(.date-header-row):hover {
     background-color: rgba(99, 140, 255, 0.14);
     box-shadow: inset 3px 0 0 rgba(124, 164, 255, 0.7);
 }
@@ -1173,8 +1174,8 @@ body:not(.dark-theme) .flights-table tbody tr.flight-row:nth-child(even) {
     background-color: #f8f9ff;
 }
 
-body:not(.dark-theme) .flights-table tbody tr.flight-row:hover {
-    background-color: #e7eeff;
+body:not(.dark-theme) .flights-table tbody tr:not(.date-header-row):hover {
+    background-color: #e8eeff;
     box-shadow: inset 3px 0 0 #7a9bdf;
 }
 
