@@ -17,6 +17,13 @@ locals {
   aerodatabox_api_host_from_env = trim(try(regexall("(?m)^AERODATABOX_API_HOST\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
   default_airport_from_env      = trim(try(regexall("(?m)^DEFAULT_AIRPORT\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
 
+  auth_admin_username_from_env     = trim(try(regexall("(?m)^AUTH_ADMIN_USERNAME\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  auth_admin_password_from_env     = trim(try(regexall("(?m)^AUTH_ADMIN_PASSWORD\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  auth_jwt_secret_from_env         = trim(try(regexall("(?m)^AUTH_JWT_SECRET\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  auth_issuer_from_env             = trim(try(regexall("(?m)^AUTH_ISSUER\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  auth_audience_from_env           = trim(try(regexall("(?m)^AUTH_AUDIENCE\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")
+  auth_token_expiry_hours_from_env = try(tonumber(trim(try(regexall("(?m)^AUTH_TOKEN_EXPIRY_HOURS\\s*=\\s*(.+)$", local.env_file_content)[0][0], ""), " \t\"'")), null)
+
   deepseek_api_key_effective                 = local.deepseek_api_key_from_env != "" ? local.deepseek_api_key_from_env : var.deepseek_api_key
   deepseek_api_endpoint_effective            = local.deepseek_api_endpoint_from_env != "" ? local.deepseek_api_endpoint_from_env : var.deepseek_api_endpoint
   deepseek_model_effective                   = local.deepseek_model_from_env != "" ? local.deepseek_model_from_env : var.deepseek_model
@@ -24,9 +31,16 @@ locals {
   deepseek_max_requests_per_minute_effective = local.deepseek_max_requests_per_minute_from_env != null ? local.deepseek_max_requests_per_minute_from_env : var.deepseek_max_requests_per_minute
   deepseek_prompt_file_effective             = local.deepseek_prompt_file_from_env != "" ? local.deepseek_prompt_file_from_env : "Prompts/DeepSeekFlightSearchPrompt.txt"
 
-  aerodatabox_api_key_effective  = local.aerodatabox_api_key_from_env
+  aerodatabox_api_key_effective  = local.aerodatabox_api_key_from_env != "" ? local.aerodatabox_api_key_from_env : var.aerodatabox_api_key
   aerodatabox_api_host_effective = local.aerodatabox_api_host_from_env != "" ? local.aerodatabox_api_host_from_env : "aerodatabox.p.rapidapi.com"
   default_airport_effective      = local.default_airport_from_env != "" ? local.default_airport_from_env : "EGLL"
+
+  auth_admin_username_effective     = local.auth_admin_username_from_env != "" ? local.auth_admin_username_from_env : var.auth_admin_username
+  auth_admin_password_effective     = local.auth_admin_password_from_env != "" ? local.auth_admin_password_from_env : var.auth_admin_password
+  auth_jwt_secret_effective         = local.auth_jwt_secret_from_env != "" ? local.auth_jwt_secret_from_env : var.auth_jwt_secret
+  auth_issuer_effective             = local.auth_issuer_from_env != "" ? local.auth_issuer_from_env : var.auth_issuer
+  auth_audience_effective           = local.auth_audience_from_env != "" ? local.auth_audience_from_env : var.auth_audience
+  auth_token_expiry_hours_effective = local.auth_token_expiry_hours_from_env != null ? local.auth_token_expiry_hours_from_env : var.auth_token_expiry_hours
 }
 
 module "vpc" {
@@ -37,6 +51,7 @@ module "ecs" {
   source                           = "./ecs"
   vpc_id                           = module.vpc.vpc_id
   private_subnet_ids               = module.vpc.private_subnet_ids
+  private_subnet_ids_by_key        = module.vpc.private_subnet_ids_by_az
   target_group_arn                 = module.ALB.target_group_arn
   alb_sg_id                        = module.ALB.alb_sg_id
   afms_image                       = local.afms_ecr_image
@@ -57,6 +72,13 @@ module "ecs" {
   aerodatabox_api_key              = local.aerodatabox_api_key_effective
   aerodatabox_api_host             = local.aerodatabox_api_host_effective
   default_airport                  = local.default_airport_effective
+  auth_admin_username              = local.auth_admin_username_effective
+  auth_admin_password              = local.auth_admin_password_effective
+  auth_jwt_secret                  = local.auth_jwt_secret_effective
+  auth_issuer                      = local.auth_issuer_effective
+  auth_audience                    = local.auth_audience_effective
+  auth_token_expiry_hours          = local.auth_token_expiry_hours_effective
+
 }
 
 module "RDS" {

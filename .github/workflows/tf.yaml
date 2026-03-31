@@ -1,4 +1,4 @@
-name: Terraform CI/CD
+name: Terraform Plan and Apply
 
 on:
   push:
@@ -17,6 +17,10 @@ env:
   AWS_REGION: eu-west-2
   TF_IN_AUTOMATION: true
   TF_VAR_rds_password: ${{ secrets.RDS_PASSWORD }}
+  TF_VAR_auth_admin_password: ${{ secrets.AUTH_ADMIN_PASSWORD }}
+  TF_VAR_auth_jwt_secret: ${{ secrets.AUTH_JWT_SECRET }}
+  TF_VAR_deepseek_api_key: ${{ secrets.DEEPSEEK_API_KEY }}
+  TF_VAR_aerodatabox_api_key: ${{ secrets.AERODATABOX_API_KEY }}
 
 jobs:
   validate-and-plan:

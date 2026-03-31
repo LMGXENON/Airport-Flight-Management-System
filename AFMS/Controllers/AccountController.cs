@@ -336,19 +336,87 @@ public class AccountController : Controller
         var configuredUsername = (_configuration["Auth:AdminUsername"] ?? string.Empty).Trim();
         var configuredPassword = _configuration["Auth:AdminPassword"] ?? string.Empty;
         var requestedUsername = username.Trim();
+        var normalizedConfiguredUsername = configuredUsername.ToUpperInvariant();
 
-        if (!string.Equals(requestedUsername, configuredUsername, StringComparison.Ordinal))
+        if (string.IsNullOrWhiteSpace(configuredUsername))
+        {
+            return (false, string.Empty);
+        }
+
+        if (!string.Equals(requestedUsername, configuredUsername, StringComparison.OrdinalIgnoreCase))
         {
             return (false, configuredUsername);
         }
 
         var storedCredential = await _context.AuthCredentials
-            .FirstOrDefaultAsync(c => c.Username == configuredUsername);
+            .FirstOrDefaultAsync(c => c.Username.ToUpper() == normalizedConfiguredUsername);
 
         if (storedCredential is not null)
         {
-            var result = _passwordHasher.VerifyHashedPassword(configuredUsername, storedCredential.PasswordHash, password);
-            return (result != PasswordVerificationResult.Failed, configuredUsername);
+            var hashUsername = string.IsNullOrWhiteSpace(storedCredential.Username)
+                ? configuredUsername
+                : storedCredential.Username;
+
+            var verificationCandidates = new[]
+            {
+                hashUsername,
+                configuredUsername,
+                requestedUsername
+            }
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+            var hashMatched = false;
+            var needsRehash = false;
+            foreach (var candidate in verificationCandidates)
+            {
+                var result = _passwordHasher.VerifyHashedPassword(candidate, storedCredential.PasswordHash, password);
+                if (result != PasswordVerificationResult.Failed)
+                {
+                    hashMatched = true;
+                    needsRehash = result == PasswordVerificationResult.SuccessRehashNeeded
+                        || !string.Equals(storedCredential.Username, configuredUsername, StringComparison.Ordinal);
+                    break;
+                }
+            }
+
+            if (hashMatched)
+            {
+                if (needsRehash)
+                {
+                    storedCredential.Username = configuredUsername;
+                    storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredUsername, password);
+                    storedCredential.UpdatedUtc = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+
+                return (true, configuredUsername);
+            }
+
+            // Legacy recovery path: if an old row stored plain text instead of a hash,
+            // accept once and migrate to a proper hash.
+            if (string.Equals(storedCredential.PasswordHash, password, StringComparison.Ordinal))
+            {
+                storedCredential.Username = configuredUsername;
+                storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredUsername, password);
+                storedCredential.UpdatedUtc = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return (true, configuredUsername);
+            }
+
+            // Recovery path for environments where AUTH_ADMIN_PASSWORD has been rotated
+            // but an older hashed credential still exists in the database.
+            if (!string.IsNullOrWhiteSpace(configuredPassword)
+                && string.Equals(password, configuredPassword, StringComparison.Ordinal))
+            {
+                storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredUsername, configuredPassword);
+                storedCredential.UpdatedUtc = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return (true, configuredUsername);
+            }
+
+            return (false, configuredUsername);
         }
 
         return (string.Equals(password, configuredPassword, StringComparison.Ordinal), configuredUsername);
