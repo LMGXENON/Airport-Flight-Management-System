@@ -234,12 +234,23 @@
 }
 
 .choice-field--date::before {
-    content: '📅';
-    font-size: 12px;
+    content: none;
+}
+
+.choice-field__icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: rgba(225, 231, 255, 0.55);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .choice-field--time::before {
     content: '◷';
+    font-size: 18px;
 }
 
 .choice-field .form-input,
@@ -278,12 +289,7 @@
 }
 
 .form-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) brightness(1.08);
-    opacity: 0.9;
-    padding: 6px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    cursor: pointer;
+    display: none;
 }
 
 /* Form Actions */
@@ -504,12 +510,7 @@
 }
 
 .form-input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) brightness(1.08);
-    opacity: 0.9;
-    padding: 6px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    cursor: pointer;
+    display: none;
 }
 
 /* -----------------------------------------------------------------------
@@ -674,9 +675,11 @@ body:not(.dark-theme) .form-input[type="time"] {
 
 body:not(.dark-theme) .form-input[type="date"]::-webkit-calendar-picker-indicator,
 body:not(.dark-theme) .form-input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: none;
-    opacity: 0.75;
-    background: rgba(43, 89, 214, 0.08);
+    display: none;
+}
+
+body:not(.dark-theme) .choice-field__icon {
+    color: #6b7aa3;
 }
 
 body:not(.dark-theme) .btn-secondary:hover {

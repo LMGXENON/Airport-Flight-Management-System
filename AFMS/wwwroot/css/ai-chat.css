@@ -10,7 +10,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(145deg, #4f79ef 0%, #3b62d5 100%);
+    background: linear-gradient(145deg, #000000 0%, #2b4db2 100%);
     border: 1px solid rgba(160, 186, 255, 0.38);
     cursor: pointer;
     display: flex;
@@ -36,9 +36,9 @@
 }
 
 .ai-chat-toggle svg {
-    width: 28px;
-    height: 28px;
-    color: white;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
 }
 
 .ai-chat-unavailable-popover {
@@ -434,7 +434,10 @@
 }
 
 @keyframes thinking-dot-cycle {
-    0%, 80%, 100% {
+
+    0%,
+    80%,
+    100% {
         background: #3a4467;
         opacity: 0.45;
         transform: scale(0.85);
