@@ -442,4 +442,20 @@ public class FlightStatusCatalogTests
 
         Assert.Equal("Canceled", normalized);
     }
+
+    [Fact]
+    public void Normalize_ReturnsDepartedForTaxiingAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("taxiing");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForTaxiingAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("taxiing");
+
+        Assert.True(result);
+    }
 }
