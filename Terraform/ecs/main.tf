@@ -38,7 +38,7 @@ resource "aws_security_group_rule" "efs_out_all" {
 }
 
 resource "aws_efs_mount_target" "afms_dp_keys" {
-  for_each        = toset(var.private_subnet_ids)
+  for_each        = var.private_subnet_ids_by_key
   file_system_id  = aws_efs_file_system.afms_dp_keys.id
   subnet_id       = each.value
   security_groups = [aws_security_group.efs_sg.id]
