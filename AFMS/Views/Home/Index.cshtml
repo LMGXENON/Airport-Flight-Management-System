@@ -17,8 +17,9 @@
     var arrivalsDisplay = apiUnavailable ? "N/A" : totalArrivals.ToString();
     var airlinesDisplay = apiUnavailable ? "N/A" : totalAirlines.ToString();
 
-    var statBadgeText = apiUnavailable ? "Data Unavailable" : "Live Data";
-    var statBadgeClass = apiUnavailable ? "unavailable" : "positive";
+    var statBadgeText    = apiUnavailable ? "Data Unavailable" : "Live Data";
+    var statBadgeClass   = apiUnavailable ? "unavailable" : "positive";
+    var statBadgeI18nKey = apiUnavailable ? "dash.dataUnavailable" : "dash.liveData";
 }
 
 <!-- Page Header -->
@@ -38,12 +39,12 @@
                     <i class='bx bxs-plane-alt'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Total Flights</div>
+                    <div class="stat-label" data-i18n="dash.totalFlights">Total Flights</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@totalFlightsDisplay" aria-label="Loading total flights"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
@@ -53,12 +54,12 @@
                     <i class='bx bxs-plane-take-off'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Departures</div>
+                    <div class="stat-label" data-i18n="dash.departures">Departures</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@departuresDisplay" aria-label="Loading departures"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
@@ -68,12 +69,12 @@
                     <i class='bx bxs-plane-land'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Arrivals</div>
+                    <div class="stat-label" data-i18n="dash.arrivals">Arrivals</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@arrivalsDisplay" aria-label="Loading arrivals"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
@@ -83,12 +84,12 @@
                     <i class='bx bxs-buildings'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Airlines</div>
+                    <div class="stat-label" data-i18n="dash.airlines">Airlines</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@airlinesDisplay" aria-label="Loading airlines"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 </div>
 
@@ -96,13 +97,13 @@
 <div class="flights-section">
     <div class="flights-header">
         <div class="section-title-wrap">
-            <h2 class="section-title">Live Flights - @selectedAirportName (@selectedAirportIata)</h2>
-            <span class="section-meta">Last updated @lastSyncedDisplay</span>
+            <h2 class="section-title"><span data-i18n="dash.liveFlights">Live Flights</span> - @selectedAirportName (@selectedAirportIata)</h2>
+            <span class="section-meta"><span data-i18n="dash.lastUpdated">Last updated</span> @lastSyncedDisplay</span>
         </div>
         <div class="direction-filters">
-            <button class="filter-btn active" data-direction="all" data-label="All">All</button>
-            <button class="filter-btn" data-direction="Departure" data-label="Departures">Departures</button>
-            <button class="filter-btn" data-direction="Arrival" data-label="Arrivals">Arrivals</button>
+            <button class="filter-btn active" data-direction="all"    data-label="All"        data-i18n="dash.filterAll">All</button>
+            <button class="filter-btn"        data-direction="Departure" data-label="Departures" data-i18n="dash.filterDep">Departures</button>
+            <button class="filter-btn"        data-direction="Arrival"   data-label="Arrivals"   data-i18n="dash.filterArr">Arrivals</button>
         </div>
     </div>
     <div class="table-filter-bar" role="search" aria-label="Filter flights in table">
@@ -111,38 +112,40 @@
             id="filterFlightNumber"
             class="table-filter-input"
             placeholder="Filter by flight number"
+            data-i18n-placeholder="dash.phFlight"
             aria-label="Filter by flight number" />
         <input
             type="text"
             id="filterAirline"
             class="table-filter-input"
             placeholder="Filter by airline"
+            data-i18n-placeholder="dash.phAirline"
             aria-label="Filter by airline" />
         <select id="filterStatus" class="table-filter-select" aria-label="Filter by status">
-            <option value="">All statuses</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="boarding">Boarding</option>
-            <option value="departed">Departed</option>
-            <option value="arrived">Arrived</option>
-            <option value="delayed">Delayed</option>
-            <option value="canceled">Canceled</option>
-            <option value="in flight">In Flight</option>
-            <option value="approaching">Approaching</option>
+            <option value=""           data-i18n="dash.allStatuses">All statuses</option>
+            <option value="scheduled"  data-i18n="dash.statusScheduled">Scheduled</option>
+            <option value="boarding"   data-i18n="dash.statusBoarding">Boarding</option>
+            <option value="departed"   data-i18n="dash.statusDeparted">Departed</option>
+            <option value="arrived"    data-i18n="dash.statusArrived">Arrived</option>
+            <option value="delayed"    data-i18n="dash.statusDelayed">Delayed</option>
+            <option value="canceled"   data-i18n="dash.statusCanceled">Canceled</option>
+            <option value="in flight"  data-i18n="dash.statusInFlight">In Flight</option>
+            <option value="approaching" data-i18n="dash.statusApproaching">Approaching</option>
         </select>
-        <button type="button" id="clearTableFilters" class="table-filter-clear">Clear</button>
+        <button type="button" id="clearTableFilters" class="table-filter-clear" data-i18n="dash.clearFilters">Clear</button>
     </div>
     <div class="table-wrapper">
         <table class="flights-table" id="flightsTable">
             <thead>
                 <tr>
-                    <th>TIME</th>
-                    <th>FLIGHT</th>
-                    <th class="from-col">FROM</th>
-                    <th class="to-col">TO</th>
-                    <th>AIRLINE</th>
-                    <th>AIRCRAFT</th>
-                    <th>STATUS</th>
-                    <th>MANAGE</th>
+                    <th data-i18n="dash.colTime">TIME</th>
+                    <th data-i18n="dash.colFlight">FLIGHT</th>
+                    <th class="from-col" data-i18n="dash.colFrom">FROM</th>
+                    <th class="to-col"   data-i18n="dash.colTo">TO</th>
+                    <th data-i18n="dash.colAirline">AIRLINE</th>
+                    <th data-i18n="dash.colAircraft">AIRCRAFT</th>
+                    <th data-i18n="dash.colStatus">STATUS</th>
+                    <th data-i18n="dash.colManage">MANAGE</th>
                 </tr>
             </thead>
             <tbody>
@@ -359,9 +362,9 @@
             @if (ViewBag.ApiError != null)
             {
                 <div class="empty-state">
-                    <p class="empty-state-title empty-state-title--danger">Live data unavailable</p>
-                    <p class="empty-state-muted">Flight data temporarily unavailable - quota resets shortly.</p>
-                    <button type="button" id="retryDashboardBtn" class="empty-state-retry-btn" aria-label="Retry loading live flight data">
+                    <p class="empty-state-title empty-state-title--danger" data-i18n="dash.errorTitle">Live data unavailable</p>
+                    <p class="empty-state-muted" data-i18n="dash.errorText">Flight data temporarily unavailable — quota resets shortly.</p>
+                    <button type="button" id="retryDashboardBtn" class="empty-state-retry-btn" aria-label="Retry loading live flight data" data-i18n="dash.retryBtn">
                         ↺ Retry
                     </button>
                 </div>
@@ -369,8 +372,8 @@
             else
             {
                 <div class="empty-state">
-                    <p class="empty-state-title">No live flight data available</p>
-                    <p class="empty-state-muted">The API did not return flights for the current time window.</p>
+                    <p class="empty-state-title" data-i18n="dash.noDataTitle">No live flight data available</p>
+                    <p class="empty-state-muted" data-i18n="dash.noDataText">The API did not return flights for the current time window.</p>
                 </div>
             }
         }
@@ -411,8 +414,13 @@
             el.removeAttribute('aria-label');
         });
 
+        const lang = window.afmsI18n ? window.afmsI18n.lang() : 'en';
+        const dict = window.afmsI18n ? window.afmsI18n.dict[lang] : null;
+
         statBadgeEls.forEach(function (el) {
-            el.textContent = el.getAttribute('data-final-text') || '';
+            const i18nKey = el.getAttribute('data-i18n-badge');
+            const translated = dict && i18nKey ? (dict[i18nKey] || el.getAttribute('data-final-text')) : el.getAttribute('data-final-text');
+            el.textContent = translated || '';
             el.classList.remove('stat-badge-skeleton');
             el.removeAttribute('aria-label');
         });
