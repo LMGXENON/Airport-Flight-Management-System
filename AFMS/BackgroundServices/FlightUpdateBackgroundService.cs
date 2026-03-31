@@ -34,7 +34,7 @@ public class FlightUpdateBackgroundService : BackgroundService
                 
                 await syncService.SyncFlightsAsync();
                 
-                _logger.LogInformation($"Flight sync completed. Next sync in {_updateInterval.TotalMinutes} minutes");
+                _logger.LogInformation("Flight sync completed. Next sync in {IntervalMinutes} minutes", _updateInterval.TotalMinutes);
             }
             catch (Exception ex)
             {
