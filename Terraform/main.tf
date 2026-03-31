@@ -37,6 +37,7 @@ module "ecs" {
   source                           = "./ecs"
   vpc_id                           = module.vpc.vpc_id
   private_subnet_ids               = module.vpc.private_subnet_ids
+  private_subnet_ids_by_key        = module.vpc.private_subnet_ids_by_az
   target_group_arn                 = module.ALB.target_group_arn
   alb_sg_id                        = module.ALB.alb_sg_id
   afms_image                       = local.afms_ecr_image

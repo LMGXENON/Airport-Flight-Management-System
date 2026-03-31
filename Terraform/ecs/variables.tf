@@ -5,6 +5,10 @@ variable "private_subnet_ids" {
   type = list(string)
 }
 
+variable "private_subnet_ids_by_key" {
+  type = map(string)
+}
+
 variable "target_group_arn" {
   description = "target group arn for afms-alb"
   type        = string
