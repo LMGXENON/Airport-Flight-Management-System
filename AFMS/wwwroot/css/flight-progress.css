@@ -61,8 +61,8 @@
     position: absolute;
     top: 50%;
     left: 0;
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,13 +72,13 @@
 }
 
 .progress-plane-icon {
-    width: 16px;
-    height: 16px;
+    width: 22px;
+    height: 22px;
     fill: var(--accent-blue);
     transform: rotate(90deg);   /* naturally points up → rotate right */
     display: block;
     flex-shrink: 0;
-    filter: drop-shadow(0 0 4px rgba(99, 140, 255, 0.5));
+    filter: drop-shadow(0 0 5px rgba(99, 140, 255, 0.55));
 }
 
 .progress-time-info {
