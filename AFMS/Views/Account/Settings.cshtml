@@ -4,50 +4,50 @@
 }
 
 <div class="page-header">
-    <h2 class="page-title">Settings</h2>
-    <p class="page-subtitle">Manage your AFMS user preferences.</p>
+    <h2 class="page-title" data-i18n="settings.title">Settings</h2>
+    <p class="page-subtitle" data-i18n="settings.subtitle">Manage your AFMS user preferences.</p>
 </div>
 
 @if (Model.Saved)
 {
-    <div class="account-alert" role="status" aria-live="polite">Settings saved.</div>
+    <div class="account-alert" role="status" aria-live="polite" data-i18n="settings.saved">Settings saved.</div>
 }
 
 <form asp-controller="Account" asp-action="Settings" method="post" class="account-settings-form">
     @Html.AntiForgeryToken()
 
     <section class="account-card account-card--wide">
-        <h3 class="account-card-title">Preferences</h3>
+        <h3 class="account-card-title" data-i18n="settings.prefs">Preferences</h3>
 
         <div class="account-form-grid">
             <div class="account-field">
-                <label for="Theme">Theme</label>
+                <label for="Theme" data-i18n="settings.theme">Theme</label>
                 <select id="Theme" name="Theme" class="account-select" data-setting="theme">
-                    <option value="light" selected="@(Model.Theme == "light")">Light</option>
-                    <option value="dark" selected="@(Model.Theme == "dark")">Dark</option>
+                    <option value="light" selected="@(Model.Theme == "light")" data-i18n="settings.themeLight">Light</option>
+                    <option value="dark"  selected="@(Model.Theme == "dark")"  data-i18n="settings.themeDark">Dark</option>
                 </select>
             </div>
 
-
-
             <div class="account-field">
-                <label for="TimeFormat">Time format</label>
+                <label for="TimeFormat" data-i18n="settings.timeFormat">Time format</label>
                 <select id="TimeFormat" name="TimeFormat" class="account-select" data-setting="time-format">
-                    <option value="24" selected="@(Model.TimeFormat == "24")">24-hour</option>
-                    <option value="12" selected="@(Model.TimeFormat == "12")">12-hour</option>
+                    <option value="24" selected="@(Model.TimeFormat == "24")" data-i18n="settings.time24">24-hour</option>
+                    <option value="12" selected="@(Model.TimeFormat == "12")" data-i18n="settings.time12">12-hour</option>
                 </select>
             </div>
 
             <div class="account-field">
-                <label for="Language">Language</label>
+                <label for="Language" data-i18n="settings.language">Language</label>
                 <select id="Language" name="Language" class="account-select">
-                    <option value="en" selected="@(Model.Language == "en")">English</option>
+                    <option value="en" selected="@(Model.Language == "en")" data-i18n="settings.langEn">English</option>
+                    <option value="es" selected="@(Model.Language == "es")" data-i18n="settings.langEs">Spanish</option>
+                    <option value="fr" selected="@(Model.Language == "fr")" data-i18n="settings.langFr">French</option>
                 </select>
             </div>
         </div>
 
         <div class="account-actions">
-            <button type="submit" class="account-save-btn">Save Settings</button>
+            <button type="submit" class="account-save-btn" data-i18n="settings.saveBtn">Save Settings</button>
         </div>
     </section>
 </form>
@@ -61,16 +61,17 @@
         (function () {
             var themeSelect     = document.getElementById('Theme');
             var timeFormatSelect = document.getElementById('TimeFormat');
+            var langSelect      = document.getElementById('Language');
             var themeToggle     = document.getElementById('themeToggle');
             var settingsForm    = document.querySelector('.account-settings-form');
 
-            /* ── helpers ─────────────────────────────────────────── */
+            /* ── helpers ──────────────────────────────────────────── */
             function readCookie(name) {
                 var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]+)'));
                 return match ? decodeURIComponent(match[1]) : null;
             }
 
-            /* Original saved theme — never mutated until Save is clicked */
+            /* Capture originals before any preview */
             var originalTheme = (function () {
                 var ls = localStorage.getItem('afms-theme');
                 if (ls === 'dark' || ls === 'light') return ls;
@@ -79,7 +80,15 @@
                 return document.body.classList.contains('dark-theme') ? 'dark' : 'light';
             })();
 
-            /* Apply theme visually — NO localStorage write (preview only) */
+            var originalLang = (function () {
+                var ls = localStorage.getItem('afms-language');
+                if (ls && window.afmsI18n && window.afmsI18n.dict[ls]) return ls;
+                var ck = readCookie('afms_language');
+                if (ck && window.afmsI18n && window.afmsI18n.dict[ck]) return ck;
+                return 'en';
+            })();
+
+            /* Preview theme only (no localStorage write) */
             function previewTheme(theme) {
                 var dark = theme === 'dark';
                 document.body.classList.toggle('dark-theme', dark);
@@ -94,6 +103,13 @@
                 }
             }
 
+            /* Preview language only (no localStorage write) */
+            function previewLang(lang) {
+                if (window.afmsI18n) {
+                    window.afmsI18n.apply(lang);
+                }
+            }
+
             function getCurrentTimeFormat() {
                 var lf = localStorage.getItem('afms-time-format');
                 if (lf === '12' || lf === '24') return lf;
@@ -102,22 +118,32 @@
                 return '24';
             }
 
-            /* ── initialise dropdowns ────────────────────────────── */
+            /* ── initialise dropdowns ─────────────────────────────── */
             if (themeSelect)      themeSelect.value      = originalTheme;
             if (timeFormatSelect) timeFormatSelect.value = getCurrentTimeFormat();
+            if (langSelect)       langSelect.value       = originalLang;
 
-            /* ── live preview on dropdown change ────────────────── */
+            /* ── live previews ────────────────────────────────────── */
             if (themeSelect) {
                 themeSelect.addEventListener('change', function () {
                     previewTheme(themeSelect.value);
                 });
             }
 
-            /* ── commit to localStorage only on Save ─────────────── */
+            if (langSelect) {
+                langSelect.addEventListener('change', function () {
+                    previewLang(langSelect.value);
+                });
+            }
+
+            /* ── commit to localStorage only on Save ──────────────── */
             if (settingsForm) {
                 settingsForm.addEventListener('submit', function () {
                     if (themeSelect) {
                         localStorage.setItem('afms-theme', themeSelect.value);
+                    }
+                    if (langSelect) {
+                        localStorage.setItem('afms-language', langSelect.value);
                     }
                 });
             }

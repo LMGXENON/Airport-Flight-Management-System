@@ -4,13 +4,13 @@
 }
 
 <div class="page-header">
-    <h2 class="page-title">Profile</h2>
-    <p class="page-subtitle">Your authenticated account details in AFMS.</p>
+    <h2 class="page-title" data-i18n="profile.title">Profile</h2>
+    <p class="page-subtitle" data-i18n="profile.subtitle">Your authenticated account details in AFMS.</p>
 </div>
 
 @if (Model.PasswordChanged)
 {
-    <div class="account-alert" role="status" aria-live="polite">Password changed successfully.</div>
+    <div class="account-alert" role="status" aria-live="polite" data-i18n="profile.pwdChanged">Password changed successfully.</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(Model.PasswordChangeError))
@@ -20,28 +20,28 @@
 
 <div class="account-grid">
     <section class="account-card">
-        <h3 class="account-card-title">User Identity</h3>
+        <h3 class="account-card-title" data-i18n="profile.userIdentity">User Identity</h3>
         <dl class="account-list">
             <div class="account-list-row">
-                <dt>Username</dt>
+                <dt data-i18n="profile.username">Username</dt>
                 <dd>@Model.Username</dd>
             </div>
             <div class="account-list-row">
-                <dt>Role</dt>
+                <dt data-i18n="profile.role">Role</dt>
                 <dd>@Model.Role</dd>
             </div>
         </dl>
     </section>
 
     <section class="account-card">
-        <h3 class="account-card-title">Session and Security</h3>
+        <h3 class="account-card-title" data-i18n="profile.sessionSec">Session and Security</h3>
         <dl class="account-list">
             <div class="account-list-row">
-                <dt>Last Login</dt>
+                <dt data-i18n="profile.lastLogin">Last Login</dt>
                 <dd>@(Model.LastLoginUtc.HasValue ? Model.LastLoginUtc.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "Not available yet")</dd>
             </div>
             <div class="account-list-row">
-                <dt>Session Expires In</dt>
+                <dt data-i18n="profile.sessionExp">Session Expires In</dt>
                 <dd>
                     <span class="session-countdown" id="sessionExpiryCountdown" data-remaining-seconds="@Model.SessionRemainingSeconds">
                         @(Model.SessionRemainingSeconds > 0 ? "Calculating..." : "Expired")
@@ -49,50 +49,50 @@
                 </dd>
             </div>
             <div class="account-list-row">
-                <dt>Session Duration</dt>
-                <dd>@Model.SessionExpiryHours hours</dd>
+                <dt data-i18n="profile.sessionDur">Session Duration</dt>
+                <dd>@Model.SessionExpiryHours <span data-i18n="profile.hours">hours</span></dd>
             </div>
             <div class="account-list-row">
-                <dt>Last Refreshed</dt>
+                <dt data-i18n="profile.lastRefreshed">Last Refreshed</dt>
                 <dd>@Model.LastUpdatedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
             </div>
         </dl>
     </section>
 
     <section class="account-card account-card--wide">
-        <h3 class="account-card-title">Change Password</h3>
+        <h3 class="account-card-title" data-i18n="profile.changePwd">Change Password</h3>
         <form asp-controller="Account" asp-action="ChangePassword" method="post" class="account-settings-form">
             @Html.AntiForgeryToken()
             <div class="account-form-grid">
                 <div class="account-field">
-                    <label for="CurrentPassword">Current password</label>
+                    <label for="CurrentPassword" data-i18n="profile.currentPwd">Current password</label>
                     <input id="CurrentPassword" name="CurrentPassword" type="password" class="account-select" required minlength="8" />
                 </div>
                 <div class="account-field">
-                    <label for="NewPassword">New password</label>
+                    <label for="NewPassword" data-i18n="profile.newPwd">New password</label>
                     <input id="NewPassword" name="NewPassword" type="password" class="account-select" required minlength="8" />
                 </div>
                 <div class="account-field">
-                    <label for="ConfirmPassword">Confirm new password</label>
+                    <label for="ConfirmPassword" data-i18n="profile.confirmPwd">Confirm new password</label>
                     <input id="ConfirmPassword" name="ConfirmPassword" type="password" class="account-select" required minlength="8" />
                 </div>
             </div>
             <div class="account-actions">
-                <button type="submit" class="account-save-btn">Update Password</button>
+                <button type="submit" class="account-save-btn" data-i18n="profile.updatePwd">Update Password</button>
             </div>
         </form>
     </section>
 
     <section class="account-card account-card--wide">
-        <h3 class="account-card-title">Login History</h3>
+        <h3 class="account-card-title" data-i18n="profile.loginHistory">Login History</h3>
         @if (Model.LoginHistory.Any())
         {
             <div class="account-history-table-wrapper">
                 <table class="account-history-table">
                     <thead>
                         <tr>
-                            <th>Timestamp (UTC)</th>
-                            <th>IP Address</th>
+                            <th data-i18n="profile.historyTs">Timestamp (UTC)</th>
+                            <th data-i18n="profile.historyIp">IP Address</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -109,7 +109,7 @@
         }
         else
         {
-            <p class="page-subtitle">No login history available yet.</p>
+            <p class="page-subtitle" data-i18n="profile.noHistory">No login history available yet.</p>
         }
     </section>
 </div>
