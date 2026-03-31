@@ -1,33 +1,27 @@
 **/bin/
 **/obj/
-*.dll
-*.exe
-*.pdb
-*.iobj
-*.ipdb
-*.ilk
-*.meta
-*.exp
-*.lib
-*.sbr
-*.scc
-*.suo
-*.pidb
+
+# Visual Studio user files
 *.user
-*.aps
-*.pch
-*.vspscc
-*.vssscc
-*.terraform
+*.suo
+.vs/
+
+# Terraform local state and cache
+**/.terraform/
 *.tfstate
-*.tfstate.backup
-*.DS_store
+*.tfstate.*
+
+# macOS metadata
+.DS_Store
+
+# Local environment files
 .env
 **/.env
 *.env
 !*.env.example
 !**/.env.example
-.vscode/
+
+# SQLite sidecar files
 *.db-shm
 *.db-wal
 *.db-journal
