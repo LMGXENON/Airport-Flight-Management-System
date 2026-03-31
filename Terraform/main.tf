@@ -31,7 +31,7 @@ locals {
   deepseek_max_requests_per_minute_effective = local.deepseek_max_requests_per_minute_from_env != null ? local.deepseek_max_requests_per_minute_from_env : var.deepseek_max_requests_per_minute
   deepseek_prompt_file_effective             = local.deepseek_prompt_file_from_env != "" ? local.deepseek_prompt_file_from_env : "Prompts/DeepSeekFlightSearchPrompt.txt"
 
-  aerodatabox_api_key_effective  = local.aerodatabox_api_key_from_env
+  aerodatabox_api_key_effective  = local.aerodatabox_api_key_from_env != "" ? local.aerodatabox_api_key_from_env : var.aerodatabox_api_key
   aerodatabox_api_host_effective = local.aerodatabox_api_host_from_env != "" ? local.aerodatabox_api_host_from_env : "aerodatabox.p.rapidapi.com"
   default_airport_effective      = local.default_airport_from_env != "" ? local.default_airport_from_env : "EGLL"
 
