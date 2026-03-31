@@ -1,0 +1,149 @@
+@model AFMS.Models.AccountSettingsViewModel
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="page-header">
+    <h2 class="page-title">Settings</h2>
+    <p class="page-subtitle">Manage your AFMS user preferences.</p>
+</div>
+
+@if (Model.Saved)
+{
+    <div class="account-alert" role="status" aria-live="polite">Settings saved.</div>
+}
+
+<form asp-controller="Account" asp-action="Settings" method="post" class="account-settings-form">
+    @Html.AntiForgeryToken()
+
+    <section class="account-card account-card--wide">
+        <h3 class="account-card-title">Preferences</h3>
+
+        <div class="account-form-grid">
+            <div class="account-field">
+                <label for="Theme">Theme</label>
+                <select id="Theme" name="Theme" class="account-select" data-setting="theme">
+                    <option value="light" selected="@(Model.Theme == "light")">Light</option>
+                    <option value="dark" selected="@(Model.Theme == "dark")">Dark</option>
+                </select>
+            </div>
+
+            <div class="account-field">
+                <label for="DefaultAirport">Default airport</label>
+                <select id="DefaultAirport" name="DefaultAirport" class="account-select">
+                    <option value="EGLL" selected="@(Model.DefaultAirport == "EGLL")">London Heathrow (LHR/EGLL)</option>
+                    <option value="EGKK" selected="@(Model.DefaultAirport == "EGKK")">London Gatwick (LGW/EGKK)</option>
+                    <option value="EGSS" selected="@(Model.DefaultAirport == "EGSS")">London Stansted (STN/EGSS)</option>
+                    <option value="KJFK" selected="@(Model.DefaultAirport == "KJFK")">New York JFK (JFK/KJFK)</option>
+                    <option value="KLAX" selected="@(Model.DefaultAirport == "KLAX")">Los Angeles (LAX/KLAX)</option>
+                </select>
+            </div>
+
+            <div class="account-field">
+                <label for="TimeFormat">Time format</label>
+                <select id="TimeFormat" name="TimeFormat" class="account-select" data-setting="time-format">
+                    <option value="24" selected="@(Model.TimeFormat == "24")">24-hour</option>
+                    <option value="12" selected="@(Model.TimeFormat == "12")">12-hour</option>
+                </select>
+            </div>
+
+            <div class="account-field">
+                <label for="Language">Language</label>
+                <select id="Language" name="Language" class="account-select">
+                    <option value="en" selected="@(Model.Language == "en")">English</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="account-actions">
+            <button type="submit" class="account-save-btn">Save Settings</button>
+        </div>
+    </section>
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/account-pages.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var themeSelect = document.getElementById('Theme');
+            var timeFormatSelect = document.getElementById('TimeFormat');
+            var themeToggle = document.getElementById('themeToggle');
+
+            function readCookie(name) {
+                var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]+)'));
+                return match ? decodeURIComponent(match[1]) : null;
+            }
+
+            function applyTheme(theme) {
+                var dark = theme === 'dark';
+                document.body.classList.toggle('dark-theme', dark);
+                localStorage.setItem('afms-theme', dark ? 'dark' : 'light');
+
+                if (themeToggle) {
+                    themeToggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+                    themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+                    var icon = themeToggle.querySelector('.theme-toggle-icon');
+                    if (icon) {
+                        icon.classList.remove('bx-moon', 'bx-sun');
+                        icon.classList.add(dark ? 'bx-sun' : 'bx-moon');
+                    }
+                }
+            }
+
+            function getCurrentTheme() {
+                var localTheme = localStorage.getItem('afms-theme');
+                if (localTheme === 'dark' || localTheme === 'light') {
+                    return localTheme;
+                }
+
+                var cookieTheme = readCookie('afms_theme');
+                if (cookieTheme === 'dark' || cookieTheme === 'light') {
+                    return cookieTheme;
+                }
+
+                return document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            }
+
+            function getCurrentTimeFormat() {
+                var localFormat = localStorage.getItem('afms-time-format');
+                if (localFormat === '12' || localFormat === '24') {
+                    return localFormat;
+                }
+
+                var cookieFormat = readCookie('afms_time_format');
+                if (cookieFormat === '12' || cookieFormat === '24') {
+                    return cookieFormat;
+                }
+
+                return '24';
+            }
+
+            if (themeSelect) {
+                themeSelect.value = getCurrentTheme();
+            }
+
+            if (timeFormatSelect) {
+                timeFormatSelect.value = getCurrentTimeFormat();
+            }
+
+            if (themeSelect) {
+                themeSelect.addEventListener('change', function () {
+                    applyTheme(themeSelect.value);
+                });
+            }
+
+            if (timeFormatSelect) {
+                timeFormatSelect.addEventListener('change', function () {
+                    // Persist is deferred until user submits the form.
+                });
+            }
+
+            if (typeof updateClock === 'function') {
+                updateClock();
+            }
+        })();
+    </script>
+}

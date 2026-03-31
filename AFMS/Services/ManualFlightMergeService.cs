@@ -24,11 +24,15 @@ public class ManualFlightMergeService
             var manualGate = Clean(manualFlight.Gate);
             var manualTerminal = Clean(manualFlight.Terminal);
             var manualAircraftType = Clean(manualFlight.AircraftType);
+            var hasManualGate = !string.IsNullOrWhiteSpace(manualGate);
+            var hasManualTerminal = !string.IsNullOrWhiteSpace(manualTerminal);
+            var hasManualAircraftType = !string.IsNullOrWhiteSpace(manualAircraftType);
             var normalizedStatus = string.IsNullOrWhiteSpace(manualFlight.Status)
                 ? null
                 : FlightStatusCatalog.IsKnown(manualFlight.Status)
                     ? FlightStatusCatalog.Normalize(manualFlight.Status)
                     : null;
+            var hasManualStatus = !string.IsNullOrWhiteSpace(normalizedStatus);
             var flightNumberKey = NormalizeFlightNumberKey(manualFlight.FlightNumber);
 
             if (flightNumberKey == null)
@@ -59,18 +63,18 @@ public class ManualFlightMergeService
 
                 if (lhrLeg != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(manualGate))
+                    if (hasManualGate)
                         lhrLeg.Gate = manualGate;
-                    if (!string.IsNullOrWhiteSpace(manualTerminal))
+                    if (hasManualTerminal)
                         lhrLeg.Terminal = manualTerminal;
-                    if (!string.IsNullOrWhiteSpace(normalizedStatus))
+                    if (hasManualStatus)
                         lhrLeg.Status = normalizedStatus;
                 }
 
-                if (!string.IsNullOrWhiteSpace(normalizedStatus))
+                if (hasManualStatus)
                     existing.Status = normalizedStatus;
 
-                if (!string.IsNullOrWhiteSpace(manualAircraftType))
+                if (hasManualAircraftType)
                 {
                     existing.Aircraft ??= new Aircraft();
                     existing.Aircraft.Model = manualAircraftType;

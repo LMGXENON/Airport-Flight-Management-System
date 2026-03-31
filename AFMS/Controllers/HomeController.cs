@@ -98,7 +98,11 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index(string? airport)
     {
-        var defaultAirport = (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant();
+        var configuredAirport = (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant();
+        var preferredAirport = (Request.Cookies["afms_default_airport"] ?? string.Empty).Trim().ToUpperInvariant();
+        var defaultAirport = DashboardAirportOptions.Any(a => a.Icao.Equals(preferredAirport, StringComparison.OrdinalIgnoreCase))
+            ? preferredAirport
+            : configuredAirport;
         var selectedAirportCode = ResolveDashboardAirportCode(airport, defaultAirport);
         var selectedAirport = DashboardAirportOptions
             .FirstOrDefault(a => a.Icao.Equals(selectedAirportCode, StringComparison.OrdinalIgnoreCase));

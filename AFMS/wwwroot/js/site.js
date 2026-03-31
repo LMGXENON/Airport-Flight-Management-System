@@ -5,16 +5,49 @@ function toLocalDateTimeValue(date) {
     return localTime.toISOString().slice(0, 19);
 }
 
+function getCookieValue(name) {
+    var encodedName = encodeURIComponent(name) + '=';
+    var cookieParts = document.cookie ? document.cookie.split(';') : [];
+
+    for (var i = 0; i < cookieParts.length; i++) {
+        var cookie = cookieParts[i].trim();
+        if (cookie.indexOf(encodedName) === 0) {
+            return decodeURIComponent(cookie.substring(encodedName.length));
+        }
+    }
+
+    return null;
+}
+
 function updateClock() {
     var now = new Date();
-    var hours = String(now.getHours()).padStart(2, '0');
-    var minutes = String(now.getMinutes()).padStart(2, '0');
-    var seconds = String(now.getSeconds()).padStart(2, '0');
+    var configuredFormat = (getCookieValue('afms_time_format') || localStorage.getItem('afms-time-format') || '24').trim();
+    if (configuredFormat !== '12' && configuredFormat !== '24') {
+        configuredFormat = '24';
+    }
+    localStorage.setItem('afms-time-format', configuredFormat);
+    var useTwelveHour = configuredFormat === '12';
+    var timeText;
+
+    if (useTwelveHour) {
+        timeText = now.toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+    } else {
+        var hours = String(now.getHours()).padStart(2, '0');
+        var minutes = String(now.getMinutes()).padStart(2, '0');
+        var seconds = String(now.getSeconds()).padStart(2, '0');
+        timeText = hours + ':' + minutes + ':' + seconds;
+    }
+
     var el = document.getElementById('currentTime');
     if (el) {
-        el.textContent = hours + ':' + minutes + ':' + seconds;
+        el.textContent = timeText;
         el.setAttribute('datetime', toLocalDateTimeValue(now));
-        el.setAttribute('aria-label', 'Current time ' + hours + ':' + minutes + ':' + seconds);
+        el.setAttribute('aria-label', 'Current time ' + timeText);
     }
 }
 setInterval(updateClock, 1000);
@@ -135,15 +168,49 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('avatarMenuContainer');
     var button = document.getElementById('avatarMenuButton');
     var menu = document.getElementById('avatarDropdownMenu');
+    var closeTimer = null;
 
     if (!container || !button || !menu) {
         return;
     }
 
+    function clearCloseTimer() {
+        if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+    }
+
+    function scheduleClose() {
+        clearCloseTimer();
+        closeTimer = setTimeout(function () {
+            setMenuOpen(false);
+        }, 120);
+    }
+
     function setMenuOpen(isOpen) {
+        clearCloseTimer();
         button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         menu.hidden = !isOpen;
     }
+
+    container.addEventListener('mouseenter', function () {
+        setMenuOpen(true);
+    });
+
+    container.addEventListener('mouseleave', function () {
+        scheduleClose();
+    });
+
+    container.addEventListener('focusin', function () {
+        setMenuOpen(true);
+    });
+
+    container.addEventListener('focusout', function (event) {
+        if (!container.contains(event.relatedTarget)) {
+            setMenuOpen(false);
+        }
+    });
 
     button.addEventListener('click', function () {
         setMenuOpen(menu.hidden);
@@ -171,7 +238,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var themeIcon = themeToggle.querySelector('.theme-toggle-icon');
     var savedTheme = localStorage.getItem('afms-theme');
-    var currentTheme = savedTheme === 'dark' ? 'dark' : 'light';
+    var cookieTheme = getCookieValue('afms_theme');
+    var currentTheme = savedTheme === 'dark' || savedTheme === 'light'
+        ? savedTheme
+        : (cookieTheme === 'dark' || cookieTheme === 'light'
+            ? cookieTheme
+            : (document.body.classList.contains('dark-theme') ? 'dark' : 'light'));
 
     function renderToggle(theme) {
         var isDark = theme === 'dark';
@@ -187,6 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function applyTheme(theme) {
         document.body.classList.toggle('dark-theme', theme === 'dark');
         localStorage.setItem('afms-theme', theme);
+        document.cookie = 'afms_theme=' + encodeURIComponent(theme) + '; path=/; max-age=15552000; SameSite=Lax';
         renderToggle(theme);
     }
 

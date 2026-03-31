@@ -390,6 +390,8 @@ body.dark-theme .theme-toggle-btn:hover {
     padding: 9px 10px;
     font-size: 13px;
     cursor: pointer;
+    text-decoration: none;
+    display: block;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -398,17 +400,6 @@ body.dark-theme .theme-toggle-btn:hover {
     background: rgba(65, 105, 225, 0.16);
     color: #ffffff;
     outline: none;
-}
-
-.avatar-dropdown-item[aria-disabled="true"] {
-    color: var(--text-secondary);
-    cursor: default;
-}
-
-.avatar-dropdown-item[aria-disabled="true"]:hover,
-.avatar-dropdown-item[aria-disabled="true"]:focus-visible {
-    background: transparent;
-    color: var(--text-secondary);
 }
 
 .avatar-dropdown-item--danger {
