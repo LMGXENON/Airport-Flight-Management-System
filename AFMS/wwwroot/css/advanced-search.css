@@ -250,6 +250,7 @@
 
 .choice-field--time::before {
     content: '◷';
+    font-size: 18px;
 }
 
 .choice-field .form-input,
