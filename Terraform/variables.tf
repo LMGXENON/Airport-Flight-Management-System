@@ -64,6 +64,11 @@ variable "auth_admin_password" {
   type        = string
   sensitive   = true
   default     = ""
+
+  validation {
+    condition     = length(trimspace(var.auth_admin_password)) > 0
+    error_message = "auth_admin_password must be provided (set TF_VAR_auth_admin_password or AUTH_ADMIN_PASSWORD in .env for local runs)."
+  }
 }
 
 variable "auth_jwt_secret" {
@@ -71,6 +76,11 @@ variable "auth_jwt_secret" {
   type        = string
   sensitive   = true
   default     = ""
+
+  validation {
+    condition     = length(trimspace(var.auth_jwt_secret)) >= 32
+    error_message = "auth_jwt_secret must be at least 32 characters (set TF_VAR_auth_jwt_secret or AUTH_JWT_SECRET in .env for local runs)."
+  }
 }
 
 variable "auth_issuer" {
