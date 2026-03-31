@@ -1308,7 +1308,7 @@ body:not(.dark-theme) .status-scheduled {
 
 .manage-col {
     white-space: nowrap;
-    min-width: 110px;
+    min-width: 140px;
 }
 
 .manage-actions {
@@ -1320,40 +1320,69 @@ body:not(.dark-theme) .status-scheduled {
 .manage-link {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 5px;
-    font-size: 16px;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
     text-decoration: none;
-    transition: opacity 0.15s, transform 0.15s;
+    transition: background 0.15s ease, color 0.15s ease,
+                border-color 0.15s ease, transform 0.15s ease,
+                box-shadow 0.15s ease;
+    letter-spacing: 0.01em;
 }
 
-.manage-link:hover {
-    opacity: 0.8;
-    transform: translateY(-1px);
+.manage-link i {
+    font-size: 14px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
+.manage-label {
+    line-height: 1;
+}
+
+/* ── Edit: blue pill ─────────────────────────────────────────── */
 .manage-edit {
-    background: #2563eb22;
+    background: rgba(37, 99, 235, 0.12);
     color: #60a5fa;
-    border: 1px solid #2563eb55;
+    border: 1px solid rgba(37, 99, 235, 0.28);
 }
 
+.manage-edit:hover {
+    background: rgba(37, 99, 235, 0.24);
+    border-color: rgba(96, 165, 250, 0.55);
+    color: #93c5fd;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.2);
+}
+
+/* ── Delete: muted ghost by default, red on hover ───────────── */
 .manage-delete {
-    background: #dc262622;
-    color: #f87171;
-    border: 1px solid #dc262655;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid rgba(136, 145, 178, 0.25);
 }
 
+.manage-delete:hover {
+    background: rgba(220, 38, 38, 0.14);
+    border-color: rgba(220, 38, 38, 0.45);
+    color: #f87171;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.15);
+}
+
+/* ── Unavailable / placeholder ───────────────────────────────── */
 .manage-link--placeholder {
-    opacity: 0.45;
+    opacity: 0.35;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .manage-link--placeholder:hover {
-    opacity: 0.45;
+    opacity: 0.35;
     transform: none;
+    box-shadow: none;
 }
 
 /* Flight Details Modal */

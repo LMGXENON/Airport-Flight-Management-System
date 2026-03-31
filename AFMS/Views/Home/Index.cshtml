@@ -332,22 +332,26 @@
                             {
                                 var dbId = dbIds[fNum];
                                 <div class="manage-actions" role="group" aria-label="Manage flight @fNum">
-                                    <a href="/Flight/Edit/@dbId" class="manage-link manage-edit" title="Edit flight">
+                                    <a href="/Flight/Edit/@dbId" class="manage-link manage-edit" title="Edit this flight">
                                         <i class='bx bx-edit-alt' aria-hidden="true"></i>
+                                        <span class="manage-label">Edit</span>
                                     </a>
-                                    <a href="/Flight/Delete/@dbId" class="manage-link manage-delete" title="Delete flight">
+                                    <a href="/Flight/Delete/@dbId" class="manage-link manage-delete" title="Delete this flight">
                                         <i class='bx bx-trash' aria-hidden="true"></i>
+                                        <span class="manage-label">Delete</span>
                                     </a>
                                 </div>
                             }
                             else
                             {
-                                <div class="manage-actions" role="group" aria-label="Manage flight unavailable for @fNum">
-                                    <span class="manage-link manage-edit manage-link--placeholder" aria-disabled="true" title="Edit unavailable">
+                                <div class="manage-actions" role="group" aria-label="Not in managed flights">
+                                    <span class="manage-link manage-edit manage-link--placeholder" aria-disabled="true" title="Not in managed flights — add via Flight Details">
                                         <i class='bx bx-edit-alt' aria-hidden="true"></i>
+                                        <span class="manage-label">Edit</span>
                                     </span>
-                                    <span class="manage-link manage-delete manage-link--placeholder" aria-disabled="true" title="Delete unavailable">
+                                    <span class="manage-link manage-delete manage-link--placeholder" aria-disabled="true" title="Not in managed flights — add via Flight Details">
                                         <i class='bx bx-trash' aria-hidden="true"></i>
+                                        <span class="manage-label">Delete</span>
                                     </span>
                                 </div>
                             }
