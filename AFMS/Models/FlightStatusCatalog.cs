@@ -65,9 +65,24 @@ public static class FlightStatusCatalog
             ["diverted"] = "Canceled"
         };
 
+    private static readonly IReadOnlyDictionary<string, string> CanonicalByNormalizedKey =
+        AllStatuses.ToDictionary(
+            status => NormalizeKey(status.Value),
+            status => status.Value,
+            StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlySet<string> CanonicalNormalizedKeys =
+        new HashSet<string>(CanonicalByNormalizedKey.Keys, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyDictionary<string, StatusOption> OptionByValue =
+        AllStatuses.ToDictionary(status => status.Value, status => status, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyList<string> AllStatusValues =
+        AllStatuses.Select(status => status.Value).ToList();
+
     public static IReadOnlyList<StatusOption> Options => AllStatuses;
 
-    public static IReadOnlyList<string> Values => AllStatuses.Select(status => status.Value).ToList();
+    public static IReadOnlyList<string> Values => AllStatusValues;
 
     public static string Normalize(string? value)
     {
@@ -78,8 +93,8 @@ public static class FlightStatusCatalog
         if (AliasToCanonical.TryGetValue(key, out var canonical))
             return canonical;
 
-        return AllStatuses.Any(status => status.Value.Equals(key, StringComparison.OrdinalIgnoreCase))
-            ? AllStatuses.First(status => status.Value.Equals(key, StringComparison.OrdinalIgnoreCase)).Value
+        return CanonicalByNormalizedKey.TryGetValue(key, out var directMatch)
+            ? directMatch
             : "Scheduled";
     }
 
@@ -103,14 +118,15 @@ public static class FlightStatusCatalog
             return false;
 
         return AliasToCanonical.ContainsKey(key)
-            || AllStatuses.Any(status => NormalizeKey(status.Value).Equals(key, StringComparison.OrdinalIgnoreCase));
+            || CanonicalNormalizedKeys.Contains(key);
     }
 
     private static StatusOption GetOption(string? value)
     {
         var normalized = Normalize(value);
-        return AllStatuses.FirstOrDefault(status => status.Value.Equals(normalized, StringComparison.OrdinalIgnoreCase))
-            ?? AllStatuses[0];
+        return OptionByValue.TryGetValue(normalized, out var option)
+            ? option
+            : AllStatuses[0];
     }
 
     private static string NormalizeKey(string? value)
