@@ -12,6 +12,7 @@ public class FlightDetailsViewModel
     public int Id { get; set; }
     public string FlightNumber { get; set; } = string.Empty;
     public string Airline { get; set; } = string.Empty;
+    public string Origin { get; set; } = string.Empty;
     public string Destination { get; set; } = string.Empty;
     
     // Formatted times
@@ -48,6 +49,7 @@ public class FlightDetailsViewModel
             Id = flight.Id,
             FlightNumber = flight.FlightNumber,
             Airline = flight.Airline,
+            Origin = flight.Origin ?? string.Empty,
             Destination = flight.Destination,
             DepartureTime = flight.DepartureTime,
             ArrivalTime = flight.ArrivalTime,
