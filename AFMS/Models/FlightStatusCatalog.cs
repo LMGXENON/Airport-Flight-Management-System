@@ -6,12 +6,14 @@ public static class FlightStatusCatalog
 
     private static readonly IReadOnlyList<StatusOption> AllStatuses =
     [
-        new("Scheduled", "Scheduled", "status-scheduled"),
-        new("Boarding", "Boarding", "status-boarding"),
-        new("Departed", "Departed", "status-departed"),
-        new("Arrived", "Arrived", "status-arrived"),
-        new("Delayed", "Delayed", "status-delayed"),
-        new("Canceled", "Canceled", "status-cancelled")
+        new("Scheduled",  "Scheduled",  "status-scheduled"),
+        new("Boarding",   "Boarding",   "status-boarding"),
+        new("Departed",   "Departed",   "status-departed"),
+        new("InFlight",   "In Flight",  "status-inflight"),
+        new("Approaching","Approaching","status-approaching"),
+        new("Arrived",    "Arrived",    "status-arrived"),
+        new("Delayed",    "Delayed",    "status-delayed"),
+        new("Canceled",   "Canceled",   "status-cancelled")
     ];
 
     private static readonly IReadOnlyDictionary<string, string> AliasToCanonical =
@@ -35,16 +37,20 @@ public static class FlightStatusCatalog
 
             ["departed"] = "Departed",
             ["departing"] = "Departed",
-            ["airborne"] = "Departed",
-            ["inflight"] = "Departed",
-            ["enroute"] = "Departed",
-            ["en route"] = "Departed",
             ["gateclosed"] = "Departed",
             ["gate closed"] = "Departed",
             ["gateclose"] = "Departed",
             ["gateclosing"] = "Departed",
-            ["approaching"] = "Departed",
             ["taxiing"] = "Departed",
+
+            ["airborne"] = "InFlight",
+            ["inflight"] = "InFlight",
+            ["in flight"] = "InFlight",
+            ["enroute"] = "InFlight",
+            ["en route"] = "InFlight",
+            ["en-route"] = "InFlight",
+
+            ["approaching"] = "Approaching",
 
             ["arrived"] = "Arrived",
             ["arriving"] = "Arrived",

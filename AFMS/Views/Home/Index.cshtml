@@ -259,7 +259,7 @@
                         // Arrival that's in flight
                         detailedStatus = rawStatus == "approaching" ? "Approaching" : "In Flight";
                         statusLabel = detailedStatus;
-                        statusClass = "status-departed";
+                        statusClass = rawStatus == "approaching" ? "status-approaching" : "status-inflight";
                     }
                     else if (normalizedStatus == "Delayed")
                     {

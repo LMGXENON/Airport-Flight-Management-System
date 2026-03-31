@@ -1209,10 +1209,36 @@ body:not(.dark-theme) .flights-table tbody tr:not(.date-header-row):hover {
     color: var(--accent-blue);
 }
 
-/* Departed — neutral grey */
+/* Departed — neutral grey (left the runway, ground perspective) */
 .status-departed {
     background-color: rgba(136, 145, 178, 0.15);
     color: var(--text-secondary);
+}
+
+/* In Flight — cyan (actively airborne) */
+.status-inflight {
+    background-color: rgba(6, 182, 212, 0.16);
+    color: #22d3ee;
+    border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+body:not(.dark-theme) .status-inflight {
+    background-color: rgba(6, 182, 212, 0.14);
+    color: #0891b2;
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+/* Approaching — sky blue (nearly there) */
+.status-approaching {
+    background-color: rgba(56, 189, 248, 0.15);
+    color: #7dd3fc;
+    border: 1px solid rgba(56, 189, 248, 0.22);
+}
+
+body:not(.dark-theme) .status-approaching {
+    background-color: rgba(56, 189, 248, 0.13);
+    color: #0369a1;
+    border-color: rgba(56, 189, 248, 0.28);
 }
 
 /* Arrived — bright green */
