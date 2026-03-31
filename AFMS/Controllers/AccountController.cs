@@ -16,7 +16,7 @@ public class AccountController : Controller
     private static readonly HashSet<string> AllowedThemes = new(StringComparer.OrdinalIgnoreCase) { "light", "dark" };
     private static readonly HashSet<string> AllowedAirports = new(StringComparer.OrdinalIgnoreCase) { "EGLL", "EGKK", "EGSS", "EGGW", "EGLC", "KJFK", "KLAX" };
     private static readonly HashSet<string> AllowedTimeFormats = new(StringComparer.OrdinalIgnoreCase) { "12", "24" };
-    private static readonly HashSet<string> AllowedLanguages  = new(StringComparer.OrdinalIgnoreCase) { "en", "es", "fr", "pl", "ro" };
+    private static readonly HashSet<string> AllowedLanguages  = new(StringComparer.OrdinalIgnoreCase) { "en", "es", "fr", "pl", "ro", "pa" };
 
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
