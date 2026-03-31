@@ -77,9 +77,12 @@ public static class FlightStatusCatalog
     private static readonly IReadOnlyDictionary<string, StatusOption> OptionByValue =
         AllStatuses.ToDictionary(status => status.Value, status => status, StringComparer.OrdinalIgnoreCase);
 
+    private static readonly IReadOnlyList<string> AllStatusValues =
+        AllStatuses.Select(status => status.Value).ToList();
+
     public static IReadOnlyList<StatusOption> Options => AllStatuses;
 
-    public static IReadOnlyList<string> Values => AllStatuses.Select(status => status.Value).ToList();
+    public static IReadOnlyList<string> Values => AllStatusValues;
 
     public static string Normalize(string? value)
     {
