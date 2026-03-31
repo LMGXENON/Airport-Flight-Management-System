@@ -1,4 +1,4 @@
-﻿// Clock update
+// Clock update
 function toLocalDateTimeValue(date) {
     var offset = date.getTimezoneOffset();
     var localTime = new Date(date.getTime() - offset * 60000);
@@ -144,23 +144,53 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Sidebar toggle for mobile
+// Sidebar: collapsible (desktop) + mobile toggle
 (function () {
     var sidebar = document.getElementById('sidebar');
-    var toggle = document.getElementById('sidebarToggle');
-    var closeBtn = document.getElementById('sidebarClose');
+    var collapseBtn = document.getElementById('sidebarCollapseBtn');
+    var toggle = document.getElementById('sidebarToggle');     // mobile hamburger
+    var STORAGE_KEY = 'afms-sidebar-collapsed';
 
+    // Restore collapsed state immediately (before first paint is handled inline in <head> via class,
+    // but also ensure JS reflects it after DOMContentLoaded)
+    function restoreCollapsed() {
+        if (!sidebar) return;
+        if (localStorage.getItem(STORAGE_KEY) === 'true') {
+            sidebar.classList.add('collapsed');
+            if (collapseBtn) {
+                collapseBtn.setAttribute('aria-label', 'Expand sidebar');
+                collapseBtn.title = 'Expand sidebar';
+            }
+        }
+    }
+
+    restoreCollapsed();
+
+    // Desktop collapse/expand toggle
+    if (collapseBtn && sidebar) {
+        collapseBtn.addEventListener('click', function () {
+            var isCollapsed = sidebar.classList.toggle('collapsed');
+            localStorage.setItem(STORAGE_KEY, isCollapsed ? 'true' : 'false');
+            collapseBtn.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            collapseBtn.title = isCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+        });
+    }
+
+    // Mobile hamburger still shows/hides the sidebar (slide in/out on small screens)
     if (toggle && sidebar) {
         toggle.addEventListener('click', function () {
             sidebar.classList.toggle('open');
         });
     }
 
-    if (closeBtn && sidebar) {
-        closeBtn.addEventListener('click', function () {
-            sidebar.classList.remove('open');
-        });
-    }
+    // Close mobile sidebar when clicking outside
+    document.addEventListener('click', function (e) {
+        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && e.target !== toggle) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
 })();
 
 // Avatar dropdown menu

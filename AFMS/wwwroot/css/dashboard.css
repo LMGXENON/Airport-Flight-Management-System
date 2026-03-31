@@ -72,6 +72,12 @@ body {
     left: 0;
     top: 0;
     z-index: 100;
+    transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    width: 64px;
 }
 
 .sidebar-header {
@@ -80,6 +86,37 @@ body {
     align-items: center;
     gap: 10px;
     border-bottom: 1px solid rgba(136, 145, 178, 0.22);
+    flex-shrink: 0;
+    overflow: hidden;
+    min-height: 68px;
+}
+
+/* Collapse button */
+.sidebar-collapse-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 18px;
+    line-height: 1;
+}
+
+.sidebar-collapse-btn:hover {
+    background-color: rgba(65, 105, 225, 0.14);
+    color: var(--text-primary);
+}
+
+.sidebar.collapsed .sidebar-collapse-btn {
+    transform: rotate(180deg);
 }
 
 .app-logo {
@@ -112,6 +149,7 @@ body {
     flex: 1;
     padding: 12px 10px;
     overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
 }
 
@@ -146,6 +184,42 @@ body {
     font-weight: 500;
     margin-bottom: 4px;
     transition: all 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.nav-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+}
+
+/* Collapsed state — hide labels, center icons */
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .app-info,
+.sidebar.collapsed .user-label,
+.sidebar.collapsed .user-name,
+.sidebar.collapsed .logout-btn {
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 10px;
+    gap: 0;
+}
+
+.sidebar.collapsed .sidebar-footer {
+    padding: 14px 8px;
+}
+
+.sidebar.collapsed .user-session-row {
+    justify-content: center;
 }
 
 .nav-item:hover,
@@ -182,6 +256,29 @@ body:not(.dark-theme) .sidebar .nav-item.active {
 .sidebar-footer {
     padding: 14px 16px;
     border-top: 1px solid rgba(136, 145, 178, 0.22);
+    overflow: hidden;
+}
+
+.sidebar-user-icon {
+    font-size: 20px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.sidebar.collapsed .sidebar-user-icon {
+    width: 20px;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.user-label,
+.user-name {
+    transition: opacity 0.2s ease, width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .user-session-row {
@@ -239,6 +336,12 @@ body:not(.dark-theme) .sidebar .nav-item.active {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed ~ .main-content,
+body.sidebar-collapsed .main-content {
+    margin-left: 64px;
 }
 
 /* Top Bar */

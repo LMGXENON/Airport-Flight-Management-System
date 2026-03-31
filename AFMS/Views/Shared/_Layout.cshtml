@@ -26,6 +26,13 @@
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-theme');
             }
+            // Restore sidebar collapsed state before first paint
+            if (localStorage.getItem('afms-sidebar-collapsed') === 'true') {
+                document.addEventListener('DOMContentLoaded', function () {
+                    var sb = document.getElementById('sidebar');
+                    if (sb) sb.classList.add('collapsed');
+                });
+            }
         })();
     </script>
     <div class="app-container">
@@ -38,19 +45,26 @@
                 <div class="app-info">
                     <h1 class="app-title">AFMS</h1>
                 </div>
-                </div>
+                <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse sidebar" title="Collapse sidebar">
+                    <i class='bx bx-chevron-left' aria-hidden="true"></i>
+                </button>
+            </div>
 
             <nav class="sidebar-nav">
-                <a href="@Url.Action("Index", "Home")" class="nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
+                <a href="@Url.Action("Index", "Home")" class="nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="Dashboard">
+                    <i class='bx bx-tachometer nav-icon' aria-hidden="true"></i>
                     <span class="nav-label">Dashboard</span>
                 </a>
-                <a href="@Url.Action("Add", "Flight")" class="nav-item @(currentController == "Flight" && currentAction == "Add" ? "active" : "")">
+                <a href="@Url.Action("Add", "Flight")" class="nav-item @(currentController == "Flight" && currentAction == "Add" ? "active" : "")" title="Add Flight">
+                    <i class='bx bx-plus-circle nav-icon' aria-hidden="true"></i>
                     <span class="nav-label">Add Flight</span>
                 </a>
-                <a href="@Url.Action("Index", "Flight")" class="nav-item @(currentController == "Flight" && currentAction != "Add" ? "active" : "")">
+                <a href="@Url.Action("Index", "Flight")" class="nav-item @(currentController == "Flight" && currentAction != "Add" ? "active" : "")" title="Flight Details">
+                    <i class='bx bx-list-ul nav-icon' aria-hidden="true"></i>
                     <span class="nav-label">Flight Details</span>
                 </a>
-                <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")">
+                <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")" title="Advanced Search">
+                    <i class='bx bx-search-alt nav-icon' aria-hidden="true"></i>
                     <span class="nav-label">Advanced Search</span>
                 </a>
             </nav>
@@ -58,6 +72,7 @@
             <div class="sidebar-footer">
                 <span class="user-label">Logged in as</span>
                 <div class="user-session-row">
+                    <i class='bx bx-user sidebar-user-icon' aria-hidden="true" title="ADMIN"></i>
                     <span class="user-name">ADMIN</span>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
                         @Html.AntiForgeryToken()
