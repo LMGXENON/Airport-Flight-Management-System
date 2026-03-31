@@ -126,6 +126,11 @@ public class FlightDetailsService
             validation.AddError("Destination is missing");
         }
 
+        if (!string.IsNullOrWhiteSpace(flight.Origin) && flight.Origin.Length > 100)
+        {
+            validation.AddWarning("Origin exceeds maximum length");
+        }
+
         if (flight.ArrivalTime <= flight.DepartureTime)
         {
             validation.AddError("Arrival time must be after departure time");
