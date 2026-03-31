@@ -201,7 +201,7 @@ body:not(.dark-theme) .sidebar .nav-item.active {
     font-size: 10px;
     color: var(--text-secondary);
     text-transform: uppercase;
-    
+
 }
 
 .user-name {
@@ -631,6 +631,11 @@ body:not(.dark-theme) .stat-card {
     height: 20px;
 }
 
+.stat-icon i {
+    font-size: 20px;
+    line-height: 1;
+}
+
 .stat-icon--flights {
     background: rgba(65, 105, 225, 0.16);
     color: #7ca4ff;
@@ -699,6 +704,7 @@ body:not(.dark-theme) .stat-card {
     from {
         background-position: 180% 0;
     }
+
     to {
         background-position: -40% 0;
     }
@@ -735,6 +741,7 @@ body:not(.dark-theme) .stat-badge.unavailable {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .stat-value-skeleton::before,
     .stat-badge-skeleton::before {
         animation: none;
@@ -1205,7 +1212,7 @@ body:not(.dark-theme) .status-scheduled {
     text-align: center;
     font-weight: 600;
     font-size: 14px;
-    
+
 }
 
 .modal-status-banner.status-ontime {
@@ -1330,13 +1337,13 @@ body:not(.dark-theme) .status-scheduled {
         flex-direction: column;
         gap: 32px;
     }
-    
+
     .modal-airport-block {
         width: 100%;
     }
-    
+
     .flight-duration {
-    flex-direction: column;
+        flex-direction: column;
         transform: rotate(90deg);
     }
 }
@@ -1647,7 +1654,7 @@ body:not(.dark-theme) .logout-btn.btn-danger:hover {
     .sidebar.open {
         transform: translateX(0);
     }
-    
+
     .main-content {
         margin-left: 0;
     }
@@ -1655,7 +1662,7 @@ body:not(.dark-theme) .logout-btn.btn-danger:hover {
     .sidebar-toggle {
         display: block;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
