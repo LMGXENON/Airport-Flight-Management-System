@@ -68,6 +68,10 @@ public class FlightSyncService
                     ? (arrivalLeg?.Airport?.Iata ?? "Unknown")
                     : (departureLeg?.Airport?.Iata ?? "Unknown");
 
+                var origin = extFlight.Direction == "Departure"
+                    ? (departureLeg?.Airport?.Iata ?? airportCode)
+                    : (arrivalLeg?.Airport?.Iata ?? "Unknown");
+
                 var gate = extFlight.Direction == "Departure" 
                     ? departureLeg?.Gate 
                     : arrivalLeg?.Gate;
@@ -141,6 +145,7 @@ public class FlightSyncService
                     {
                         FlightNumber = flightNumber,
                         Airline = airline,
+                        Origin = origin,
                         Destination = destination,
                         DepartureTime = departureTime,
                         ArrivalTime = arrivalTime,
