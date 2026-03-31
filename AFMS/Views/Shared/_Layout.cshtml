@@ -52,18 +52,24 @@
                     <i class='bx bx-tachometer nav-icon' aria-hidden="true"></i>
                     <span class="nav-label">Dashboard</span>
                 </a>
-                <a href="@Url.Action("Add", "Flight")" class="nav-item @(currentController == "Flight" && currentAction == "Add" ? "active" : "")" title="Add Flight">
-                    <i class='bx bx-plus-circle nav-icon' aria-hidden="true"></i>
-                    <span class="nav-label">Add Flight</span>
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="@Url.Action("Add", "Flight")" class="nav-item @(currentController == "Flight" && currentAction == "Add" ? "active" : "")" title="Add Flight">
+                        <i class='bx bx-plus-circle nav-icon' aria-hidden="true"></i>
+                        <span class="nav-label">Add Flight</span>
+                    </a>
+                }
                 <a href="@Url.Action("Index", "Flight")" class="nav-item @(currentController == "Flight" && currentAction != "Add" ? "active" : "")" title="Flight Details">
                     <i class='bx bx-list-ul nav-icon' aria-hidden="true"></i>
                     <span class="nav-label">Flight Details</span>
                 </a>
-                <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")" title="Advanced Search">
-                    <i class='bx bx-search-alt nav-icon' aria-hidden="true"></i>
-                    <span class="nav-label">Advanced Search</span>
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")" title="Advanced Search">
+                        <i class='bx bx-search-alt nav-icon' aria-hidden="true"></i>
+                        <span class="nav-label">Advanced Search</span>
+                    </a>
+                }
             </nav>
 
             <!-- Collapse toggle — sits between nav and footer -->

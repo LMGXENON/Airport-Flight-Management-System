@@ -212,6 +212,7 @@ public class HomeController : Controller
         };
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AdvancedSearch(
         string? search,
         string? flight,
