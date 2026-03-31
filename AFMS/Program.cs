@@ -334,6 +334,16 @@ static void ApplyStartupSchemaUpdates(ApplicationDbContext dbContext, ILogger st
                 startupLogger.LogDebug("AircraftType column already exists; skipping startup schema update.");
             }
 
+            if (!SqliteColumnExists(dbContext, "Flights", "Origin"))
+            {
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE Flights ADD COLUMN Origin TEXT NULL");
+                startupLogger.LogInformation("Added missing Origin column to Flights table.");
+            }
+            else
+            {
+                startupLogger.LogDebug("Origin column already exists; skipping startup schema update.");
+            }
+
             if (!SqliteIndexExists(dbContext, "IX_Flights_FlightNumber_DepartureTime"))
             {
                 dbContext.Database.ExecuteSqlRaw("CREATE INDEX IX_Flights_FlightNumber_DepartureTime ON Flights (FlightNumber, DepartureTime)");
