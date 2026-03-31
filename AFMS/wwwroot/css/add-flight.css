@@ -149,18 +149,18 @@
 /* ── Hero strip ──────────────────────────────────────────────── */
 .details-hero {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 5px;
     padding: 22px 28px;
     background: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
-    gap: 16px;
 }
 
-.details-hero-info {
+.details-hero-top {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .details-flight-num {
@@ -176,6 +176,24 @@
     font-size: 13px;
     color: var(--text-secondary);
     font-weight: 500;
+}
+
+.details-delay-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: 500;
+    color: #fbbf24;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.details-delay-note i {
+    font-size: 14px;
+    font-style: normal;
+    flex-shrink: 0;
 }
 
 /* ── Generic section wrapper ─────────────────────────────────── */

@@ -11,13 +11,20 @@
 
 <div class="details-card">
 
-    <!-- ── Hero: flight number + badge ──────────────────────── -->
+    <!-- ── Hero: flight number + badge inline ─────────────────── -->
     <div class="details-hero">
-        <div class="details-hero-info">
+        <div class="details-hero-top">
             <span class="details-flight-num">@Model.FlightNumber</span>
-            <span class="details-airline">@Model.Airline</span>
+            <span class="status-badge @Model.StatusClass">@Model.StatusLabel</span>
         </div>
-        <span class="status-badge @Model.StatusClass">@Model.StatusLabel</span>
+        <span class="details-airline">@Model.Airline</span>
+        @if (Model.StatusClass == "status-delayed")
+        {
+            <span class="details-delay-note">
+                <i class='bx bx-time-five' aria-hidden="true"></i>
+                Delayed &mdash; original departure: @Model.DepartureTimeFormatted
+            </span>
+        }
     </div>
 
     <!-- ── Section 1: Route ──────────────────────────────────── -->
