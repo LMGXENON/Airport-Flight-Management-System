@@ -53,7 +53,13 @@ public class HomeController : Controller
         ["lgw"] = "LGW",
         ["stansted"] = "STN",
         ["london stansted"] = "STN",
-        ["stn"] = "STN"
+        ["stn"] = "STN",
+        ["luton"] = "LTN",
+        ["london luton"] = "LTN",
+        ["ltn"] = "LTN",
+        ["city"] = "LCY",
+        ["london city"] = "LCY",
+        ["lcy"] = "LCY"
     };
     private static readonly (string Icao, string Iata, string Name)[] DashboardAirportOptions =
     [
