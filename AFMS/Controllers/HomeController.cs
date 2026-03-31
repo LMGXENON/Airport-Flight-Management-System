@@ -60,6 +60,8 @@ public class HomeController : Controller
         ("EGLL", "LHR", "London Heathrow Airport"),
         ("EGKK", "LGW", "London Gatwick Airport"),
         ("EGSS", "STN", "London Stansted Airport"),
+        ("EGGW", "LTN", "London Luton Airport"),
+        ("EGLC", "LCY", "London City Airport"),
         ("KJFK", "JFK", "New York JFK Airport"),
         ("KLAX", "LAX", "Los Angeles Airport")
     ];
