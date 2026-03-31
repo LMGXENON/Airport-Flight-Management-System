@@ -81,45 +81,70 @@ body {
 }
 
 .sidebar-header {
-    padding: 0 12px;
+    padding: 16px;
     display: flex;
     align-items: center;
     gap: 10px;
     border-bottom: 1px solid rgba(136, 145, 178, 0.22);
     flex-shrink: 0;
     height: 68px;
-    transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+/* Collapse/expand toggle button — styled like a nav item */
+.sidebar-collapse-section {
+    padding: 4px 10px 8px;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(136, 145, 178, 0.14);
+}
+
+.sidebar.collapsed .sidebar-collapse-section {
+    padding: 4px 8px 8px;
 }
 
 .sidebar-collapse-btn {
-    margin-left: auto;
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-    background: transparent;
-    color: var(--text-secondary);
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 18px;
-    line-height: 1;
-    z-index: 10;
-    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    font-family: inherit;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .sidebar-collapse-btn:hover {
-    background-color: rgba(65, 105, 225, 0.14);
+    background-color: rgba(65, 105, 225, 0.1);
     color: var(--text-primary);
 }
 
-/* Chevron rotates to point right when collapsed (= expand) */
-.sidebar.collapsed .sidebar-collapse-btn {
+body:not(.dark-theme) .sidebar-collapse-btn {
+    color: #111111;
+}
+
+/* The chevron icon rotates 180° when collapsed (points right = expand) */
+.sidebar-collapse-btn .nav-icon {
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn .nav-icon {
     transform: rotate(180deg);
-    margin-left: 0;
+}
+
+/* Collapsed state: center the button and hide its label */
+.sidebar.collapsed .sidebar-collapse-btn {
+    justify-content: center;
+    padding: 10px;
+    gap: 0;
 }
 
 .app-logo {
@@ -131,21 +156,6 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: opacity 0.2s ease, width 0.28s cubic-bezier(0.4, 0, 0.2, 1), margin 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* In collapsed state: hide logo, center just the chevron */
-.sidebar.collapsed .app-logo {
-    width: 0;
-    opacity: 0;
-    overflow: hidden;
-    margin: 0;
-}
-
-.sidebar.collapsed .sidebar-header {
-    justify-content: center;
-    padding: 0;
-    gap: 0;
 }
 
 .app-info {
