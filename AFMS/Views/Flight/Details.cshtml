@@ -10,49 +10,100 @@
 </div>
 
 <div class="details-card">
-    <div class="details-header">
-        <div>
-            <h2 class="details-flight-number">@Model.FlightNumber</h2>
-            <p class="details-airline">@Model.Airline</p>
+
+    <!-- ── Hero: flight number + badge ──────────────────────── -->
+    <div class="details-hero">
+        <div class="details-hero-info">
+            <span class="details-flight-num">@Model.FlightNumber</span>
+            <span class="details-airline">@Model.Airline</span>
         </div>
         <span class="status-badge @Model.StatusClass">@Model.StatusLabel</span>
     </div>
 
-    <div class="details-grid">
-        <div class="detail-item">
-            <p class="detail-label">Destination</p>
-            <p class="detail-value">@Model.Destination</p>
-        </div>
-        <div class="detail-item">
-            <p class="detail-label">Aircraft Type</p>
-            <p class="detail-value">@Model.AircraftType</p>
-        </div>
-        <div class="detail-item">
-            <p class="detail-label">Departure Time</p>
-            <p class="detail-value">@Model.DepartureTimeFormatted</p>
-        </div>
-        <div class="detail-item">
-            <p class="detail-label">Arrival Time</p>
-            <p class="detail-value">@Model.ArrivalTimeFormatted</p>
-        </div>
-        <div class="detail-item">
-            <p class="detail-label">Gate</p>
-            <p class="detail-value">@Model.FormattedGate</p>
-        </div>
-        <div class="detail-item">
-            <p class="detail-label">Terminal</p>
-            <p class="detail-value">@Model.FormattedTerminal</p>
-        </div>
-        <div class="detail-item">
-            <p class="detail-label">Flight Duration</p>
-            <p class="detail-value">@Model.FlightDuration</p>
+    <!-- ── Section 1: Route ──────────────────────────────────── -->
+    <div class="details-section">
+        <h3 class="details-section-title">
+            <i class='bx bx-map' aria-hidden="true"></i> Route
+        </h3>
+        <div class="details-route">
+            <div class="details-route-airport">
+                <span class="details-route-dir-label">From</span>
+                <span class="details-route-name">@(!string.IsNullOrWhiteSpace(Model.Origin) ? Model.Origin : "—")</span>
+            </div>
+            <div class="details-route-sep">
+                <div class="details-route-line"></div>
+                <i class='bx bxs-plane-alt' aria-hidden="true"></i>
+                <div class="details-route-line"></div>
+            </div>
+            <div class="details-route-airport details-route-airport--dest">
+                <span class="details-route-dir-label">To</span>
+                <span class="details-route-name">@Model.Destination</span>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="detail-actions">
-    <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" class="btn btn-warning">Edit Flight</a>
-    <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" class="btn btn-danger">Delete Flight</a>
-</div>
+    <!-- ── Section 2: Timing ─────────────────────────────────── -->
+    <div class="details-section">
+        <h3 class="details-section-title">
+            <i class='bx bx-time' aria-hidden="true"></i> Timing
+        </h3>
+        <div class="details-timing-grid">
+            <div class="details-timing-item">
+                <span class="details-timing-label">Departure</span>
+                <span class="details-timing-value">@Model.DepartureTimeFormatted</span>
+            </div>
+            <div class="details-timing-item details-timing-item--center">
+                <span class="details-timing-label">Duration</span>
+                <span class="details-timing-value details-timing-value--pill">@Model.FlightDuration</span>
+            </div>
+            <div class="details-timing-item details-timing-item--right">
+                <span class="details-timing-label">Arrival</span>
+                <span class="details-timing-value">@Model.ArrivalTimeFormatted</span>
+            </div>
+        </div>
+    </div>
 
+    <!-- ── Section 3: Operations ─────────────────────────────── -->
+    <div class="details-section">
+        <h3 class="details-section-title">
+            <i class='bx bx-briefcase' aria-hidden="true"></i> Operations
+        </h3>
+        <div class="details-logistics-grid">
+            <div class="details-logistics-item">
+                <span class="details-logistics-label">
+                    <i class='bx bx-door-open' aria-hidden="true"></i> Gate
+                </span>
+                <span class="details-logistics-value">@Model.FormattedGate</span>
+            </div>
+            <div class="details-logistics-item">
+                <span class="details-logistics-label">
+                    <i class='bx bx-building' aria-hidden="true"></i> Terminal
+                </span>
+                <span class="details-logistics-value">@Model.FormattedTerminal</span>
+            </div>
+            <div class="details-logistics-item">
+                <span class="details-logistics-label">
+                    <i class='bx bxs-plane-alt' aria-hidden="true"></i> Aircraft
+                </span>
+                <span class="details-logistics-value">@Model.AircraftType</span>
+            </div>
+        </div>
+    </div>
 
+</div><!-- /.details-card -->
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="detail-actions">
+        <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" class="btn btn-warning">
+            <i class='bx bx-edit-alt' aria-hidden="true"></i> Edit Flight
+        </a>
+        <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" class="btn btn-danger">
+            <i class='bx bx-trash' aria-hidden="true"></i> Delete Flight
+        </a>
+    </div>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/add-flight.css" asp-append-version="true" />
+}
