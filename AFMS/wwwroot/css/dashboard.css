@@ -201,7 +201,7 @@ body:not(.dark-theme) .sidebar .nav-item.active {
     font-size: 10px;
     color: var(--text-secondary);
     text-transform: uppercase;
-    
+
 }
 
 .user-name {
@@ -310,14 +310,14 @@ body.dark-theme .theme-toggle-btn:hover {
     align-items: flex-end;
     gap: 2px;
     padding: 8px 12px;
-    border: 1px solid rgba(136, 145, 178, 0.18);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
-    background: linear-gradient(180deg, rgba(37, 43, 74, 0.92), rgba(26, 31, 58, 0.78));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(232, 238, 251, 0.92));
+    box-shadow: 0 10px 24px rgba(22, 32, 58, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     min-width: 116px;
 }
 
-.time-label {
+.current-time .time-label {
     font-size: 9px;
     font-weight: 700;
     color: var(--text-secondary);
@@ -326,13 +326,19 @@ body.dark-theme .theme-toggle-btn:hover {
     line-height: 1;
 }
 
-.time-value {
+.current-time .time-value {
     font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
     font-family: 'Oxanium', sans-serif;
     letter-spacing: 0.06em;
     line-height: 1;
+}
+
+body.dark-theme .current-time {
+    border-color: rgba(136, 145, 178, 0.18);
+    background: linear-gradient(180deg, rgba(37, 43, 74, 0.92), rgba(26, 31, 58, 0.78));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .avatar-btn {
@@ -625,6 +631,11 @@ body:not(.dark-theme) .stat-card {
     height: 20px;
 }
 
+.stat-icon i {
+    font-size: 20px;
+    line-height: 1;
+}
+
 .stat-icon--flights {
     background: rgba(65, 105, 225, 0.16);
     color: #7ca4ff;
@@ -693,6 +704,7 @@ body:not(.dark-theme) .stat-card {
     from {
         background-position: 180% 0;
     }
+
     to {
         background-position: -40% 0;
     }
@@ -729,6 +741,7 @@ body:not(.dark-theme) .stat-badge.unavailable {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .stat-value-skeleton::before,
     .stat-badge-skeleton::before {
         animation: none;
@@ -1199,7 +1212,7 @@ body:not(.dark-theme) .status-scheduled {
     text-align: center;
     font-weight: 600;
     font-size: 14px;
-    
+
 }
 
 .modal-status-banner.status-ontime {
@@ -1324,13 +1337,13 @@ body:not(.dark-theme) .status-scheduled {
         flex-direction: column;
         gap: 32px;
     }
-    
+
     .modal-airport-block {
         width: 100%;
     }
-    
+
     .flight-duration {
-    flex-direction: column;
+        flex-direction: column;
         transform: rotate(90deg);
     }
 }
@@ -1641,7 +1654,7 @@ body:not(.dark-theme) .logout-btn.btn-danger:hover {
     .sidebar.open {
         transform: translateX(0);
     }
-    
+
     .main-content {
         margin-left: 0;
     }
@@ -1649,7 +1662,7 @@ body:not(.dark-theme) .logout-btn.btn-danger:hover {
     .sidebar-toggle {
         display: block;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
