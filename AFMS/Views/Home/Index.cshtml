@@ -5,9 +5,6 @@
 
     var selectedAirportName = ViewBag.SelectedAirportName as string ?? "London Heathrow Airport";
     var selectedAirportIata = ViewBag.SelectedAirportIata as string ?? "LHR";
-    var selectedAirportIcao = ViewBag.SelectedAirportIcao as string ?? "EGLL";
-    var airportOptions = ViewBag.AirportOptions as IEnumerable<KeyValuePair<string, string>>
-        ?? Enumerable.Empty<KeyValuePair<string, string>>();
     var lastSyncedDisplay = ViewBag.LastSyncedDisplay as string ?? "--:--";
 
     var apiUnavailable = ViewBag.ApiError != null;
@@ -28,17 +25,8 @@
 <div class="page-header page-header--split">
     <div>
         <h1 class="page-title dashboard-title">Dashboard</h1>
-        <p class="page-subtitle">@selectedAirportName (@selectedAirportIata/@selectedAirportIcao) - Live Flight Data</p>
+        <p class="page-subtitle">@selectedAirportName (@selectedAirportIata/EGLL) - Live Flight Data</p>
     </div>
-    <form method="get" class="airport-switcher-form" aria-label="Choose dashboard airport">
-        <label for="airportSwitcher" class="airport-switcher-label">Airport</label>
-        <select id="airportSwitcher" name="airport" class="airport-switcher-select" onchange="this.form.submit()">
-            @foreach (var option in airportOptions)
-            {
-                <option value="@option.Key" selected="@(option.Key == selectedAirportIcao)">@option.Value</option>
-            }
-        </select>
-    </form>
 </div>
 
 <!-- Stats Grid - Main -->

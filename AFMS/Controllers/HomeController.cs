@@ -61,16 +61,8 @@ public class HomeController : Controller
         ["london city"] = "LCY",
         ["lcy"] = "LCY"
     };
-    private static readonly (string Icao, string Iata, string Name)[] DashboardAirportOptions =
-    [
-        ("EGLL", "LHR", "London Heathrow Airport"),
-        ("EGKK", "LGW", "London Gatwick Airport"),
-        ("EGSS", "STN", "London Stansted Airport"),
-        ("EGGW", "LTN", "London Luton Airport"),
-        ("EGLC", "LCY", "London City Airport"),
-        ("KJFK", "JFK", "New York JFK Airport"),
-        ("KLAX", "LAX", "Los Angeles Airport")
-    ];
+    private static readonly (string Icao, string Iata, string Name) HeathrowAirport =
+        ("EGLL", "LHR", "London Heathrow Airport");
 
     private readonly AeroDataBoxService _aeroDataBoxService;
     private readonly FlightSearchService _flightSearchService;
@@ -104,30 +96,15 @@ public class HomeController : Controller
         _logger              = logger;
     }
 
-    public async Task<IActionResult> Index(string? airport)
+    public async Task<IActionResult> Index()
     {
-        var configuredAirport = (_configuration["AeroDataBox:DefaultAirport"] ?? "EGLL").Trim().ToUpperInvariant();
-        var preferredAirport = (Request.Cookies["afms_default_airport"] ?? string.Empty).Trim().ToUpperInvariant();
-        var defaultAirport = DashboardAirportOptions.Any(a => a.Icao.Equals(preferredAirport, StringComparison.OrdinalIgnoreCase))
-            ? preferredAirport
-            : configuredAirport;
-        var selectedAirportCode = ResolveDashboardAirportCode(airport, defaultAirport);
-        var selectedAirport = DashboardAirportOptions
-            .FirstOrDefault(a => a.Icao.Equals(selectedAirportCode, StringComparison.OrdinalIgnoreCase));
-
-        var selectedAirportName = string.IsNullOrWhiteSpace(selectedAirport.Name)
-            ? selectedAirportCode
-            : selectedAirport.Name;
-        var selectedAirportIata = string.IsNullOrWhiteSpace(selectedAirport.Iata)
-            ? selectedAirportCode
-            : selectedAirport.Iata;
+        var selectedAirportCode = HeathrowAirport.Icao;
+        var selectedAirportName = HeathrowAirport.Name;
+        var selectedAirportIata = HeathrowAirport.Iata;
 
         ViewBag.SelectedAirportIcao = selectedAirportCode;
         ViewBag.SelectedAirportIata = selectedAirportIata;
         ViewBag.SelectedAirportName = selectedAirportName;
-        ViewBag.AirportOptions = DashboardAirportOptions
-            .Select(a => new KeyValuePair<string, string>(a.Icao, $"{a.Name} ({a.Iata}/{a.Icao})"))
-            .ToList();
 
         var londonTime = GetLondonNow();
         var cacheKey = $"flights_{selectedAirportCode}_{londonTime:yyyyMMddHH}";
@@ -205,28 +182,7 @@ public class HomeController : Controller
             sortedFlights.Add(CreateSyntheticFlight(dbFlight, homeAirportIata));
     }
 
-    private static string ResolveDashboardAirportCode(string? requestedAirport, string fallbackAirport)
-    {
-        // Always resolve to ICAO because upstream API calls use ICAO airport codes.
-        var fallback = string.IsNullOrWhiteSpace(fallbackAirport)
-            ? "EGLL"
-            : fallbackAirport.Trim().ToUpperInvariant();
 
-        if (string.IsNullOrWhiteSpace(requestedAirport))
-            return fallback;
-
-        var normalized = requestedAirport.Trim().ToUpperInvariant();
-
-        if (DashboardAirportOptions.Any(a => a.Icao.Equals(normalized, StringComparison.OrdinalIgnoreCase)))
-            return normalized;
-
-        var byIata = DashboardAirportOptions
-            .FirstOrDefault(a => a.Iata.Equals(normalized, StringComparison.OrdinalIgnoreCase));
-        if (!string.IsNullOrWhiteSpace(byIata.Icao))
-            return byIata.Icao;
-
-        return fallback;
-    }
 
     private static AeroDataBoxFlight CreateSyntheticFlight(Flight dbFlight, string homeAirportIata)
     {
