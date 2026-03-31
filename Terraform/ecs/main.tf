@@ -122,6 +122,30 @@ resource "aws_ecs_task_definition" "afms-task" {
           value = var.default_airport
         },
         {
+          name  = "AUTH_ADMIN_USERNAME"
+          value = var.auth_admin_username
+        },
+        {
+          name  = "AUTH_ADMIN_PASSWORD"
+          value = var.auth_admin_password
+        },
+        {
+          name  = "AUTH_JWT_SECRET"
+          value = var.auth_jwt_secret
+        },
+        {
+          name  = "AUTH_ISSUER"
+          value = var.auth_issuer
+        },
+        {
+          name  = "AUTH_AUDIENCE"
+          value = var.auth_audience
+        },
+        {
+          name  = "AUTH_TOKEN_EXPIRY_HOURS"
+          value = tostring(var.auth_token_expiry_hours)
+        },
+        {
           name  = "DATA_PROTECTION_KEYS_PATH"
           value = var.data_protection_keys_path
         }
