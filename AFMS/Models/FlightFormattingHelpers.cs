@@ -22,11 +22,19 @@ public static class FlightFormattingHelpers
         return normalizedCode switch
         {
             "EGLL" => "LHR",
+            "EGKK" => "LGW",
+            "EGSS" => "STN",
             "KJFK" => "JFK",
             "KLAX" => "LAX",
             "OMDB" => "DXB",
             "EDDF" => "FRA",
             "RJTT" => "HND",
+            "LFPG" => "CDG",
+            "LEMD" => "MAD",
+            "EHAM" => "AMS",
+            "LTFM" => "IST",
+            "VHHH" => "HKG",
+            "WSSS" => "SIN",
             _ => normalizedCode
         };
     }

@@ -108,4 +108,44 @@ public class FlightFormattingHelpersTests
 
         Assert.Equal("n/a", result);
     }
+
+    [Fact]
+    public void ConvertToIata_MapsGatwickIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("EGKK");
+
+        Assert.Equal("LGW", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsStanstedIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("EGSS");
+
+        Assert.Equal("STN", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsCharlesDeGaulleIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("LFPG");
+
+        Assert.Equal("CDG", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsMadridIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("LEMD");
+
+        Assert.Equal("MAD", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsAmsterdamIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("EHAM");
+
+        Assert.Equal("AMS", result);
+    }
 }

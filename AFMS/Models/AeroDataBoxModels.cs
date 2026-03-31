@@ -41,6 +41,7 @@ public class Airport
     public string? ShortName { get; set; }
     public string? MunicipalityName { get; set; }
     public string? CountryCode { get; set; }
+    public string? TimeZone { get; set; }
 }
 
 public class ScheduledTime

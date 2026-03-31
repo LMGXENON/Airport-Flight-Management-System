@@ -44,6 +44,7 @@ public static class FlightStatusCatalog
             ["gateclose"] = "Departed",
             ["gateclosing"] = "Departed",
             ["approaching"] = "Departed",
+            ["taxiing"] = "Departed",
 
             ["arrived"] = "Arrived",
             ["arriving"] = "Arrived",
