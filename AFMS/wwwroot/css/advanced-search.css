@@ -237,6 +237,17 @@
     content: none;
 }
 
+.choice-field__icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: rgba(225, 231, 255, 0.55);
+    pointer-events: none;
+    z-index: 1;
+}
+
 .choice-field--time::before {
     content: '◷';
 }
@@ -664,6 +675,10 @@ body:not(.dark-theme) .form-input[type="time"] {
 body:not(.dark-theme) .form-input[type="date"]::-webkit-calendar-picker-indicator,
 body:not(.dark-theme) .form-input[type="time"]::-webkit-calendar-picker-indicator {
     display: none;
+}
+
+body:not(.dark-theme) .choice-field__icon {
+    color: #6b7aa3;
 }
 
 body:not(.dark-theme) .btn-secondary:hover {
