@@ -4,37 +4,46 @@
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    --ai-chat-toggle-icon: #f8fbff;
+    --ai-chat-toggle-bg: linear-gradient(145deg, #000000 0%, #2b4db2 100%);
+    --ai-chat-toggle-border: rgba(160, 186, 255, 0.38);
+    --ai-chat-toggle-shadow: 0 10px 24px rgba(16, 32, 78, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    --ai-chat-toggle-hover-bg: linear-gradient(145deg, #5b83f3 0%, #446be0 100%);
+    --ai-chat-toggle-hover-shadow: 0 12px 28px rgba(18, 36, 86, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    --ai-chat-toggle-focus-ring: rgba(124, 164, 255, 0.33);
 }
 
-body.dark-theme .ai-chat-container {
-    --ai-chat-toggle-icon: var(--accent-blue);
+body:not(.dark-theme) .ai-chat-container {
+    --ai-chat-toggle-bg: linear-gradient(145deg, #a0edf4 0%, #3ecfe0 100%);
+    --ai-chat-toggle-border: rgba(64, 208, 225, 0.98);
+    --ai-chat-toggle-shadow: 0 10px 24px rgba(39, 179, 196, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    --ai-chat-toggle-hover-bg: linear-gradient(145deg, #b6f3f7 0%, #52d8e7 100%);
+    --ai-chat-toggle-hover-shadow: 0 12px 28px rgba(39, 179, 196, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    --ai-chat-toggle-focus-ring: rgba(119, 230, 238, 0.56);
 }
 
 .ai-chat-toggle {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(145deg, #000000 0%, #2b4db2 100%);
-    border: 1px solid rgb(0 0 0 / 38%);
+    background: var(--ai-chat-toggle-bg);
+    border: 1px solid var(--ai-chat-toggle-border);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 24px rgba(16, 32, 78, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    color: var(--ai-chat-toggle-icon);
+    box-shadow: var(--ai-chat-toggle-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .ai-chat-toggle:hover {
     transform: translateY(-1px) scale(1.04);
-    background: linear-gradient(145deg, #5b83f3 0%, #446be0 100%);
-    box-shadow: 0 12px 28px rgba(18, 36, 86, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    background: var(--ai-chat-toggle-hover-bg);
+    box-shadow: var(--ai-chat-toggle-hover-shadow);
 }
 
 .ai-chat-toggle:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(124, 164, 255, 0.33), 0 10px 24px rgba(16, 32, 78, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    box-shadow: 0 0 0 3px var(--ai-chat-toggle-focus-ring), var(--ai-chat-toggle-shadow);
 }
 
 .ai-chat-toggle:active {
