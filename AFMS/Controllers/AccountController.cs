@@ -336,6 +336,7 @@ public class AccountController : Controller
         var configuredUsername = (_configuration["Auth:AdminUsername"] ?? string.Empty).Trim();
         var configuredPassword = _configuration["Auth:AdminPassword"] ?? string.Empty;
         var requestedUsername = username.Trim();
+        var normalizedConfiguredUsername = configuredUsername.ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(configuredUsername))
         {
@@ -348,13 +349,27 @@ public class AccountController : Controller
         }
 
         var storedCredential = await _context.AuthCredentials
-            .FirstOrDefaultAsync(c => c.Username == configuredUsername);
+            .FirstOrDefaultAsync(c => c.Username.ToUpper() == normalizedConfiguredUsername);
 
         if (storedCredential is not null)
         {
-            var result = _passwordHasher.VerifyHashedPassword(configuredUsername, storedCredential.PasswordHash, password);
+            var hashUsername = string.IsNullOrWhiteSpace(storedCredential.Username)
+                ? configuredUsername
+                : storedCredential.Username;
+
+            var result = _passwordHasher.VerifyHashedPassword(hashUsername, storedCredential.PasswordHash, password);
             if (result != PasswordVerificationResult.Failed)
             {
+                // Keep credential identity stable so future hash verification remains deterministic.
+                if (!string.Equals(hashUsername, configuredUsername, StringComparison.Ordinal)
+                    || result == PasswordVerificationResult.SuccessRehashNeeded)
+                {
+                    storedCredential.Username = configuredUsername;
+                    storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredUsername, password);
+                    storedCredential.UpdatedUtc = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+
                 return (true, configuredUsername);
             }
 
