@@ -357,12 +357,33 @@ public class AccountController : Controller
                 ? configuredUsername
                 : storedCredential.Username;
 
-            var result = _passwordHasher.VerifyHashedPassword(hashUsername, storedCredential.PasswordHash, password);
-            if (result != PasswordVerificationResult.Failed)
+            var verificationCandidates = new[]
             {
-                // Keep credential identity stable so future hash verification remains deterministic.
-                if (!string.Equals(hashUsername, configuredUsername, StringComparison.Ordinal)
-                    || result == PasswordVerificationResult.SuccessRehashNeeded)
+                hashUsername,
+                configuredUsername,
+                requestedUsername
+            }
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+            var hashMatched = false;
+            var needsRehash = false;
+            foreach (var candidate in verificationCandidates)
+            {
+                var result = _passwordHasher.VerifyHashedPassword(candidate, storedCredential.PasswordHash, password);
+                if (result != PasswordVerificationResult.Failed)
+                {
+                    hashMatched = true;
+                    needsRehash = result == PasswordVerificationResult.SuccessRehashNeeded
+                        || !string.Equals(storedCredential.Username, configuredUsername, StringComparison.Ordinal);
+                    break;
+                }
+            }
+
+            if (hashMatched)
+            {
+                if (needsRehash)
                 {
                     storedCredential.Username = configuredUsername;
                     storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredUsername, password);
@@ -370,6 +391,17 @@ public class AccountController : Controller
                     await _context.SaveChangesAsync();
                 }
 
+                return (true, configuredUsername);
+            }
+
+            // Legacy recovery path: if an old row stored plain text instead of a hash,
+            // accept once and migrate to a proper hash.
+            if (string.Equals(storedCredential.PasswordHash, password, StringComparison.Ordinal))
+            {
+                storedCredential.Username = configuredUsername;
+                storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredUsername, password);
+                storedCredential.UpdatedUtc = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
                 return (true, configuredUsername);
             }
 
