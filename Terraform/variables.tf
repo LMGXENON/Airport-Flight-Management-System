@@ -53,6 +53,13 @@ variable "deepseek_max_requests_per_minute" {
   default     = 5
 }
 
+variable "aerodatabox_api_key" {
+  description = "AeroDataBox API key for live flight data"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "auth_admin_username" {
   description = "Admin username for AFMS login"
   type        = string
