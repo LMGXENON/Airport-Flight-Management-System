@@ -81,6 +81,7 @@ namespace AFMS.Controllers
         }
 
         // GET: Flight/Add
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add()
         {
             var now = DateTime.Now;
@@ -96,6 +97,7 @@ namespace AFMS.Controllers
         }
 
         // POST: Flight/Add
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(Flight flight)
@@ -135,6 +137,7 @@ namespace AFMS.Controllers
         }
 
         // GET: Flight/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -154,6 +157,7 @@ namespace AFMS.Controllers
         }
 
         // POST: Flight/Edit/5
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Flight flight)
@@ -191,6 +195,7 @@ namespace AFMS.Controllers
         }
 
         // GET: Flight/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -208,6 +213,7 @@ namespace AFMS.Controllers
         }
 
         // POST: Flight/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

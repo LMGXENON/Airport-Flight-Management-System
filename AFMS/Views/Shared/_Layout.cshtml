@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true"/>
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <script src="~/js/i18n.js" asp-append-version="true"></script>
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -50,36 +51,42 @@
             <nav class="sidebar-nav">
                 <a href="@Url.Action("Index", "Home")" class="nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="Dashboard">
                     <i class='bx bx-tachometer nav-icon' aria-hidden="true"></i>
-                    <span class="nav-label">Dashboard</span>
+                    <span class="nav-label" data-i18n="nav.dashboard">Dashboard</span>
                 </a>
-                <a href="@Url.Action("Add", "Flight")" class="nav-item @(currentController == "Flight" && currentAction == "Add" ? "active" : "")" title="Add Flight">
-                    <i class='bx bx-plus-circle nav-icon' aria-hidden="true"></i>
-                    <span class="nav-label">Add Flight</span>
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="@Url.Action("Add", "Flight")" class="nav-item @(currentController == "Flight" && currentAction == "Add" ? "active" : "")" title="Add Flight">
+                        <i class='bx bx-plus-circle nav-icon' aria-hidden="true"></i>
+                        <span class="nav-label" data-i18n="nav.addFlight">Add Flight</span>
+                    </a>
+                }
                 <a href="@Url.Action("Index", "Flight")" class="nav-item @(currentController == "Flight" && currentAction != "Add" ? "active" : "")" title="Flight Details">
                     <i class='bx bx-list-ul nav-icon' aria-hidden="true"></i>
-                    <span class="nav-label">Flight Details</span>
+                    <span class="nav-label" data-i18n="nav.flightDetails">Flight Details</span>
                 </a>
-                <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")" title="Advanced Search">
-                    <i class='bx bx-search-alt nav-icon' aria-hidden="true"></i>
-                    <span class="nav-label">Advanced Search</span>
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="@Url.Action("AdvancedSearch", "Home")" class="nav-item @(currentController == "Home" && currentAction == "AdvancedSearch" ? "active" : "")" title="Advanced Search">
+                        <i class='bx bx-search-alt nav-icon' aria-hidden="true"></i>
+                        <span class="nav-label" data-i18n="nav.advancedSearch">Advanced Search</span>
+                    </a>
+                }
             </nav>
 
             <!-- Collapse toggle — sits between nav and footer -->
             <div class="sidebar-collapse-section">
                 <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse sidebar" title="Collapse sidebar">
                     <i class='bx bx-chevron-left nav-icon' aria-hidden="true"></i>
-                    <span class="nav-label collapse-label">Collapse</span>
+                    <span class="nav-label collapse-label" data-i18n="nav.collapse">Collapse</span>
                 </button>
             </div>            <div class="sidebar-footer">
-                <span class="user-label">Logged in as</span>
+                <span class="user-label" data-i18n="nav.loggedInAs">Logged in as</span>
                 <div class="user-session-row">
                     <i class='bx bx-user sidebar-user-icon' aria-hidden="true" title="ADMIN"></i>
                     <span class="user-name">ADMIN</span>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-danger logout-btn" title="Logout">
+                        <button type="submit" class="btn btn-danger logout-btn" data-i18n-title="nav.logout" title="Logout">
                             <svg class="logout-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="22" height="22" viewBox="0,0,256,256" aria-hidden="true">
                                 <defs>
                                     <linearGradient x1="3.879" y1="3.879" x2="20.121" y2="20.121" gradientUnits="userSpaceOnUse" id="lo-door-fill">
@@ -103,7 +110,7 @@
                                     <path d="M21.95,11.109l-3.893,-3.856c-0.548,-0.542 -1.478,-0.154 -1.478,0.616v2.131h-5.579c-1.105,0 -2,0.895 -2,2c0,1.105 0.895,2 2,2h5.579v2.131c0,0.771 0.93,1.159 1.478,0.616l3.893,-3.856c0.495,-0.491 0.495,-1.291 0,-1.782z" fill="url(#lo-arrow)"/>
                                 </g>
                             </svg>
-                            <span class="logout-text">Logout</span>
+                            <span class="logout-text" data-i18n="nav.logout">Logout</span>
                         </button>
                     </form>
                 </div>
@@ -157,7 +164,7 @@
                         <i class='bx bx-moon theme-toggle-icon' aria-hidden="true"></i>
                     </button>
                     <div class="current-time" aria-label="Current local time">
-                        <span class="time-label">Current Time</span>
+                        <span class="time-label" data-i18n="topbar.currentTime">Current Time</span>
                         <time class="time-value" id="currentTime" datetime="" aria-live="off">00:00:00</time>
                     </div>
                     <div class="user-avatar" id="avatarMenuContainer">
@@ -172,11 +179,11 @@
                             <img src="~/images/AFMS Logo.png" alt="" aria-hidden="true" class="avatar-btn-icon" />
                         </button>
                         <div class="avatar-dropdown" id="avatarDropdownMenu" role="menu" aria-label="User menu" hidden>
-                            <a asp-controller="Account" asp-action="Profile" class="avatar-dropdown-item" role="menuitem">Profile</a>
-                            <a asp-controller="Account" asp-action="Settings" class="avatar-dropdown-item" role="menuitem">Settings</a>
+                            <a asp-controller="Account" asp-action="Profile" class="avatar-dropdown-item" role="menuitem" data-i18n="topbar.profile">Profile</a>
+                            <a asp-controller="Account" asp-action="Settings" class="avatar-dropdown-item" role="menuitem" data-i18n="topbar.settings">Settings</a>
                             <form asp-controller="Account" asp-action="Logout" method="post" class="avatar-dropdown-form">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="avatar-dropdown-item avatar-dropdown-item--danger" role="menuitem">Logout</button>
+                                <button type="submit" class="avatar-dropdown-item avatar-dropdown-item--danger" role="menuitem" data-i18n="topbar.logout">Logout</button>
                             </form>
                         </div>
                     </div>
@@ -198,12 +205,12 @@
                         <img src="~/images/AFMS logo.png" alt="AI" />
                     </div>
                     <div class="ai-chat-title">
-                        <h3 id="aiChatTitle">Flight Assistant</h3>
-                        <p>Search helper for flights and filters</p>
+                        <h3 id="aiChatTitle" data-i18n="ai.title">Flight Assistant</h3>
+                        <p data-i18n="ai.subtitle">Search helper for flights and filters</p>
                     </div>
                 </div>
                 <div class="ai-chat-header-actions">
-                    <button type="button" class="ai-chat-clear" id="aiChatClear">Clear chat</button>
+                    <button type="button" class="ai-chat-clear" id="aiChatClear" data-i18n="ai.clearChat">Clear chat</button>
                     <button type="button" class="ai-chat-close" id="aiChatClose" aria-label="Close chat">×</button>
                 </div>
             </div>
@@ -213,8 +220,8 @@
                     <div class="ai-icon">
                         <img src="~/images/AFMS logo.png" alt="AI" class="ai-icon-image" />
                     </div>
-                    <h4>AI Flight Assistant</h4>
-                    <p>Ask me about flights, schedules, and airport information.</p>
+                    <h4 data-i18n="ai.welcome.title">AI Flight Assistant</h4>
+                    <p data-i18n="ai.welcome.text">Ask me about flights, schedules, and airport information.</p>
                 </div>
             </div>
             
@@ -224,10 +231,11 @@
                         id="chatInput" 
                         class="chat-input-field" 
                         placeholder="Describe your flight search..."
+                        data-i18n-placeholder="ai.inputPlaceholder"
                         aria-label="Ask the flight assistant for search help"
                         rows="1"
                     ></textarea>
-                    <div class="chat-input-hint" id="chatInputHint">Press Enter to send. Shift+Enter adds a new line.</div>
+                    <div class="chat-input-hint" id="chatInputHint" data-i18n="ai.inputHint">Press Enter to send. Shift+Enter adds a new line.</div>
                 </div>
                 <button class="chat-send-btn" id="chatSendBtn" aria-label="Send chat message">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,11 +249,11 @@
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32px" height="32px" viewBox="0,0,256,256" aria-hidden="true"><defs><linearGradient x1="5.691" y1="7.662" x2="22.366" y2="24.338" gradientUnits="userSpaceOnUse" id="ai-plane-color-1"><stop offset="0" stop-color="#004cff" stop-opacity="0.94902"></stop><stop offset="1" stop-color="#0081ff" stop-opacity="0.50196"></stop></linearGradient><linearGradient x1="5.691" y1="7.662" x2="22.366" y2="24.338" gradientUnits="userSpaceOnUse" id="ai-plane-color-2"><stop offset="0" stop-color="#ffffff" stop-opacity="0.6"></stop><stop offset="0.493" stop-color="#ffffff" stop-opacity="0"></stop><stop offset="0.997" stop-color="#ffffff" stop-opacity="0.3"></stop></linearGradient></defs><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8,8)"><path d="M24.29,13.4h-3.37c-0.43,0 -0.86,-0.18 -1.15,-0.51l-7.65,-8.46c-0.25,-0.27 -0.6,-0.43 -0.97,-0.43h-1.45c-0.37,0 -0.61,0.38 -0.46,0.71l4.08,8.89c-1.88,0.14 -4.25,0.33 -6.24,0.5l-2.16,-3.7c-0.14,-0.25 -0.41,-0.4 -0.69,-0.4h-0.63c-0.33,0 -0.6,0.27 -0.6,0.6v10.8c0,0.33 0.27,0.6 0.6,0.6h0.63c0.28,0 0.55,-0.15 0.69,-0.4l2.16,-3.7c1.99,0.17 4.36,0.36 6.24,0.5l-4.08,8.89c-0.15,0.33 0.09,0.71 0.46,0.71h1.45c0.37,0 0.72,-0.16 0.97,-0.43l7.65,-8.46c0.29,-0.33 0.72,-0.51 1.15,-0.51h3.37c4.67,0 5.71,-1.56 5.71,-2.6c0,-1.04 -1.04,-2.6 -5.71,-2.6z" fill="url(#ai-plane-color-1)"></path><path d="M11.15,4.5c0.225,0 0.444,0.098 0.599,0.265l7.645,8.455c0.38,0.432 0.936,0.68 1.526,0.68h3.37c3.841,0 5.21,1.085 5.21,2.1c0,1.015 -1.369,2.1 -5.21,2.1h-3.37c-0.59,0 -1.146,0.248 -1.521,0.675l-7.646,8.456c-0.159,0.171 -0.379,0.27 -0.603,0.27l-1.456,-0.001l4.08,-8.89l0.3,-0.654l-0.717,-0.053c-1.859,-0.138 -4.248,-0.33 -6.235,-0.5l-0.315,-0.027l-0.159,0.273l-2.165,3.708c-0.048,0.086 -0.148,0.143 -0.253,0.143h-0.63c-0.054,0 -0.1,-0.046 -0.1,-0.1v-10.8c0,-0.054 0.046,-0.1 0.1,-0.1h0.63c0.105,0 0.205,0.057 0.258,0.152l2.16,3.7l0.159,0.273l0.315,-0.027c1.986,-0.17 4.375,-0.361 6.235,-0.5l0.717,-0.053l-0.3,-0.654l-4.074,-8.891h1.45M11.15,4h-1.45c-0.37,0 -0.61,0.38 -0.46,0.71l4.08,8.89c-1.88,0.14 -4.25,0.33 -6.24,0.5l-2.16,-3.7c-0.14,-0.25 -0.41,-0.4 -0.69,-0.4h-0.63c-0.33,0 -0.6,0.27 -0.6,0.6v10.8c0,0.33 0.27,0.6 0.6,0.6h0.63c0.28,0 0.55,-0.15 0.69,-0.4l2.16,-3.7c1.99,0.17 4.36,0.36 6.24,0.5l-4.08,8.89c-0.15,0.33 0.09,0.71 0.46,0.71h1.45c0.37,0 0.72,-0.16 0.97,-0.43l7.65,-8.46c0.29,-0.33 0.72,-0.51 1.15,-0.51h3.37c4.67,0 5.71,-1.56 5.71,-2.6c0,-1.04 -1.04,-2.6 -5.71,-2.6h-3.37c-0.43,0 -0.86,-0.18 -1.15,-0.51l-7.65,-8.46c-0.25,-0.27 -0.6,-0.43 -0.97,-0.43z" fill="url(#ai-plane-color-2)"></path></g></g></svg>
         </button>
         <div class="ai-chat-unavailable-popover" id="aiChatUnavailablePopover" role="dialog" aria-label="Assistant unavailable on this page" hidden>
-            <p class="ai-chat-unavailable-title">Flight Assistant is unavailable here</p>
-            <p class="ai-chat-unavailable-text">Use one of these pages to chat with the assistant:</p>
+            <p class="ai-chat-unavailable-title" data-i18n="ai.unavailable.title">Flight Assistant is unavailable here</p>
+            <p class="ai-chat-unavailable-text" data-i18n="ai.unavailable.text">Use one of these pages to chat with the assistant:</p>
             <div class="ai-chat-unavailable-actions">
-                <a href="@Url.Action("AdvancedSearch", "Home")" class="ai-chat-unavailable-link">Go to Advanced Search</a>
-                <a href="@Url.Action("Add", "Flight")" class="ai-chat-unavailable-link">Go to Add Flight</a>
+                <a href="@Url.Action("AdvancedSearch", "Home")" class="ai-chat-unavailable-link" data-i18n="ai.unavailable.goAdv">Go to Advanced Search</a>
+                <a href="@Url.Action("Add", "Flight")" class="ai-chat-unavailable-link" data-i18n="ai.unavailable.goAdd">Go to Add Flight</a>
             </div>
         </div>
     </div>
