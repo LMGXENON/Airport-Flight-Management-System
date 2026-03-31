@@ -337,7 +337,12 @@ public class AccountController : Controller
         var configuredPassword = _configuration["Auth:AdminPassword"] ?? string.Empty;
         var requestedUsername = username.Trim();
 
-        if (!string.Equals(requestedUsername, configuredUsername, StringComparison.Ordinal))
+        if (string.IsNullOrWhiteSpace(configuredUsername))
+        {
+            return (false, string.Empty);
+        }
+
+        if (!string.Equals(requestedUsername, configuredUsername, StringComparison.OrdinalIgnoreCase))
         {
             return (false, configuredUsername);
         }
@@ -348,7 +353,23 @@ public class AccountController : Controller
         if (storedCredential is not null)
         {
             var result = _passwordHasher.VerifyHashedPassword(configuredUsername, storedCredential.PasswordHash, password);
-            return (result != PasswordVerificationResult.Failed, configuredUsername);
+            if (result != PasswordVerificationResult.Failed)
+            {
+                return (true, configuredUsername);
+            }
+
+            // Recovery path for environments where AUTH_ADMIN_PASSWORD has been rotated
+            // but an older hashed credential still exists in the database.
+            if (!string.IsNullOrWhiteSpace(configuredPassword)
+                && string.Equals(password, configuredPassword, StringComparison.Ordinal))
+            {
+                storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredUsername, configuredPassword);
+                storedCredential.UpdatedUtc = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return (true, configuredUsername);
+            }
+
+            return (false, configuredUsername);
         }
 
         return (string.Equals(password, configuredPassword, StringComparison.Ordinal), configuredUsername);
