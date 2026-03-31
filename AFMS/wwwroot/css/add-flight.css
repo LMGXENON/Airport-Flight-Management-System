@@ -356,6 +356,21 @@
     color: var(--text-primary);
 }
 
+.details-logistics-value--unset {
+    font-size: 13px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+/* Unset cell in managed-flights table */
+.cell-unset {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    font-size: 13px;
+}
+
 /* ── Action buttons ──────────────────────────────────────────── */
 .detail-actions {
     display: flex;

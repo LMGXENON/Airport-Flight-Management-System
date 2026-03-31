@@ -69,23 +69,49 @@
             <i class='bx bx-briefcase' aria-hidden="true"></i> Operations
         </h3>
         <div class="details-logistics-grid">
+            @{
+                bool gateSet     = !string.IsNullOrWhiteSpace(Model.FormattedGate)  && Model.FormattedGate  != "TBD" && Model.FormattedGate  != "-";
+                bool terminalSet = !string.IsNullOrWhiteSpace(Model.FormattedTerminal) && Model.FormattedTerminal != "TBD" && Model.FormattedTerminal != "-";
+                bool aircraftSet = !string.IsNullOrWhiteSpace(Model.AircraftType)   && Model.AircraftType   != "TBD" && Model.AircraftType   != "-";
+            }
             <div class="details-logistics-item">
                 <span class="details-logistics-label">
                     <i class='bx bx-door-open' aria-hidden="true"></i> Gate
                 </span>
-                <span class="details-logistics-value">@Model.FormattedGate</span>
+                @if (gateSet)
+                {
+                    <span class="details-logistics-value">@Model.FormattedGate</span>
+                }
+                else
+                {
+                    <span class="details-logistics-value details-logistics-value--unset">Not assigned</span>
+                }
             </div>
             <div class="details-logistics-item">
                 <span class="details-logistics-label">
                     <i class='bx bx-building' aria-hidden="true"></i> Terminal
                 </span>
-                <span class="details-logistics-value">@Model.FormattedTerminal</span>
+                @if (terminalSet)
+                {
+                    <span class="details-logistics-value">@Model.FormattedTerminal</span>
+                }
+                else
+                {
+                    <span class="details-logistics-value details-logistics-value--unset">Not assigned</span>
+                }
             </div>
             <div class="details-logistics-item">
                 <span class="details-logistics-label">
                     <i class='bx bxs-plane-alt' aria-hidden="true"></i> Aircraft
                 </span>
-                <span class="details-logistics-value">@Model.AircraftType</span>
+                @if (aircraftSet)
+                {
+                    <span class="details-logistics-value">@Model.AircraftType</span>
+                }
+                else
+                {
+                    <span class="details-logistics-value details-logistics-value--unset">Not specified</span>
+                }
             </div>
         </div>
     </div>
