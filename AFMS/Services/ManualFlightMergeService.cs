@@ -27,11 +27,7 @@ public class ManualFlightMergeService
             var hasManualGate = !string.IsNullOrWhiteSpace(manualGate);
             var hasManualTerminal = !string.IsNullOrWhiteSpace(manualTerminal);
             var hasManualAircraftType = !string.IsNullOrWhiteSpace(manualAircraftType);
-            var normalizedStatus = string.IsNullOrWhiteSpace(manualFlight.Status)
-                ? null
-                : FlightStatusCatalog.IsKnown(manualFlight.Status)
-                    ? FlightStatusCatalog.Normalize(manualFlight.Status)
-                    : null;
+            var normalizedStatus = NormalizeManualStatus(manualFlight.Status);
             var hasManualStatus = !string.IsNullOrWhiteSpace(normalizedStatus);
             var flightNumberKey = NormalizeFlightNumberKey(manualFlight.FlightNumber);
 
@@ -152,4 +148,14 @@ public class ManualFlightMergeService
 
     private static string? Clean(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? NormalizeManualStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return null;
+
+        return FlightStatusCatalog.IsKnown(status)
+            ? FlightStatusCatalog.Normalize(status)
+            : null;
+    }
 }
