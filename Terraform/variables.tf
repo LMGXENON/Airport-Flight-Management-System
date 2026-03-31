@@ -52,3 +52,41 @@ variable "deepseek_max_requests_per_minute" {
   type        = number
   default     = 5
 }
+
+variable "auth_admin_username" {
+  description = "Admin username for AFMS login"
+  type        = string
+  default     = "afms"
+}
+
+variable "auth_admin_password" {
+  description = "Admin password for AFMS login"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "auth_jwt_secret" {
+  description = "JWT signing secret for AFMS auth"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "auth_issuer" {
+  description = "JWT issuer for AFMS auth"
+  type        = string
+  default     = "AFMS"
+}
+
+variable "auth_audience" {
+  description = "JWT audience for AFMS auth"
+  type        = string
+  default     = "AFMS.Users"
+}
+
+variable "auth_token_expiry_hours" {
+  description = "JWT token expiry in hours"
+  type        = number
+  default     = 8
+}
