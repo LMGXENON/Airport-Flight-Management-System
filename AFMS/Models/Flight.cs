@@ -44,7 +44,7 @@ namespace AFMS.Models
 
         [Display(Name = "Terminal")]
         [Required(ErrorMessage = "Terminal is required")]
-        [RegularExpression(@"^[1-5]$", ErrorMessage = "Terminal must be between 1 and 5")]
+        [RegularExpression(@"^[1-5]$", ErrorMessage = "Terminal must be 1, 2, 3, 4, or 5")]
         public string Terminal { get; set; } = "1";
 
         [Display(Name = "Aircraft Type")]
