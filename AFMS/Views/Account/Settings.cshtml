@@ -16,40 +16,141 @@
 <form asp-controller="Account" asp-action="Settings" method="post" class="account-settings-form">
     @Html.AntiForgeryToken()
 
-    <section class="account-card account-card--wide">
-        <h3 class="account-card-title" data-i18n="settings.prefs">Preferences</h3>
+    <div class="settings-sections">
 
-        <div class="account-form-grid">
-            <div class="account-field">
-                <label for="Theme" data-i18n="settings.theme">Theme</label>
-                <select id="Theme" name="Theme" class="account-select" data-setting="theme">
-                    <option value="light" selected="@(Model.Theme == "light")" data-i18n="settings.themeLight">Light</option>
-                    <option value="dark"  selected="@(Model.Theme == "dark")"  data-i18n="settings.themeDark">Dark</option>
-                </select>
+        <!-- ── Section 1: Appearance ─────────────────────────────── -->
+        <section class="settings-section">
+            <div class="settings-section-header">
+                <div class="settings-section-icon settings-section-icon--appearance">
+                    <i class='bx bx-palette' aria-hidden="true"></i>
+                </div>
+                <div class="settings-section-meta">
+                    <h3 class="settings-section-title">Appearance</h3>
+                    <p class="settings-section-desc">Customise how AFMS looks and displays data across all pages.</p>
+                </div>
             </div>
 
-            <div class="account-field">
-                <label for="TimeFormat" data-i18n="settings.timeFormat">Time format</label>
-                <select id="TimeFormat" name="TimeFormat" class="account-select" data-setting="time-format">
-                    <option value="24" selected="@(Model.TimeFormat == "24")" data-i18n="settings.time24">24-hour</option>
-                    <option value="12" selected="@(Model.TimeFormat == "12")" data-i18n="settings.time12">12-hour</option>
-                </select>
+            <div class="account-form-grid settings-form-grid">
+                <div class="account-field">
+                    <label for="Theme" data-i18n="settings.theme">Theme</label>
+                    <select id="Theme" name="Theme" class="account-select" data-setting="theme">
+                        <option value="light" selected="@(Model.Theme == "light")" data-i18n="settings.themeLight">Light</option>
+                        <option value="dark"  selected="@(Model.Theme == "dark")"  data-i18n="settings.themeDark">Dark</option>
+                    </select>
+                </div>
+
+                <div class="account-field">
+                    <label for="TimeFormat" data-i18n="settings.timeFormat">Time format</label>
+                    <select id="TimeFormat" name="TimeFormat" class="account-select" data-setting="time-format">
+                        <option value="24" selected="@(Model.TimeFormat == "24")" data-i18n="settings.time24">24-hour</option>
+                        <option value="12" selected="@(Model.TimeFormat == "12")" data-i18n="settings.time12">12-hour</option>
+                    </select>
+                </div>
+
+                <div class="account-field">
+                    <label for="Language" data-i18n="settings.language">Language</label>
+                    <select id="Language" name="Language" class="account-select">
+                        <option value="en" selected="@(Model.Language == "en")" data-i18n="settings.langEn">English</option>
+                        <option value="es" selected="@(Model.Language == "es")" data-i18n="settings.langEs">Spanish</option>
+                        <option value="fr" selected="@(Model.Language == "fr")" data-i18n="settings.langFr">French</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Section 2: Airport ────────────────────────────────── -->
+        <section class="settings-section settings-section--locked">
+            <div class="settings-section-header">
+                <div class="settings-section-icon settings-section-icon--airport">
+                    <i class='bx bxs-plane-alt' aria-hidden="true"></i>
+                </div>
+                <div class="settings-section-meta">
+                    <h3 class="settings-section-title">
+                        Airport Hub
+                        <span class="settings-badge settings-badge--fixed">Fixed</span>
+                    </h3>
+                    <p class="settings-section-desc">Your active airport. Multi-airport selection is planned for a future release.</p>
+                </div>
             </div>
 
-            <div class="account-field">
-                <label for="Language" data-i18n="settings.language">Language</label>
-                <select id="Language" name="Language" class="account-select">
-                    <option value="en" selected="@(Model.Language == "en")" data-i18n="settings.langEn">English</option>
-                    <option value="es" selected="@(Model.Language == "es")" data-i18n="settings.langEs">Spanish</option>
-                    <option value="fr" selected="@(Model.Language == "fr")" data-i18n="settings.langFr">French</option>
-                </select>
+            <div class="settings-airport-card">
+                <div class="settings-airport-codes">
+                    <span class="settings-airport-iata">LHR</span>
+                    <span class="settings-airport-icao">EGLL</span>
+                </div>
+                <div class="settings-airport-info">
+                    <span class="settings-airport-name">London Heathrow Airport</span>
+                    <span class="settings-airport-meta">
+                        <i class='bx bx-globe' aria-hidden="true"></i> Europe/London &nbsp;·&nbsp;
+                        <i class='bx bx-flag' aria-hidden="true"></i> United Kingdom &nbsp;·&nbsp;
+                        <i class='bx bx-time' aria-hidden="true"></i> GMT+1
+                    </span>
+                </div>
+                <i class='bx bx-lock-alt settings-airport-lock' aria-label="Airport locked" aria-hidden="true"></i>
             </div>
-        </div>
 
-        <div class="account-actions">
-            <button type="submit" class="account-save-btn" data-i18n="settings.saveBtn">Save Settings</button>
-        </div>
-    </section>
+            <p class="settings-future-note">
+                <i class='bx bx-info-circle' aria-hidden="true"></i>
+                Support for additional airports (Gatwick, Stansted, JFK, LAX) is on the roadmap.
+            </p>
+        </section>
+
+        <!-- ── Section 3: Notifications ─────────────────────────── -->
+        <section class="settings-section settings-section--locked">
+            <div class="settings-section-header">
+                <div class="settings-section-icon settings-section-icon--notify">
+                    <i class='bx bx-bell' aria-hidden="true"></i>
+                </div>
+                <div class="settings-section-meta">
+                    <h3 class="settings-section-title">
+                        Notifications
+                        <span class="settings-badge settings-badge--soon">Coming Soon</span>
+                    </h3>
+                    <p class="settings-section-desc">Receive real-time alerts for gate changes, delays, and departures.</p>
+                </div>
+            </div>
+
+            <div class="settings-toggles">
+                <div class="settings-toggle-row" aria-disabled="true">
+                    <div class="settings-toggle-info">
+                        <span class="settings-toggle-label">Gate change alerts</span>
+                        <span class="settings-toggle-hint">Notify when a flight's gate is reassigned</span>
+                    </div>
+                    <div class="settings-toggle-switch settings-toggle-switch--disabled" aria-hidden="true">
+                        <span class="settings-toggle-knob"></span>
+                    </div>
+                </div>
+
+                <div class="settings-toggle-row" aria-disabled="true">
+                    <div class="settings-toggle-info">
+                        <span class="settings-toggle-label">Delay notifications</span>
+                        <span class="settings-toggle-hint">Alert when a departure or arrival is delayed</span>
+                    </div>
+                    <div class="settings-toggle-switch settings-toggle-switch--disabled" aria-hidden="true">
+                        <span class="settings-toggle-knob"></span>
+                    </div>
+                </div>
+
+                <div class="settings-toggle-row" aria-disabled="true">
+                    <div class="settings-toggle-info">
+                        <span class="settings-toggle-label">Departure reminders</span>
+                        <span class="settings-toggle-hint">Reminder 30 minutes before scheduled departure</span>
+                    </div>
+                    <div class="settings-toggle-switch settings-toggle-switch--disabled" aria-hidden="true">
+                        <span class="settings-toggle-knob"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div><!-- /.settings-sections -->
+
+    <!-- ── Sticky save footer ───────────────────────────────────── -->
+    <div class="settings-form-footer">
+        <p class="settings-save-hint">Only <strong>Appearance</strong> preferences are saved.</p>
+        <button type="submit" class="account-save-btn" data-i18n="settings.saveBtn">Save Settings</button>
+    </div>
+
 </form>
 
 @section Styles {
@@ -59,11 +160,11 @@
 @section Scripts {
     <script>
         (function () {
-            var themeSelect     = document.getElementById('Theme');
+            var themeSelect      = document.getElementById('Theme');
             var timeFormatSelect = document.getElementById('TimeFormat');
-            var langSelect      = document.getElementById('Language');
-            var themeToggle     = document.getElementById('themeToggle');
-            var settingsForm    = document.querySelector('.account-settings-form');
+            var langSelect       = document.getElementById('Language');
+            var themeToggle      = document.getElementById('themeToggle');
+            var settingsForm     = document.querySelector('.account-settings-form');
 
             /* ── helpers ──────────────────────────────────────────── */
             function readCookie(name) {
@@ -105,9 +206,7 @@
 
             /* Preview language only (no localStorage write) */
             function previewLang(lang) {
-                if (window.afmsI18n) {
-                    window.afmsI18n.apply(lang);
-                }
+                if (window.afmsI18n) { window.afmsI18n.apply(lang); }
             }
 
             function getCurrentTimeFormat() {
@@ -125,31 +224,18 @@
 
             /* ── live previews ────────────────────────────────────── */
             if (themeSelect) {
-                themeSelect.addEventListener('change', function () {
-                    previewTheme(themeSelect.value);
-                });
+                themeSelect.addEventListener('change', function () { previewTheme(themeSelect.value); });
             }
-
             if (langSelect) {
-                langSelect.addEventListener('change', function () {
-                    previewLang(langSelect.value);
-                });
+                langSelect.addEventListener('change', function () { previewLang(langSelect.value); });
             }
 
             /* ── commit to localStorage only on Save ──────────────── */
             if (settingsForm) {
                 settingsForm.addEventListener('submit', function () {
-                    if (themeSelect) {
-                        localStorage.setItem('afms-theme', themeSelect.value);
-                    }
-                    if (langSelect) {
-                        localStorage.setItem('afms-language', langSelect.value);
-                    }
+                    if (themeSelect) localStorage.setItem('afms-theme',    themeSelect.value);
+                    if (langSelect)  localStorage.setItem('afms-language', langSelect.value);
                 });
-            }
-
-            if (typeof updateClock === 'function') {
-                updateClock();
             }
         })();
     </script>

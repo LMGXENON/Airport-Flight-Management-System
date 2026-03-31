@@ -86,7 +86,7 @@
                         <td>@(string.IsNullOrWhiteSpace(flight.AircraftType) ? "-" : flight.AircraftType)</td>
                         <td>@flight.DepartureTime.ToString("MMM dd, HH:mm")</td>
                         <td>@flight.ArrivalTime.ToString("MMM dd, HH:mm")</td>
-                        <td>@(flight.Gate ?? "TBD")</td>
+                        <td><span class="@(string.IsNullOrWhiteSpace(flight.Gate) ? "cell-unset" : "")">@(string.IsNullOrWhiteSpace(flight.Gate) ? "—" : flight.Gate)</span></td>
                         <td>Terminal @flight.Terminal</td>
                         <td>
                             <span class="status-badge @statusClass">@statusLabel</span>
