@@ -167,6 +167,32 @@
     text-align: right;
 }
 
+/* Localhost IP badge */
+.ip-local {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2px 10px;
+    cursor: default;
+    letter-spacing: 0.02em;
+}
+
+.ip-local::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    flex-shrink: 0;
+}
+
 @media (max-width: 640px) {
     .account-list-row {
         flex-direction: column;
