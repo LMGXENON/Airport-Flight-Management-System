@@ -242,12 +242,50 @@ body:not(.dark-theme) .sidebar-collapse-btn {
     gap: 0;
 }
 
+/* Collapsed: hide the full footer, show icon-only logout instead */
 .sidebar.collapsed .sidebar-footer {
-    padding: 14px 8px;
+    display: none;
 }
 
-.sidebar.collapsed .user-session-row {
+/* Collapsed logout icon — absolutely pinned to the very bottom of the sidebar */
+.sidebar-logout-collapsed {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px 8px;
+    border-top: 1px solid rgba(136, 145, 178, 0.22);
+    background-color: var(--bg-secondary);
     justify-content: center;
+    align-items: center;
+}
+
+.sidebar.collapsed .sidebar-logout-collapsed {
+    display: flex;
+}
+
+.collapsed-logout-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+    padding: 0;
+}
+
+.collapsed-logout-btn:hover {
+    background: rgba(220, 38, 38, 0.14);
+}
+
+.collapsed-logout-btn:active {
+    background: rgba(220, 38, 38, 0.24);
+    transform: scale(0.92);
 }
 
 .nav-item:hover,
