@@ -74,6 +74,9 @@ public static class FlightStatusCatalog
     private static readonly IReadOnlySet<string> CanonicalNormalizedKeys =
         new HashSet<string>(CanonicalByNormalizedKey.Keys, StringComparer.OrdinalIgnoreCase);
 
+    private static readonly IReadOnlyDictionary<string, StatusOption> OptionByValue =
+        AllStatuses.ToDictionary(status => status.Value, status => status, StringComparer.OrdinalIgnoreCase);
+
     public static IReadOnlyList<StatusOption> Options => AllStatuses;
 
     public static IReadOnlyList<string> Values => AllStatuses.Select(status => status.Value).ToList();
@@ -118,8 +121,9 @@ public static class FlightStatusCatalog
     private static StatusOption GetOption(string? value)
     {
         var normalized = Normalize(value);
-        return AllStatuses.FirstOrDefault(status => status.Value.Equals(normalized, StringComparison.OrdinalIgnoreCase))
-            ?? AllStatuses[0];
+        return OptionByValue.TryGetValue(normalized, out var option)
+            ? option
+            : AllStatuses[0];
     }
 
     private static string NormalizeKey(string? value)
