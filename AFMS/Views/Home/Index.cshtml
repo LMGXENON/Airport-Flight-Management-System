@@ -336,10 +336,17 @@
                                         <i class='bx bx-edit-alt' aria-hidden="true"></i>
                                         <span class="manage-label">Edit</span>
                                     </a>
-                                    <a href="/Flight/Delete/@dbId" class="manage-link manage-delete" title="Delete this flight">
+                                    <button type="button"
+                                            class="manage-link manage-delete manage-link-button js-open-delete-modal-home"
+                                            title="Delete this flight"
+                                            data-flight-id="@dbId"
+                                            data-flight-number="@fNum"
+                                            data-flight-airline="@(flight.Airline?.Name ?? "-")"
+                                            data-flight-destination="@toLocation"
+                                            data-flight-departure="@displayTime">
                                         <i class='bx bx-trash' aria-hidden="true"></i>
                                         <span class="manage-label">Delete</span>
-                                    </a>
+                                    </button>
                                 </div>
                             }
                             else
@@ -389,6 +396,51 @@
 
 <!-- Flight Details Modal (shared partial) -->
 @await Html.PartialAsync("_FlightDetailsModal")
+
+@if (User.IsInRole("Admin"))
+{
+    <div id="deleteConfirmOverlayHome" class="delete-confirm-overlay" aria-hidden="true">
+        <div class="delete-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitleHome">
+            <button type="button" class="delete-confirm-close" aria-label="Close delete confirmation">&times;</button>
+
+            <div class="delete-confirm-header">
+                <span class="delete-confirm-kicker">Confirm Delete</span>
+                <h3 id="deleteConfirmTitleHome" class="delete-confirm-title">Delete this flight?</h3>
+                <p class="delete-confirm-subtitle">You are about to remove this flight from AFMS.</p>
+            </div>
+
+            <div class="delete-confirm-warning" role="status" aria-live="polite">
+                This action is permanent and cannot be undone.
+            </div>
+
+            <dl class="delete-confirm-list">
+                <div class="delete-confirm-row">
+                    <dt>Flight</dt>
+                    <dd id="deleteConfirmFlightNumberHome">-</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Airline</dt>
+                    <dd id="deleteConfirmAirlineHome">-</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Destination</dt>
+                    <dd id="deleteConfirmDestinationHome">-</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Departure</dt>
+                    <dd id="deleteConfirmDepartureHome">-</dd>
+                </div>
+            </dl>
+
+            <form asp-controller="Flight" asp-action="Delete" method="post" class="delete-confirm-actions">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="deleteConfirmFlightIdHome" name="id" value="" />
+                <button type="button" class="delete-cancel-btn">Keep Flight</button>
+                <button type="submit" class="delete-submit-btn">Yes, Delete Flight</button>
+            </form>
+        </div>
+    </div>
+}
 
 @section Scripts {
 <script>
@@ -625,6 +677,93 @@
     
     // Attach click handlers after initial render
     attachFlightRowHandlers();
+
+    var deleteOverlay = document.getElementById('deleteConfirmOverlayHome');
+    if (deleteOverlay) {
+        var deleteCloseBtn = deleteOverlay.querySelector('.delete-confirm-close');
+        var deleteCancelBtn = deleteOverlay.querySelector('.delete-cancel-btn');
+        var deleteIdInput = document.getElementById('deleteConfirmFlightIdHome');
+        var deleteFlightNumber = document.getElementById('deleteConfirmFlightNumberHome');
+        var deleteAirline = document.getElementById('deleteConfirmAirlineHome');
+        var deleteDestination = document.getElementById('deleteConfirmDestinationHome');
+        var deleteDeparture = document.getElementById('deleteConfirmDepartureHome');
+        var lastDeleteTrigger = null;
+
+        function setDeleteText(el, value) {
+            if (el) {
+                el.textContent = value && value.trim() ? value : '-';
+            }
+        }
+
+        function closeDeleteModal() {
+            deleteOverlay.classList.remove('active');
+            deleteOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            if (lastDeleteTrigger) {
+                lastDeleteTrigger.focus();
+            }
+        }
+
+        function openDeleteModal(trigger) {
+            lastDeleteTrigger = trigger;
+            deleteIdInput.value = trigger.getAttribute('data-flight-id') || '';
+            setDeleteText(deleteFlightNumber, trigger.getAttribute('data-flight-number') || '');
+            setDeleteText(deleteAirline, trigger.getAttribute('data-flight-airline') || '');
+            setDeleteText(deleteDestination, trigger.getAttribute('data-flight-destination') || '');
+            setDeleteText(deleteDeparture, trigger.getAttribute('data-flight-departure') || '');
+
+            deleteOverlay.classList.add('active');
+            deleteOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            if (deleteCloseBtn) {
+                deleteCloseBtn.focus();
+            }
+        }
+
+        function bindDeleteTriggers() {
+            var deleteTriggers = document.querySelectorAll('.js-open-delete-modal-home');
+            deleteTriggers.forEach(function (trigger) {
+                if (trigger.dataset.deleteBound === 'true') {
+                    return;
+                }
+
+                trigger.dataset.deleteBound = 'true';
+                trigger.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openDeleteModal(trigger);
+                });
+            });
+        }
+
+        bindDeleteTriggers();
+
+        if (deleteCloseBtn) {
+            deleteCloseBtn.addEventListener('click', closeDeleteModal);
+        }
+
+        if (deleteCancelBtn) {
+            deleteCancelBtn.addEventListener('click', closeDeleteModal);
+        }
+
+        deleteOverlay.addEventListener('click', function (event) {
+            if (event.target === deleteOverlay) {
+                closeDeleteModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && deleteOverlay.classList.contains('active')) {
+                closeDeleteModal();
+            }
+        });
+
+        var originalRender = render;
+        render = function () {
+            originalRender();
+            bindDeleteTriggers();
+        };
+    }
 })();
 </script>
 }

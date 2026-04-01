@@ -1349,6 +1349,11 @@ body:not(.dark-theme) .status-scheduled {
     gap: 5px;
     padding: 4px 10px;
     border-radius: 20px;
+.manage-link-button {
+    border: none;
+    background: transparent;
+    font: inherit;
+}
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
