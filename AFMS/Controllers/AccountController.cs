@@ -1,5 +1,7 @@
 using AFMS.Models;
 using AFMS.Data;
+using AFMS.Helpers;
+using AFMS.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,12 +22,17 @@ public class AccountController : Controller
 
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly LoginLocationService _loginLocationService;
     private readonly PasswordHasher<string> _passwordHasher = new();
 
-    public AccountController(IConfiguration configuration, ApplicationDbContext context)
+    public AccountController(
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        LoginLocationService loginLocationService)
     {
         _configuration = configuration;
         _context = context;
+        _loginLocationService = loginLocationService;
     }
 
     [HttpGet]
@@ -81,6 +88,7 @@ public class AccountController : Controller
         {
             Username = credentialCheck.CanonicalUsername,
             IpAddress = GetRequestIpAddress(),
+            UserAgent = GetRequestUserAgent(),
             OccurredUtc = DateTime.UtcNow
         });
         await _context.SaveChangesAsync();
@@ -142,9 +150,18 @@ public class AccountController : Controller
             .Select(entry => new LoginHistoryItem
             {
                 OccurredUtc = entry.OccurredUtc,
-                IpAddress = entry.IpAddress
+                IpAddress = entry.IpAddress,
+                UserAgent = entry.UserAgent
             })
             .ToListAsync();
+
+        for (var i = 0; i < loginHistory.Count; i++)
+        {
+            var entry = loginHistory[i];
+            entry.DeviceBrowser = UserAgentParser.ToDeviceBrowserLabel(entry.UserAgent);
+            entry.Location = await _loginLocationService.ResolveLocationAsync(entry.IpAddress);
+            entry.IsCurrentSession = i == 0;
+        }
 
         var model = new AccountProfileViewModel
         {
@@ -430,6 +447,15 @@ public class AccountController : Controller
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         return NormalizeIpAddress(ip);
+    }
+
+    private string GetRequestUserAgent()
+    {
+        var userAgent = Request.Headers.UserAgent.ToString();
+        if (string.IsNullOrWhiteSpace(userAgent))
+            return "Unknown";
+
+        return userAgent.Length <= 512 ? userAgent : userAgent[..512];
     }
 
     /// <summary>Maps loopback addresses to a human-readable label.</summary>

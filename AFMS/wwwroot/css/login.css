@@ -100,6 +100,8 @@
 
 .login-submit {
     width: 100%;
+    justify-content: center;
+    text-align: center;
     background: linear-gradient(135deg, #2f79ff 0%, #55b7ff 100%);
     color: #ffffff;
     border: 1px solid rgba(146, 202, 255, 0.38);

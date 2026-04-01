@@ -9,6 +9,24 @@
         if (ip is "::1" or "127.0.0.1" or "::ffff:127.0.0.1" or "localhost") return "localhost";
         return ip;
     }
+
+    TimeZoneInfo ResolveUkTimeZone()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Europe/London"); }
+        catch
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time"); }
+            catch { return TimeZoneInfo.Utc; }
+        }
+    }
+
+    string FormatUkTimestamp(DateTime utc)
+    {
+        var tz = ResolveUkTimeZone();
+        var uk = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), tz);
+        var zoneLabel = tz.IsDaylightSavingTime(uk) ? "BST" : "GMT";
+        return $"{uk:yyyy-MM-dd HH:mm:ss} {zoneLabel}";
+    }
 }
 
 <div class="page-header">
@@ -46,7 +64,7 @@
         <dl class="account-list">
             <div class="account-list-row">
                 <dt data-i18n="profile.lastLogin">Last Login</dt>
-                <dd>@(Model.LastLoginUtc.HasValue ? Model.LastLoginUtc.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "Not available yet")</dd>
+                <dd>@(Model.LastLoginUtc.HasValue ? FormatUkTimestamp(Model.LastLoginUtc.Value) : "Not available yet")</dd>
             </div>
             <div class="account-list-row">
                 <dt data-i18n="profile.sessionExp">Session Expires In</dt>
@@ -62,7 +80,7 @@
             </div>
             <div class="account-list-row">
                 <dt data-i18n="profile.lastRefreshed">Last Refreshed</dt>
-                <dd>@Model.LastUpdatedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+                <dd>@FormatUkTimestamp(Model.LastUpdatedUtc)</dd>
             </div>
         </dl>
     </section>
@@ -99,29 +117,32 @@
                 <table class="account-history-table">
                     <thead>
                         <tr>
-                            <th data-i18n="profile.historyTs">Timestamp (UTC)</th>
-                            <th data-i18n="profile.historyIp">IP Address</th>
+                            <th>Timestamp (UK)</th>
+                            <th>Device / Browser</th>
+                            <th>Location</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var entry in Model.LoginHistory)
                         {
                             <tr>
-                                <td>@entry.OccurredUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>@FormatUkTimestamp(entry.OccurredUtc)</td>
                                 <td>
                                     @{
                                         var displayIp = FriendlyIp(entry.IpAddress);
                                         var isLocal   = displayIp == "localhost";
                                     }
+                                    <span title="IP: @displayIp">@entry.DeviceBrowser</span>
+                                    @if (entry.IsCurrentSession)
+                                    {
+                                        <span class="session-active-tag" title="Current session">Active</span>
+                                    }
                                     @if (isLocal)
                                     {
                                         <span class="ip-local" title="IPv6 loopback — this machine">localhost</span>
                                     }
-                                    else
-                                    {
-                                        <span>@displayIp</span>
-                                    }
                                 </td>
+                                <td>@entry.Location</td>
                             </tr>
                         }
                     </tbody>
