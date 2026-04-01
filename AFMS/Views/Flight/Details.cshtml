@@ -140,8 +140,15 @@
         <div class="delete-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
             <button type="button" class="delete-confirm-close" aria-label="Close delete confirmation">&times;</button>
 
-            <h3 id="deleteConfirmTitle" class="delete-confirm-title">Delete this flight?</h3>
-            <p class="delete-confirm-subtitle">This action permanently removes the flight and cannot be undone.</p>
+            <div class="delete-confirm-header">
+                <span class="delete-confirm-kicker">Confirm Delete</span>
+                <h3 id="deleteConfirmTitle" class="delete-confirm-title">Delete this flight?</h3>
+                <p class="delete-confirm-subtitle">You are about to remove this flight from AFMS.</p>
+            </div>
+
+            <div class="delete-confirm-warning" role="status" aria-live="polite">
+                This action is permanent and cannot be undone.
+            </div>
 
             <dl class="delete-confirm-list">
                 <div class="delete-confirm-row">
@@ -165,8 +172,8 @@
             <form asp-controller="Flight" asp-action="Delete" method="post" class="delete-confirm-actions">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="id" value="@Model.Id" />
-                <button type="button" class="delete-cancel-btn">Cancel</button>
-                <button type="submit" class="delete-submit-btn">Delete Flight</button>
+                <button type="button" class="delete-cancel-btn">Keep Flight</button>
+                <button type="submit" class="delete-submit-btn">Yes, Delete Flight</button>
             </form>
         </div>
     </div>

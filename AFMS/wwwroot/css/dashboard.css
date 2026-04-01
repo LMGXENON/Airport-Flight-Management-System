@@ -1445,8 +1445,26 @@ body.modal-open {
     border: 1px solid var(--border-color);
     border-radius: 14px;
     box-shadow: 0 20px 56px rgba(0, 0, 0, 0.45);
-    padding: 20px;
+    padding: 22px;
     position: relative;
+}
+
+.delete-confirm-header {
+    margin-bottom: 12px;
+}
+
+.delete-confirm-kicker {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    background: rgba(239, 68, 68, 0.12);
+    color: #fda4af;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .delete-confirm-close {
@@ -1471,9 +1489,20 @@ body.modal-open {
 }
 
 .delete-confirm-subtitle {
-    margin: 8px 0 16px;
+    margin: 8px 0 0;
     color: var(--text-secondary);
     font-size: 14px;
+}
+
+.delete-confirm-warning {
+    margin: 0 0 14px;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #fecaca;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .delete-confirm-list {
