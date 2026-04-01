@@ -1,6 +1,14 @@
 @model AFMS.Models.AccountProfileViewModel
 @{
     ViewData["Title"] = "Profile";
+
+    // Normalise loopback addresses to a human-readable label.
+    string FriendlyIp(string? ip)
+    {
+        if (string.IsNullOrWhiteSpace(ip)) return "Unknown";
+        if (ip is "::1" or "127.0.0.1" or "::ffff:127.0.0.1" or "localhost") return "localhost";
+        return ip;
+    }
 }
 
 <div class="page-header">
@@ -100,7 +108,20 @@
                         {
                             <tr>
                                 <td>@entry.OccurredUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>@entry.IpAddress</td>
+                                <td>
+                                    @{
+                                        var displayIp = FriendlyIp(entry.IpAddress);
+                                        var isLocal   = displayIp == "localhost";
+                                    }
+                                    @if (isLocal)
+                                    {
+                                        <span class="ip-local" title="IPv6 loopback — this machine">localhost</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@displayIp</span>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>

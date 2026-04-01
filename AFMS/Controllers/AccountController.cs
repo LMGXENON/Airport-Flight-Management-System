@@ -425,10 +425,17 @@ public class AccountController : Controller
         {
             var first = forwardedFor.Split(',')[0].Trim();
             if (!string.IsNullOrWhiteSpace(first))
-                return first;
+                return NormalizeIpAddress(first);
         }
 
-        return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        return NormalizeIpAddress(ip);
     }
+
+    /// <summary>Maps loopback addresses to a human-readable label.</summary>
+    private static string NormalizeIpAddress(string ip) =>
+        ip is "::1" or "127.0.0.1" or "::ffff:127.0.0.1" or "localhost"
+            ? "localhost"
+            : ip;
 }
 
