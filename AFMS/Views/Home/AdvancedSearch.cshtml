@@ -190,6 +190,7 @@
                 <label class="form-label">Direction</label>
                 <div class="direction-toggle">
                     <input type="hidden" id="directionInput" name="direction" value="@Model.Direction" />
+                    <span class="direction-toggle-indicator" aria-hidden="true"></span>
                     <button type="button" class="direction-btn @(string.IsNullOrEmpty(Model.Direction) ? "active" : "")"
                             data-direction=""
                             aria-pressed="@(string.IsNullOrEmpty(Model.Direction) ? "true" : "false")">All</button>
@@ -337,6 +338,25 @@
                 directionSummary.textContent = describeDirection(selectedDirection);
                 directionSummary.classList.toggle('selection-summary--filtered', Boolean(selectedDirection));
             }
+
+            updateDirectionIndicator(selectedDirection);
+        }
+
+        function updateDirectionIndicator(selectedDirection = '') {
+            const toggle = document.querySelector('.direction-toggle');
+            const indicator = toggle?.querySelector('.direction-toggle-indicator');
+            const activeButton = toggle?.querySelector(`.direction-btn[data-direction="${selectedDirection}"]`) || toggle?.querySelector('.direction-btn.active');
+
+            if (!toggle || !indicator || !activeButton) {
+                return;
+            }
+
+            const toggleRect = toggle.getBoundingClientRect();
+            const buttonRect = activeButton.getBoundingClientRect();
+            const left = buttonRect.left - toggleRect.left;
+
+            indicator.style.width = `${buttonRect.width}px`;
+            indicator.style.transform = `translateX(${left}px)`;
         }
 
         function updateStatusButtons(selectedStatuses = getSelectedStatuses()) {
@@ -360,6 +380,12 @@
             updateDirectionButtons(directionInput?.value ?? '');
             updateStatusButtons();
         };
+
+        window.addEventListener('resize', () => {
+            updateDirectionIndicator(directionInput?.value ?? '');
+        });
+
+        updateDirectionButtons(directionInput?.value ?? '');
 
         function setFieldError(id, isInvalid) {
             const input = document.getElementById(id);
