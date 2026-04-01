@@ -150,6 +150,12 @@ namespace AFMS.Controllers
             {
                 return NotFound();
             }
+
+            // Datetime-local inputs are local-time values. Persisted flight times are treated as UTC,
+            // so convert to local once for display to avoid offset drift on repeated edits.
+            flight.DepartureTime = DateTime.SpecifyKind(flight.DepartureTime, DateTimeKind.Utc).ToLocalTime();
+            flight.ArrivalTime = DateTime.SpecifyKind(flight.ArrivalTime, DateTimeKind.Utc).ToLocalTime();
+
             flight.Status = FlightStatusCatalog.Normalize(flight.Status);
             ViewBag.Airlines = await FlightFormHelpers.GetAirlinesSelectListAsync(_context, flight.Airline);
             ViewBag.AircraftModels = FlightFormHelpers.GetAircraftModelsSelectList(flight.AircraftType);
