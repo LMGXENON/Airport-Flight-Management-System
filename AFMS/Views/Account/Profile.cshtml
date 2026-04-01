@@ -20,7 +20,7 @@
         }
     }
 
-    string FormatUkLoginTimestamp(DateTime utc)
+    string FormatUkTimestamp(DateTime utc)
     {
         var tz = ResolveUkTimeZone();
         var uk = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), tz);
@@ -64,7 +64,7 @@
         <dl class="account-list">
             <div class="account-list-row">
                 <dt data-i18n="profile.lastLogin">Last Login</dt>
-                <dd>@(Model.LastLoginUtc.HasValue ? Model.LastLoginUtc.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "Not available yet")</dd>
+                <dd>@(Model.LastLoginUtc.HasValue ? FormatUkTimestamp(Model.LastLoginUtc.Value) : "Not available yet")</dd>
             </div>
             <div class="account-list-row">
                 <dt data-i18n="profile.sessionExp">Session Expires In</dt>
@@ -80,7 +80,7 @@
             </div>
             <div class="account-list-row">
                 <dt data-i18n="profile.lastRefreshed">Last Refreshed</dt>
-                <dd>@Model.LastUpdatedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+                <dd>@FormatUkTimestamp(Model.LastUpdatedUtc)</dd>
             </div>
         </dl>
     </section>
@@ -125,7 +125,7 @@
                         @foreach (var entry in Model.LoginHistory)
                         {
                             <tr>
-                                <td>@FormatUkLoginTimestamp(entry.OccurredUtc)</td>
+                                <td>@FormatUkTimestamp(entry.OccurredUtc)</td>
                                 <td>
                                     @{
                                         var displayIp = FriendlyIp(entry.IpAddress);
