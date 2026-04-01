@@ -133,6 +133,10 @@
                                         var isLocal   = displayIp == "localhost";
                                     }
                                     <span title="IP: @displayIp">@entry.DeviceBrowser</span>
+                                    @if (entry.IsCurrentSession)
+                                    {
+                                        <span class="session-active-tag" title="Current session">Active</span>
+                                    }
                                     @if (isLocal)
                                     {
                                         <span class="ip-local" title="IPv6 loopback — this machine">localhost</span>

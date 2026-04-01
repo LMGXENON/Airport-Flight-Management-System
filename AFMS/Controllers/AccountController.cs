@@ -155,10 +155,12 @@ public class AccountController : Controller
             })
             .ToListAsync();
 
-        foreach (var entry in loginHistory)
+        for (var i = 0; i < loginHistory.Count; i++)
         {
+            var entry = loginHistory[i];
             entry.DeviceBrowser = UserAgentParser.ToDeviceBrowserLabel(entry.UserAgent);
             entry.Location = await _loginLocationService.ResolveLocationAsync(entry.IpAddress);
+            entry.IsCurrentSession = i == 0;
         }
 
         var model = new AccountProfileViewModel

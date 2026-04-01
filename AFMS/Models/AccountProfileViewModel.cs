@@ -36,4 +36,6 @@ public class LoginHistoryItem
     public string DeviceBrowser { get; set; } = "Unknown device";
 
     public string Location { get; set; } = "Unknown";
+
+    public bool IsCurrentSession { get; set; }
 }
