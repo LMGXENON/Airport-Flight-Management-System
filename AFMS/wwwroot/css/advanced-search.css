@@ -341,11 +341,11 @@
 }
 
 .status-btn.active {
-    border-color: rgba(64, 208, 225, 0.98);
-    background: linear-gradient(145deg, #a0edf4 0%, #3ecfe0 100%);
+    border-color: var(--accent-blue);
+    background: var(--accent-blue);
     color: #fff;
-    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.4), 0 10px 20px rgba(39, 179, 196, 0.28);
-    font-weight: 600;
+    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.2);
+    font-weight: 400;
     transform: translateY(-1px);
 }
 
@@ -429,11 +429,11 @@
 .direction-toggle-indicator {
     position: absolute;
     top: 4px;
-    left: 4px;
+    left: 2px;
     height: calc(100% - 8px);
     border-radius: 9px;
-    background: linear-gradient(145deg, #a0edf4 0%, #3ecfe0 100%);
-    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.4), 0 10px 20px rgba(39, 179, 196, 0.28);
+    background: var(--accent-blue);
+    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.18);
     transform: translateX(0);
     transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), width 0.24s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform, width;
@@ -445,7 +445,7 @@
 
 .direction-btn.active {
     color: #fff;
-    font-weight: 600;
+    font-weight: 400;
 }
 
 .direction-btn:active {
@@ -692,7 +692,7 @@ body:not(.dark-theme) .direction-toggle {
 }
 
 body:not(.dark-theme) .direction-toggle-indicator {
-    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.6), 0 10px 20px rgba(39, 179, 196, 0.28);
+    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.18);
 }
 
 body:not(.dark-theme) .direction-btn {
@@ -705,6 +705,7 @@ body:not(.dark-theme) .direction-btn:hover {
 
 body:not(.dark-theme) .direction-btn.active {
     color: #ffffff;
+    font-weight: 400;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -737,10 +738,10 @@ body:not(.dark-theme) .status-btn:hover {
 }
 
 body:not(.dark-theme) .status-btn.active {
-    border-color: rgba(64, 208, 225, 0.98);
-    background: linear-gradient(145deg, #b6f3f7 0%, #52d8e7 100%);
+    border-color: var(--accent-blue);
+    background: var(--accent-blue);
     color: #ffffff;
-    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.6), 0 10px 20px rgba(39, 179, 196, 0.3);
+    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.2);
 }
 
 body:not(.dark-theme) .spinner {

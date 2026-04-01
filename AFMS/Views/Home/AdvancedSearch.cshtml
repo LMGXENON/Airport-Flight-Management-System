@@ -354,7 +354,7 @@
             const toggleRect = toggle.getBoundingClientRect();
             const buttonRect = activeButton.getBoundingClientRect();
             const left = buttonRect.left - toggleRect.left;
-            const inset = 2;
+            const inset = 1;
 
             indicator.style.width = `${Math.max(0, buttonRect.width - inset * 2)}px`;
             indicator.style.transform = `translateX(${left + inset}px)`;
