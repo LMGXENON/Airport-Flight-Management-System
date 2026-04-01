@@ -341,10 +341,10 @@
 }
 
 .status-btn.active {
-    border-color: var(--accent-blue);
-    background-color: var(--accent-blue);
+    border-color: rgba(64, 208, 225, 0.98);
+    background: linear-gradient(145deg, #a0edf4 0%, #3ecfe0 100%);
     color: #fff;
-    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.2);
+    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.4), 0 10px 20px rgba(39, 179, 196, 0.28);
     font-weight: 600;
     transform: translateY(-1px);
 }
@@ -432,8 +432,8 @@
     left: 4px;
     height: calc(100% - 8px);
     border-radius: 9px;
-    background: var(--accent-blue);
-    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.18);
+    background: linear-gradient(145deg, #a0edf4 0%, #3ecfe0 100%);
+    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.4), 0 10px 20px rgba(39, 179, 196, 0.28);
     transform: translateX(0);
     transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), width 0.24s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform, width;
@@ -692,7 +692,7 @@ body:not(.dark-theme) .direction-toggle {
 }
 
 body:not(.dark-theme) .direction-toggle-indicator {
-    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.7), 0 8px 16px rgba(65, 105, 225, 0.18);
+    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.6), 0 10px 20px rgba(39, 179, 196, 0.28);
 }
 
 body:not(.dark-theme) .direction-btn {
@@ -737,7 +737,10 @@ body:not(.dark-theme) .status-btn:hover {
 }
 
 body:not(.dark-theme) .status-btn.active {
-    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.72), 0 8px 16px rgba(65, 105, 225, 0.2);
+    border-color: rgba(64, 208, 225, 0.98);
+    background: linear-gradient(145deg, #b6f3f7 0%, #52d8e7 100%);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(176, 248, 255, 0.6), 0 10px 20px rgba(39, 179, 196, 0.3);
 }
 
 body:not(.dark-theme) .spinner {
