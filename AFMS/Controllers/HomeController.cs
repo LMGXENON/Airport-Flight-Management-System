@@ -188,14 +188,19 @@ public class HomeController : Controller
     {
         // Convert a manually-entered Flight from the database into an AeroDataBoxFlight
         // so it can be displayed alongside API flights with a consistent structure
+        var departureUtc = DateTime.SpecifyKind(dbFlight.DepartureTime, DateTimeKind.Utc);
+        var arrivalUtc = DateTime.SpecifyKind(dbFlight.ArrivalTime, DateTimeKind.Utc);
+
         var departureScheduledTime = new ScheduledTime
         {
-            Local = dbFlight.DepartureTime.ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture)
+            Local = departureUtc.ToLocalTime().ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture),
+            Utc = departureUtc.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture)
         };
 
         var arrivalScheduledTime = new ScheduledTime
         {
-            Local = dbFlight.ArrivalTime.ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture)
+            Local = arrivalUtc.ToLocalTime().ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture),
+            Utc = arrivalUtc.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture)
         };
 
         var origin = string.IsNullOrWhiteSpace(dbFlight.Origin) ? null : dbFlight.Origin.Trim();
