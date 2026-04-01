@@ -84,6 +84,7 @@ builder.Services.AddMemoryCache();
 
 // Add HttpClient for API calls
 builder.Services.AddHttpClient<AeroDataBoxService>();
+builder.Services.AddHttpClient<LoginLocationService>();
 builder.Services.AddHttpClient("DeepSeek", client =>
 {
     var apiEndpoint = builder.Configuration["DeepSeek:ApiEndpoint"] ?? "https://api.deepseek.com/v1/";
@@ -235,6 +236,7 @@ static void AddDotEnvConfiguration(WebApplicationBuilder builder)
     string[] knownEnvVars =
     [
         "AERODATABOX_API_KEY", "AERODATABOX_API_HOST", "DEFAULT_AIRPORT",
+        "IP_GEOLOCATION_ENABLED", "IP_GEOLOCATION_API_BASE_URL", "IP_GEOLOCATION_TIMEOUT_SECONDS",
         "DEEPSEEK_API_KEY", "DEEPSEEK_API_ENDPOINT", "DEEPSEEK_MODEL",
         "DEEPSEEK_TIMEOUT_SECONDS", "DEEPSEEK_MAX_REQUESTS_PER_MINUTE", "DEEPSEEK_PROMPT_FILE",
         "AUTH_ADMIN_USERNAME", "AUTH_ADMIN_PASSWORD", "AUTH_JWT_SECRET", "AUTH_ISSUER", "AUTH_AUDIENCE", "AUTH_TOKEN_EXPIRY_HOURS"
@@ -288,6 +290,9 @@ static string? GetDotEnvAlias(string key) => key switch
     "AERODATABOX_API_KEY" => "AeroDataBox:ApiKey",
     "AERODATABOX_API_HOST" => "AeroDataBox:ApiHost",
     "DEFAULT_AIRPORT" => "AeroDataBox:DefaultAirport",
+    "IP_GEOLOCATION_ENABLED" => "IpGeolocation:Enabled",
+    "IP_GEOLOCATION_API_BASE_URL" => "IpGeolocation:ApiBaseUrl",
+    "IP_GEOLOCATION_TIMEOUT_SECONDS" => "IpGeolocation:TimeoutSeconds",
     "DEEPSEEK_API_KEY" => "DeepSeek:ApiKey",
     "DEEPSEEK_API_ENDPOINT" => "DeepSeek:ApiEndpoint",
     "DEEPSEEK_MODEL" => "DeepSeek:Model",

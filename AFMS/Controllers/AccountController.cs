@@ -1,6 +1,7 @@
 using AFMS.Models;
 using AFMS.Data;
 using AFMS.Helpers;
+using AFMS.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +22,17 @@ public class AccountController : Controller
 
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly LoginLocationService _loginLocationService;
     private readonly PasswordHasher<string> _passwordHasher = new();
 
-    public AccountController(IConfiguration configuration, ApplicationDbContext context)
+    public AccountController(
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        LoginLocationService loginLocationService)
     {
         _configuration = configuration;
         _context = context;
+        _loginLocationService = loginLocationService;
     }
 
     [HttpGet]
@@ -152,6 +158,7 @@ public class AccountController : Controller
         foreach (var entry in loginHistory)
         {
             entry.DeviceBrowser = UserAgentParser.ToDeviceBrowserLabel(entry.UserAgent);
+            entry.Location = await _loginLocationService.ResolveLocationAsync(entry.IpAddress);
         }
 
         var model = new AccountProfileViewModel

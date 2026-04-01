@@ -34,4 +34,6 @@ public class LoginHistoryItem
     public string UserAgent { get; set; } = string.Empty;
 
     public string DeviceBrowser { get; set; } = "Unknown device";
+
+    public string Location { get; set; } = "Unknown";
 }
