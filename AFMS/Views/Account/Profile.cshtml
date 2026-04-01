@@ -9,6 +9,24 @@
         if (ip is "::1" or "127.0.0.1" or "::ffff:127.0.0.1" or "localhost") return "localhost";
         return ip;
     }
+
+    TimeZoneInfo ResolveUkTimeZone()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Europe/London"); }
+        catch
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time"); }
+            catch { return TimeZoneInfo.Utc; }
+        }
+    }
+
+    string FormatUkLoginTimestamp(DateTime utc)
+    {
+        var tz = ResolveUkTimeZone();
+        var uk = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), tz);
+        var zoneLabel = tz.IsDaylightSavingTime(uk) ? "BST" : "GMT";
+        return $"{uk:yyyy-MM-dd HH:mm:ss} {zoneLabel}";
+    }
 }
 
 <div class="page-header">
@@ -99,7 +117,7 @@
                 <table class="account-history-table">
                     <thead>
                         <tr>
-                            <th data-i18n="profile.historyTs">Timestamp (UTC)</th>
+                            <th>Timestamp (UK)</th>
                             <th>Device / Browser</th>
                         </tr>
                     </thead>
@@ -107,7 +125,7 @@
                         @foreach (var entry in Model.LoginHistory)
                         {
                             <tr>
-                                <td>@entry.OccurredUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>@FormatUkLoginTimestamp(entry.OccurredUtc)</td>
                                 <td>
                                     @{
                                         var displayIp = FriendlyIp(entry.IpAddress);
