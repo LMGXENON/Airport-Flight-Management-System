@@ -30,6 +30,13 @@
     </div>
 </div>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="flight-success-banner" id="dashboardSuccessBanner" aria-live="polite">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
 <!-- Stats Grid - Main -->
 <div class="stats-grid">
     <div class="stat-card">
@@ -445,6 +452,13 @@
 @section Scripts {
 <script>
 (function () {
+    const dashboardSuccessBanner = document.getElementById('dashboardSuccessBanner');
+    if (dashboardSuccessBanner) {
+        window.setTimeout(function () {
+            dashboardSuccessBanner.remove();
+        }, 4500);
+    }
+
     const retryBtn = document.getElementById('retryDashboardBtn');
 
     if (retryBtn) {
