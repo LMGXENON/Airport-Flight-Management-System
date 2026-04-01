@@ -188,17 +188,47 @@ public class HomeController : Controller
     {
         // Convert a manually-entered Flight from the database into an AeroDataBoxFlight
         // so it can be displayed alongside API flights with a consistent structure
-        var scheduledTime = new ScheduledTime
+        var departureUtc = DateTime.SpecifyKind(dbFlight.DepartureTime, DateTimeKind.Utc);
+        var arrivalUtc = DateTime.SpecifyKind(dbFlight.ArrivalTime, DateTimeKind.Utc);
+
+        var departureScheduledTime = new ScheduledTime
         {
-            Local = dbFlight.DepartureTime.ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture)
+            Local = departureUtc.ToLocalTime().ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture),
+            Utc = departureUtc.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture)
         };
+
+        var arrivalScheduledTime = new ScheduledTime
+        {
+            Local = arrivalUtc.ToLocalTime().ToString("yyyy-MM-ddTHH:mm", System.Globalization.CultureInfo.InvariantCulture),
+            Utc = arrivalUtc.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture)
+        };
+
+        var origin = string.IsNullOrWhiteSpace(dbFlight.Origin) ? null : dbFlight.Origin.Trim();
+        var destination = string.IsNullOrWhiteSpace(dbFlight.Destination) ? null : dbFlight.Destination.Trim();
 
         var departure = new FlightMovement
         {
-            Airport = new Airport { Iata = string.IsNullOrWhiteSpace(homeAirportIata) ? "LHR" : homeAirportIata },
-            ScheduledTime = scheduledTime,
+            Airport = new Airport
+            {
+                Iata = string.IsNullOrWhiteSpace(homeAirportIata) ? "LHR" : homeAirportIata,
+                Name = origin ?? "London Heathrow",
+                MunicipalityName = origin
+            },
+            ScheduledTime = departureScheduledTime,
             Terminal = dbFlight.Terminal,
             Gate = dbFlight.Gate,
+            Status = dbFlight.Status
+        };
+
+        var arrival = new FlightMovement
+        {
+            Airport = new Airport
+            {
+                Iata = destination,
+                Name = destination,
+                MunicipalityName = destination
+            },
+            ScheduledTime = arrivalScheduledTime,
             Status = dbFlight.Status
         };
 
@@ -207,6 +237,7 @@ public class HomeController : Controller
             Number = dbFlight.FlightNumber,
             Status = dbFlight.Status,
             Departure = departure,
+            Arrival = arrival,
             Direction = "Departure",
             Airline = new Airline { Name = dbFlight.Airline }
         };
