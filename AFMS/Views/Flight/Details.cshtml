@@ -131,12 +131,88 @@
         <a href="@Url.Action("Edit", "Flight", new { id = Model.Id })" class="btn btn-warning">
             <i class='bx bx-edit-alt' aria-hidden="true"></i> Edit Flight
         </a>
-        <a href="@Url.Action("Delete", "Flight", new { id = Model.Id })" class="btn btn-danger">
+        <button type="button" id="openDeleteConfirmFromDetails" class="btn btn-danger">
             <i class='bx bx-trash' aria-hidden="true"></i> Delete Flight
-        </a>
+        </button>
+    </div>
+
+    <div id="deleteConfirmOverlay" class="delete-confirm-overlay" aria-hidden="true">
+        <div class="delete-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+            <button type="button" class="delete-confirm-close" aria-label="Close delete confirmation">&times;</button>
+
+            <h3 id="deleteConfirmTitle" class="delete-confirm-title">Delete this flight?</h3>
+            <p class="delete-confirm-subtitle">This action permanently removes the flight and cannot be undone.</p>
+
+            <dl class="delete-confirm-list">
+                <div class="delete-confirm-row">
+                    <dt>Flight</dt>
+                    <dd>@Model.FlightNumber</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Airline</dt>
+                    <dd>@Model.Airline</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Destination</dt>
+                    <dd>@Model.Destination</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Departure</dt>
+                    <dd>@Model.DepartureTimeFormatted</dd>
+                </div>
+            </dl>
+
+            <form asp-controller="Flight" asp-action="Delete" method="post" class="delete-confirm-actions">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="button" class="delete-cancel-btn">Cancel</button>
+                <button type="submit" class="delete-submit-btn">Delete Flight</button>
+            </form>
+        </div>
     </div>
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/add-flight.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var overlay = document.getElementById('deleteConfirmOverlay');
+            var openBtn = document.getElementById('openDeleteConfirmFromDetails');
+            if (!overlay || !openBtn) return;
+
+            var closeBtn = overlay.querySelector('.delete-confirm-close');
+            var cancelBtn = overlay.querySelector('.delete-cancel-btn');
+
+            function openModal() {
+                overlay.classList.add('active');
+                overlay.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                if (closeBtn) closeBtn.focus();
+            }
+
+            function closeModal() {
+                overlay.classList.remove('active');
+                overlay.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+                openBtn.focus();
+            }
+
+            openBtn.addEventListener('click', openModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+            overlay.addEventListener('click', function (event) {
+                if (event.target === overlay) closeModal();
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && overlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        })();
+    </script>
 }

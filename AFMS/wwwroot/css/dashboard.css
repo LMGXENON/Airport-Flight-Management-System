@@ -1411,6 +1411,129 @@ body:not(.dark-theme) .status-scheduled {
     box-shadow: none;
 }
 
+.action-link-button {
+    border: none;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.delete-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 6, 12, 0.74);
+    z-index: 1200;
+    padding: 16px;
+}
+
+.delete-confirm-overlay.active {
+    display: flex;
+}
+
+.delete-confirm-modal {
+    width: min(520px, 100%);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.45);
+    padding: 20px;
+    position: relative;
+}
+
+.delete-confirm-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(136, 145, 178, 0.35);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.delete-confirm-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 22px;
+}
+
+.delete-confirm-subtitle {
+    margin: 8px 0 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.delete-confirm-list {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.delete-confirm-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(136, 145, 178, 0.28);
+}
+
+.delete-confirm-row dt {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.delete-confirm-row dd {
+    margin: 0;
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+}
+
+.delete-confirm-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.delete-cancel-btn,
+.delete-submit-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.delete-cancel-btn {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.delete-submit-btn {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: #fff;
+}
+
 /* Flight Details Modal */
 .modal-overlay {
     position: fixed;

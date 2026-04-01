@@ -198,18 +198,8 @@ namespace AFMS.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var flight = await _context.Flights.FindAsync(id);
-            if (flight == null)
-            {
-                return NotFound();
-            }
-
-            return View(flight);
+            await Task.CompletedTask;
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: Flight/Delete/5
