@@ -63,6 +63,7 @@
                 <tr>
                     <th scope="col" data-i18n="flight.colNum">Flight #</th>
                     <th scope="col" data-i18n="flight.colAirline">Airline</th>
+                    <th scope="col">Origin</th>
                     <th scope="col" data-i18n="flight.colDest">Destination</th>
                     <th scope="col" data-i18n="flight.colAircraft">Aircraft</th>
                     <th scope="col" data-i18n="flight.colDep">Departure</th>
@@ -82,6 +83,7 @@
                     <tr>
                         <td class="flight-number">@flight.FlightNumber</td>
                         <td>@flight.Airline</td>
+                        <td>@(string.IsNullOrWhiteSpace(flight.Origin) ? "-" : flight.Origin)</td>
                         <td>@flight.Destination</td>
                         <td>@(string.IsNullOrWhiteSpace(flight.AircraftType) ? "-" : flight.AircraftType)</td>
                         <td>@flight.DepartureTime.ToString("MMM dd, HH:mm")</td>
