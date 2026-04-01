@@ -100,7 +100,7 @@
                     <thead>
                         <tr>
                             <th data-i18n="profile.historyTs">Timestamp (UTC)</th>
-                            <th data-i18n="profile.historyIp">IP Address</th>
+                            <th>Device / Browser</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -113,13 +113,10 @@
                                         var displayIp = FriendlyIp(entry.IpAddress);
                                         var isLocal   = displayIp == "localhost";
                                     }
+                                    <span title="IP: @displayIp">@entry.DeviceBrowser</span>
                                     @if (isLocal)
                                     {
                                         <span class="ip-local" title="IPv6 loopback — this machine">localhost</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@displayIp</span>
                                     }
                                 </td>
                             </tr>

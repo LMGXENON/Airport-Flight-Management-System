@@ -30,4 +30,8 @@ public class LoginHistoryItem
     public DateTime OccurredUtc { get; set; }
 
     public string IpAddress { get; set; } = string.Empty;
+
+    public string UserAgent { get; set; } = string.Empty;
+
+    public string DeviceBrowser { get; set; } = "Unknown device";
 }

@@ -1,5 +1,6 @@
 using AFMS.Models;
 using AFMS.Data;
+using AFMS.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -81,6 +82,7 @@ public class AccountController : Controller
         {
             Username = credentialCheck.CanonicalUsername,
             IpAddress = GetRequestIpAddress(),
+            UserAgent = GetRequestUserAgent(),
             OccurredUtc = DateTime.UtcNow
         });
         await _context.SaveChangesAsync();
@@ -142,9 +144,15 @@ public class AccountController : Controller
             .Select(entry => new LoginHistoryItem
             {
                 OccurredUtc = entry.OccurredUtc,
-                IpAddress = entry.IpAddress
+                IpAddress = entry.IpAddress,
+                UserAgent = entry.UserAgent
             })
             .ToListAsync();
+
+        foreach (var entry in loginHistory)
+        {
+            entry.DeviceBrowser = UserAgentParser.ToDeviceBrowserLabel(entry.UserAgent);
+        }
 
         var model = new AccountProfileViewModel
         {
@@ -430,6 +438,15 @@ public class AccountController : Controller
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         return NormalizeIpAddress(ip);
+    }
+
+    private string GetRequestUserAgent()
+    {
+        var userAgent = Request.Headers.UserAgent.ToString();
+        if (string.IsNullOrWhiteSpace(userAgent))
+            return "Unknown";
+
+        return userAgent.Length <= 512 ? userAgent : userAgent[..512];
     }
 
     /// <summary>Maps loopback addresses to a human-readable label.</summary>
