@@ -22,7 +22,7 @@
     var statBadgeI18nKey = apiUnavailable ? "dash.dataUnavailable" : "dash.liveData";
 }
 
-<!-- Page Header -->
+@* Page Header *@
 <div class="page-header page-header--split">
     <div>
         <h1 class="page-title dashboard-title">Dashboard</h1>
@@ -37,7 +37,7 @@
     </div>
 }
 
-<!-- Stats Grid - Main -->
+@* Stats Grid - Main *@
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-content">
@@ -100,7 +100,7 @@
     </div>
 </div>
 
-<!-- Flights Section -->
+@* Flights Section *@
 <div class="flights-section">
     <div class="flights-header">
         <div class="section-title-wrap">
@@ -397,11 +397,11 @@
         }
     </div>
 
-    <!-- Pagination -->
+    @* Pagination *@
     <div class="pagination" id="pagination"></div>
 </div>
 
-<!-- Flight Details Modal (shared partial) -->
+@* Flight Details Modal (shared partial) *@
 @await Html.PartialAsync("_FlightDetailsModal")
 
 @if (User.IsInRole("Admin"))

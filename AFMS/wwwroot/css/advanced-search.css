@@ -342,10 +342,10 @@
 
 .status-btn.active {
     border-color: var(--accent-blue);
-    background-color: var(--accent-blue);
+    background: var(--accent-blue);
     color: #fff;
     box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.2);
-    font-weight: 600;
+    font-weight: 400;
     transform: translateY(-1px);
 }
 
@@ -405,6 +405,7 @@
     border-radius: 12px;
     border: 1px solid rgba(128, 146, 255, 0.12);
     background: rgba(8, 13, 33, 0.28);
+    position: relative;
 }
 
 .direction-btn {
@@ -422,34 +423,33 @@
     transition: all 0.2s;
     font-family: inherit;
     position: relative;
+    z-index: 1;
+}
+
+.direction-toggle-indicator {
+    position: absolute;
+    top: 4px;
+    left: 2px;
+    height: calc(100% - 8px);
+    border-radius: 9px;
+    background: var(--accent-blue);
+    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.18);
+    transform: translateX(0);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), width 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, width;
 }
 
 .direction-btn:hover {
-    border-color: var(--accent-blue);
     color: var(--text-primary);
-    background-color: rgba(65, 105, 225, 0.1);
 }
 
 .direction-btn.active {
-    border-color: rgba(114, 141, 255, 0.28);
-    background-color: var(--accent-blue);
     color: #fff;
-    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.18);
-    font-weight: 600;
-    transform: translateY(-1px);
-}
-
-.direction-btn.active::after {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.92);
-    margin-left: 4px;
+    font-weight: 400;
 }
 
 .direction-btn:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
 }
 
 /* -----------------------------------------------------------------------
@@ -691,18 +691,27 @@ body:not(.dark-theme) .direction-toggle {
     border-color: rgba(124, 164, 255, 0.18);
 }
 
+body:not(.dark-theme) .direction-toggle-indicator {
+    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.18);
+}
+
 body:not(.dark-theme) .direction-btn {
     color: var(--text-secondary);
 }
 
 body:not(.dark-theme) .direction-btn:hover {
-    background-color: rgba(43, 89, 214, 0.08);
     color: var(--text-primary);
 }
 
 body:not(.dark-theme) .direction-btn.active {
     color: #ffffff;
-    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.7), 0 8px 16px rgba(65, 105, 225, 0.18);
+    font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .direction-toggle-indicator {
+        transition: none;
+    }
 }
 
 body:not(.dark-theme) .selection-summary {
@@ -729,7 +738,10 @@ body:not(.dark-theme) .status-btn:hover {
 }
 
 body:not(.dark-theme) .status-btn.active {
-    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.72), 0 8px 16px rgba(65, 105, 225, 0.2);
+    border-color: var(--accent-blue);
+    background: var(--accent-blue);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(214, 223, 255, 0.14), 0 8px 16px rgba(65, 105, 225, 0.2);
 }
 
 body:not(.dark-theme) .spinner {

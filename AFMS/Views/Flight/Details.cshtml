@@ -11,7 +11,7 @@
 
 <div class="details-card">
 
-    <!-- ── Hero: flight number + badge inline ─────────────────── -->
+    @* Hero: flight number + badge inline *@
     <div class="details-hero">
         <div class="details-hero-top">
             <span class="details-flight-num">@Model.FlightNumber</span>
@@ -27,7 +27,7 @@
         }
     </div>
 
-    <!-- ── Section 1: Route ──────────────────────────────────── -->
+    @* Section 1: Route *@
     <div class="details-section">
         <h3 class="details-section-title">
             <i class='bx bx-map' aria-hidden="true"></i> Route
@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    <!-- ── Section 2: Timing ─────────────────────────────────── -->
+    @* Section 2: Timing *@
     <div class="details-section">
         <h3 class="details-section-title">
             <i class='bx bx-time' aria-hidden="true"></i> Timing
@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <!-- ── Section 3: Operations ─────────────────────────────── -->
+    @* Section 3: Operations *@
     <div class="details-section">
         <h3 class="details-section-title">
             <i class='bx bx-briefcase' aria-hidden="true"></i> Operations
@@ -123,7 +123,7 @@
         </div>
     </div>
 
-</div><!-- /.details-card -->
+</div>@* /.details-card *@
 
 @if (User.IsInRole("Admin"))
 {

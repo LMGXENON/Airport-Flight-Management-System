@@ -5,7 +5,7 @@
     var pagination = Model.Pagination;
 }
 
-<!-- Page Header -->
+@* Page Header *@
 <div class="page-header page-header--split">
     <div>
         <h1 class="page-title" data-i18n="flight.pageTitle">Managed Flights</h1>
@@ -26,7 +26,7 @@
     </div>
 }
 
-<!-- Flight Number Search -->
+@* Flight Number Search *@
 <form method="get" action="@Url.Action("Index", "Flight")" class="flight-search-form" aria-label="Search flights by flight number">
     <input type="text"
            name="search"
@@ -50,9 +50,9 @@
     }
 </form>
 
-<!-- Flights Section -->
+@* Flights Section *@
 <div class="flights-section" style="position: relative;">
-    <!-- Loading Spinner Overlay -->
+    @* Loading Spinner Overlay *@
     <div id="flightsLoadingSpinner" class="loading-spinner-overlay" style="display: none;">
         <div class="loading-spinner"></div>
         <span class="loading-spinner-label">Loading flights…</span>

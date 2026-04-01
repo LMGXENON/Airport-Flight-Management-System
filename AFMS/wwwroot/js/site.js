@@ -111,35 +111,36 @@ updateClock();
     });
 })();
 
-// Show loading spinner for flights table during fetches
 document.addEventListener('DOMContentLoaded', function () {
     var flightsSection = document.querySelector('.flights-section');
     var spinner = document.getElementById('flightsLoadingSpinner');
     if (flightsSection && spinner) {
-        // Show spinner on search form submit
+        function setFlightsLoadingVisible(isVisible) {
+            spinner.style.display = isVisible ? 'flex' : 'none';
+        }
+
         var searchForm = document.querySelector('.flight-search-form');
         if (searchForm) {
             searchForm.addEventListener('submit', function () {
-                spinner.style.display = 'flex';
+                setFlightsLoadingVisible(true);
             });
         }
-        // Show spinner on pagination link click
+
         var pagination = document.querySelector('.pagination');
         if (pagination) {
             pagination.addEventListener('click', function (e) {
-                var target = e.target;
-                if (target.tagName === 'A' && target.classList.contains('page-btn')) {
-                    spinner.style.display = 'flex';
+                var pageButton = e.target.closest('.page-btn');
+                if (pageButton) {
+                    setFlightsLoadingVisible(true);
                 }
             });
         }
 
-        // (Optional) If flights table is ever loaded via AJAX, expose a global function to show/hide spinner
         window.showFlightsLoadingSpinner = function () {
-            spinner.style.display = 'flex';
+            setFlightsLoadingVisible(true);
         };
         window.hideFlightsLoadingSpinner = function () {
-            spinner.style.display = 'none';
+            setFlightsLoadingVisible(false);
         };
     }
 });
