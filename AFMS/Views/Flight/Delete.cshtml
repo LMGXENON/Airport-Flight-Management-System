@@ -4,13 +4,13 @@
     ViewData["Title"] = "Delete Flight";
 }
 
-<!-- Page Header -->
+@* Page Header *@
 <div class="page-header">
     <h1 class="page-title">Delete Flight</h1>
     <p class="page-subtitle">Are you sure you want to delete this flight?</p>
 </div>
 
-<!-- Delete Confirmation Card -->
+@* Delete Confirmation Card *@
 <div class="details-card">
     <div class="warning-banner">
         <strong>⚠️ Warning:</strong> This action cannot be undone. The flight will be permanently removed from the database.
@@ -44,7 +44,7 @@
     </div>
 </div>
 
-<!-- Delete Actions -->
+@* Delete Actions *@
 <form asp-action="Delete" method="post" class="detail-actions">
     @Html.AntiForgeryToken()
     <button type="submit" class="btn btn-danger" onclick="return confirm('Are you absolutely sure you want to delete this flight? This cannot be undone.');">

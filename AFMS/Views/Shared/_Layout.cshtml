@@ -38,7 +38,7 @@
         })();
     </script>
     <div class="app-container">
-        <!-- Left Sidebar -->
+        @* Left Sidebar *@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="app-logo">
@@ -74,7 +74,7 @@
                 }
             </nav>
 
-            <!-- Collapse toggle — sits between nav and footer -->
+            @* Collapse toggle sits between nav and footer *@
             <div class="sidebar-collapse-section">
                 <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse sidebar" title="Collapse sidebar">
                     <i class='bx bx-chevron-left nav-icon' aria-hidden="true"></i>
@@ -117,7 +117,7 @@
                 </div>
             </div>
 
-            <!-- Collapsed-only: bare door icon at the very bottom -->
+            @* Collapsed-only: bare door icon at the very bottom *@
             <div class="sidebar-logout-collapsed" aria-hidden="true">
                 <form asp-controller="Account" asp-action="Logout" method="post">
                     @Html.AntiForgeryToken()
@@ -150,7 +150,7 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
+        @* Main Content *@
         <div class="main-content">
             <header class="top-bar">
                 <button class="sidebar-toggle" id="sidebarToggle">☰</button>
@@ -197,7 +197,7 @@
         </div>
     </div>
 
-    <!-- Flight assistant panel -->
+    @* Flight assistant panel *@
     <div class="ai-chat-container">
         <div class="ai-chat-window" id="aiChatWindow" role="dialog" aria-modal="false" aria-labelledby="aiChatTitle">
             <div class="ai-chat-header">

@@ -19,18 +19,18 @@
 
 
 
-<!-- Page Header -->
+@* Page Header *@
 <div class="page-header">
     <h1 class="page-title">Advanced Flight Search</h1>
     <p class="page-subtitle">Search and filter live flight records</p>
 </div>
 
-<!-- Search Form -->
+@* Search Form *@
 <div class="search-form-container">
     <form class="search-form" id="searchForm" method="get" asp-action="AdvancedSearch" asp-controller="Home" aria-label="Advanced flight search">
         <input type="hidden" name="search" value="1" />
 
-        <!-- Row 1: Flight, Airline, Origin, Destination -->
+        @* Row 1: Flight, Airline, Origin, Destination *@
         <div class="form-row form-row--route">
             <div class="form-group">
                 <label for="flight" class="form-label">Flight Number</label>
@@ -152,7 +152,7 @@
             </div>
         </div>
 
-        <!-- Row 2: Departure Date, Arrival Date, Terminal -->
+        @* Row 2: Departure Date, Arrival Date, Terminal *@
         <div class="form-row">
             <div class="form-group">
                 <label for="departureDate" class="form-label">Departure Date</label>
@@ -184,7 +184,7 @@
             </div>
         </div>
 
-        <!-- Row 3: Direction + Time Range (new) -->
+        @* Row 3: Direction + Time Range (new) *@
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Direction</label>
@@ -221,7 +221,7 @@
             </div>
         </div>
 
-        <!-- Row 4: Status Buttons (multi-select) -->
+        @* Row 4: Status Buttons (multi-select) *@
         <div class="form-row">
             <div class="form-group form-group--full-width">
                 <label class="form-label">
@@ -250,12 +250,12 @@
             </div>
         </div>
 
-        <!-- Hidden sort/page state (for progressive enhancement) -->
+        @* Hidden sort/page state (for progressive enhancement) *@
         <input type="hidden" id="sortByInput"    name="sortBy"    value="@Model.SortBy" />
         <input type="hidden" id="sortOrderInput" name="sortOrder" value="@Model.SortOrder" />
         <input type="hidden" id="pageInput"      name="page"      value="@Model.Page" />
 
-        <!-- Action Buttons -->
+        @* Action Buttons *@
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" id="searchBtn">
                 <span class="btn-icon">🔍</span>
@@ -283,13 +283,13 @@
     <p class="api-hint">Tip: every filter is optional - combine any number of filters together.</p>
 </div>
 
-<!-- Loading Spinner -->
+@* Loading Spinner *@
 <div class="search-loading" id="searchLoading" hidden>
     <div class="spinner"></div>
     <span>Searching flights…</span>
 </div>
 
-<!-- Results Container (pre-rendered on first GET, then replaced via AJAX) -->
+@* Results Container (pre-rendered on first GET, then replaced via AJAX) *@
 <div id="results-container">
     @if (Model.HasSearched)
     {
@@ -297,7 +297,7 @@
     }
 </div>
 
-<!-- Flight Details Modal (shared partial) -->
+@* Flight Details Modal (shared partial) *@
 @await Html.PartialAsync("_FlightDetailsModal")
 
 @section Scripts {
