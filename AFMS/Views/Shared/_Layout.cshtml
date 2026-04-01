@@ -1,6 +1,7 @@
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentRole = (User.Claims.FirstOrDefault(claim => claim.Type == System.Security.Claims.ClaimTypes.Role)?.Value ?? "User").ToUpperInvariant();
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -82,8 +83,8 @@
             </div>            <div class="sidebar-footer">
                 <span class="user-label" data-i18n="nav.loggedInAs">Logged in as</span>
                 <div class="user-session-row">
-                    <i class='bx bx-user sidebar-user-icon' aria-hidden="true" title="ADMIN"></i>
-                    <span class="user-name">ADMIN</span>
+                    <i class='bx bx-user sidebar-user-icon' aria-hidden="true" title="@currentRole"></i>
+                    <span class="user-name">@currentRole</span>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-danger logout-btn" data-i18n-title="nav.logout" title="Logout">
