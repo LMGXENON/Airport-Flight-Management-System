@@ -187,7 +187,7 @@ namespace AFMS.Controllers
                     }
                     throw;
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Home");
             }
             ViewBag.Airlines = await FlightFormHelpers.GetAirlinesSelectListAsync(_context, flight.Airline);
             ViewBag.AircraftModels = FlightFormHelpers.GetAircraftModelsSelectList(flight.AircraftType);
