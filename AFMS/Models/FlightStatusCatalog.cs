@@ -43,12 +43,12 @@ public static class FlightStatusCatalog
             ["gateclosing"] = "Departed",
             ["taxiing"] = "Departed",
 
-            ["airborne"] = "InFlight",
-            ["inflight"] = "InFlight",
-            ["in flight"] = "InFlight",
-            ["enroute"] = "InFlight",
-            ["en route"] = "InFlight",
-            ["en-route"] = "InFlight",
+            ["airborne"] = "Departed",
+            ["inflight"] = "Departed",
+            ["in flight"] = "Departed",
+            ["enroute"] = "Departed",
+            ["en route"] = "Departed",
+            ["en-route"] = "Departed",
 
             ["approaching"] = "Approaching",
 
@@ -93,6 +93,14 @@ public static class FlightStatusCatalog
 
     public static string Normalize(string? value)
     {
+        // Keep exact canonical values stable (for form submissions), then apply alias mapping.
+        var trimmed = value?.Trim();
+        if (!string.IsNullOrWhiteSpace(trimmed)
+            && OptionByValue.TryGetValue(trimmed, out var optionMatch))
+        {
+            return optionMatch.Value;
+        }
+
         var key = NormalizeKey(value);
         if (string.IsNullOrWhiteSpace(key))
             return "Scheduled";
