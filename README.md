@@ -55,7 +55,7 @@ Behind the scenes, AFMS is built on ASP.NET Core MVC, with a database backend an
 
 ## Architecture diagram
 
-(Diagram to be added)
+![AFMS AWS deployment architecture](docs/images/deployment-architecture.png)
 
 ## Prerequisites
 
@@ -137,9 +137,7 @@ Terraform configuration is under `Terraform/` and composes the following AWS ser
 
 All infrastructure is provisioned in the `eu-west-2` (London) region. Terraform state is stored in S3 for team collaboration.
 
-### Deployment architecture diagram
 
-![AFMS AWS deployment architecture](docs/images/deployment-architecture.png)
 
 ### Before applying Terraform
 
