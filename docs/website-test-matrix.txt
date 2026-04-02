@@ -93,7 +93,7 @@ Format: Test | Expected Result | Result
 | Layout UI - Avatar dropdown behavior | Hover/focus/click/ESC behavior works correctly | PASS (browser flow opened avatar menu and closed it via Escape) |
 | Settings UI - Live preview | Theme/language preview updates instantly before save | PASS (browser flow showed immediate theme + language preview updates) |
 | i18n - Language translations | data-i18n text/placeholder/title/html translations apply correctly | PASS (browser flow verified translated labels such as Panel and Cerrar Sesión) |
-| Real-time - SignalR connection | Client subscribes and receives flight update events | FAIL (no websocket connection to /flightHub detected from dashboard page) |
+| Real-time - SignalR connection | Client subscribes and receives flight update events | PASS (verified websocket to /flightHub, successful SubscribeToFlightUpdates ack, and received both FlightUpdated + FlightAdded payloads with auto-refresh trigger) |
 | Background service - Periodic sync | Background service runs sync loop every 2 minutes | PASS (dedicated log capture showed 2 sync starts and 2 sync completions over interval) |
 | Error route - Home/Error | Error page route responds for authenticated user | PASS (GET /Home/Error -> 200) |
 
