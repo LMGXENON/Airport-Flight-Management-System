@@ -145,7 +145,7 @@ All infrastructure is provisioned in the `eu-west-2` (London) region. Terraform 
 
 Review and customise:
 
-- Backend configuration in `provider.tf` (S3 bucket, DynamoDB lock table)
+- Backend configuration in `provider.tf` (S3 bucket)
 - Route53 domain and subdomain defaults
 - RDS password and instance size
 - Sensitive variables (API keys, JWT secrets)
