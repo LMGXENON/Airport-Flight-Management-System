@@ -36,6 +36,7 @@ public class FlightSyncService
 
             // Get flights from AeroDataBox for the next 24 hours
             var airportCode = _configuration["AeroDataBox:DefaultAirport"] ?? "EGLL";
+            var homeAirportIata = FlightFormattingHelpers.ConvertToIata(airportCode);
             var dateFrom = DateTime.UtcNow;
             var dateTo = dateFrom.AddHours(24);
 
@@ -64,13 +65,13 @@ public class FlightSyncService
                 departureTime = ParseUtcOrFallback(departureLeg?.ScheduledTime?.Utc, departureTime);
                 arrivalTime = ParseUtcOrFallback(arrivalLeg?.ScheduledTime?.Utc, arrivalTime);
 
-                var destination = extFlight.Direction == "Departure" 
-                    ? (arrivalLeg?.Airport?.Iata ?? "Unknown")
-                    : (departureLeg?.Airport?.Iata ?? "Unknown");
+                var destination = extFlight.Direction == "Departure"
+                    ? NormalizeAirportCode(arrivalLeg?.Airport?.Iata, "Unknown")
+                    : NormalizeAirportCode(arrivalLeg?.Airport?.Iata, homeAirportIata);
 
                 var origin = extFlight.Direction == "Departure"
-                    ? (departureLeg?.Airport?.Iata ?? airportCode)
-                    : (arrivalLeg?.Airport?.Iata ?? "Unknown");
+                    ? NormalizeAirportCode(departureLeg?.Airport?.Iata, homeAirportIata)
+                    : NormalizeAirportCode(departureLeg?.Airport?.Iata, "Unknown");
 
                 var gate = extFlight.Direction == "Departure" 
                     ? departureLeg?.Gate 
@@ -123,6 +124,18 @@ public class FlightSyncService
                     if (existingFlight.ArrivalTime != arrivalTime)
                     {
                         existingFlight.ArrivalTime = arrivalTime;
+                        hasChanged = true;
+                    }
+
+                    if (!string.Equals(existingFlight.Origin, origin, StringComparison.OrdinalIgnoreCase))
+                    {
+                        existingFlight.Origin = origin;
+                        hasChanged = true;
+                    }
+
+                    if (!string.Equals(existingFlight.Destination, destination, StringComparison.OrdinalIgnoreCase))
+                    {
+                        existingFlight.Destination = destination;
                         hasChanged = true;
                     }
 
@@ -198,5 +211,14 @@ public class FlightSyncService
                 out var parsedUtc)
             ? parsedUtc.UtcDateTime
             : fallback;
+    }
+
+    private static string NormalizeAirportCode(string? code, string fallback)
+    {
+        var normalized = FlightFormattingHelpers.ConvertToIata(code);
+        if (string.IsNullOrWhiteSpace(normalized))
+            return fallback;
+
+        return normalized;
     }
 }

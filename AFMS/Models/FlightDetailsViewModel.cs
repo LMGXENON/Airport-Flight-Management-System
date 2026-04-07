@@ -49,8 +49,8 @@ public class FlightDetailsViewModel
             Id = flight.Id,
             FlightNumber = flight.FlightNumber,
             Airline = flight.Airline,
-            Origin = flight.Origin ?? string.Empty,
-            Destination = flight.Destination,
+            Origin = NormalizeAirportForDisplay(flight.Origin),
+            Destination = NormalizeAirportForDisplay(flight.Destination),
             DepartureTime = flight.DepartureTime,
             ArrivalTime = flight.ArrivalTime,
             DepartureTimeFormatted = detailsService.FormatDateAndTime(flight.DepartureTime),
@@ -64,5 +64,14 @@ public class FlightDetailsViewModel
             StatusClass = detailsService.GetStatusClass(flight.Status),
             IsManualEntry = flight.IsManualEntry
         };
+    }
+
+    private static string NormalizeAirportForDisplay(string? airportCode)
+    {
+        if (string.IsNullOrWhiteSpace(airportCode))
+            return string.Empty;
+
+        var normalized = FlightFormattingHelpers.ConvertToIata(airportCode);
+        return string.IsNullOrWhiteSpace(normalized) ? airportCode.Trim() : normalized;
     }
 }
