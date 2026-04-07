@@ -72,8 +72,6 @@ public class FlightSyncService
                 var origin = extFlight.Direction == "Departure"
                     ? (departureLeg?.Airport?.Iata ?? airportCode)
                     : (arrivalLeg?.Airport?.Iata ?? "LHR");
-                    ? NormalizeAirportCode(departureLeg?.Airport?.Iata, homeAirportIata)
-                    : NormalizeAirportCode(departureLeg?.Airport?.Iata, "Unknown");
 
                 var gate = extFlight.Direction == "Departure" 
                     ? departureLeg?.Gate 
