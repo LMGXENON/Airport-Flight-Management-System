@@ -72,6 +72,8 @@ public class FlightSyncService
                 var origin = extFlight.Direction == "Departure"
                     ? (departureLeg?.Airport?.Iata ?? airportCode)
                     : (arrivalLeg?.Airport?.Iata ?? "LHR");
+                    ? NormalizeAirportCode(departureLeg?.Airport?.Iata, homeAirportIata)
+                    : NormalizeAirportCode(departureLeg?.Airport?.Iata, "Unknown");
 
                 var gate = extFlight.Direction == "Departure" 
                     ? departureLeg?.Gate 
@@ -80,6 +82,22 @@ public class FlightSyncService
                 var terminal = extFlight.Direction == "Departure" 
                     ? departureLeg?.Terminal ?? "1" 
                     : arrivalLeg?.Terminal ?? "1";
+                string origin;
+                string? gate;
+                string terminal;
+
+                if (string.Equals(extFlight.Direction, "Departure", StringComparison.OrdinalIgnoreCase))
+                {
+                    origin = departureLeg?.Airport?.Iata ?? airportCode;
+                    gate = departureLeg?.Gate;
+                    terminal = departureLeg?.Terminal ?? "1";
+                }
+                else
+                {
+                    origin = arrivalLeg?.Airport?.Iata ?? "LHR";
+                    gate = arrivalLeg?.Gate;
+                    terminal = arrivalLeg?.Terminal ?? "1";
+                }
 
                 var aircraftType = extFlight.Aircraft?.Model;
 
