@@ -70,7 +70,7 @@ public class FlightSyncService
 
                 var origin = extFlight.Direction == "Departure"
                     ? (departureLeg?.Airport?.Iata ?? airportCode)
-                    : (arrivalLeg?.Airport?.Iata ?? "Unknown");
+                    : (arrivalLeg?.Airport?.Iata ?? "LHR");
 
                 var gate = extFlight.Direction == "Departure" 
                     ? departureLeg?.Gate 
