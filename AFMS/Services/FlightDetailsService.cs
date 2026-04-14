@@ -39,7 +39,7 @@ public class FlightDetailsService
     /// </summary>
     public string GetDisplayValue(string? value, string fallback = "TBD")
     {
-        return string.IsNullOrWhiteSpace(value) ? fallback : value;
+        return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
     }
 
     /// <summary>
