@@ -1,4 +1,5 @@
 using AFMS.Services;
+using AFMS.Models;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Globalization;
 
@@ -117,4 +118,42 @@ public class FlightDetailsServiceTests
 
         Assert.Equal("Terminal 1", terminal);
     }
+
+    [Fact]
+    public void ValidateFlightDetails_AddsErrorWhenStatusIsMissing()
+    {
+        var service = CreateService();
+        var flight = CreateValidFlight();
+        flight.Status = " ";
+
+        var validation = service.ValidateFlightDetails(flight);
+
+        Assert.Contains("Status is missing", validation.Errors);
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void ValidateFlightDetails_AddsWarningWhenStatusIsUnknown()
+    {
+        var service = CreateService();
+        var flight = CreateValidFlight();
+        flight.Status = "Gate Reopened";
+
+        var validation = service.ValidateFlightDetails(flight);
+
+        Assert.Contains("Status is not recognized by the catalog", validation.Warnings);
+        Assert.True(validation.IsValid);
+    }
+
+    private static Flight CreateValidFlight() => new()
+    {
+        FlightNumber = "BA123",
+        Airline = "British Airways",
+        Destination = "JFK",
+        Origin = "LHR",
+        DepartureTime = new DateTime(2026, 4, 14, 10, 0, 0),
+        ArrivalTime = new DateTime(2026, 4, 14, 14, 0, 0),
+        Status = "Scheduled",
+        Terminal = "5"
+    };
 }

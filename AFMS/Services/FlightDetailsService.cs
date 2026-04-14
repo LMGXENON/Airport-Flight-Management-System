@@ -147,6 +147,15 @@ public class FlightDetailsService
             validation.AddError("Destination is missing");
         }
 
+        if (string.IsNullOrWhiteSpace(flight.Status))
+        {
+            validation.AddError("Status is missing");
+        }
+        else if (!FlightStatusCatalog.IsKnown(flight.Status))
+        {
+            validation.AddWarning("Status is not recognized by the catalog");
+        }
+
         if (!string.IsNullOrWhiteSpace(flight.Origin) && flight.Origin.Length > 100)
         {
             validation.AddWarning("Origin exceeds maximum length");
