@@ -255,4 +255,11 @@ public class TesterWorkflowTests
         var pagination = new PaginationState { Page = 1, PageSize = 25, TotalCount = 51 };
         Assert.Equal(3, pagination.TotalPages);
     }
+
+    [Fact]
+    public void TesterRegressionCommit37_Scenario7()
+    {
+        var service = CreateDetailsService();
+        Assert.Equal("TBD", service.FormatGate(" "));
+    }
 }
