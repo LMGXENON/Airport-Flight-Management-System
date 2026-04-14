@@ -109,6 +109,13 @@ public class ManualFlightMergeService
         var gate = Clean(flight.Gate);
         var terminal = Clean(flight.Terminal);
         var destination = Clean(flight.Destination);
+        var destinationIata = string.IsNullOrWhiteSpace(destination)
+            ? null
+            : FlightFormattingHelpers.ConvertToIata(destination);
+
+        if (string.IsNullOrWhiteSpace(destinationIata))
+            destinationIata = destination;
+
         var normalizedStatus = FlightStatusCatalog.Normalize(flight.Status);
         var departureUtc = DateTime.SpecifyKind(flight.DepartureTime, DateTimeKind.Utc);
         var arrivalUtc = DateTime.SpecifyKind(flight.ArrivalTime, DateTimeKind.Utc);
@@ -138,7 +145,7 @@ public class ManualFlightMergeService
             },
             Arrival = new FlightMovement
             {
-                Airport = new Airport { Iata = destination, Name = destination },
+                Airport = new Airport { Iata = destinationIata, Name = destination },
                 ScheduledTime = new ScheduledTime
                 {
                     Local = arrivalUtc.ToLocalTime().ToString("yyyy-MM-ddTHH:mmzzz"),

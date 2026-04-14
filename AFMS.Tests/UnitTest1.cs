@@ -819,4 +819,28 @@ public class ManualFlightMergeServiceTests
         Assert.Equal("Delayed", flight.Status);
         Assert.Equal("Delayed", flight.Departure?.Status);
     }
+
+    [Fact]
+    public void MergeManualFlights_NormalizesSyntheticDestinationToIata()
+    {
+        var apiFlights = new List<AeroDataBoxFlight>();
+
+        var manualFlights = new List<Flight>
+        {
+            new()
+            {
+                FlightNumber = "BA400",
+                Destination = "KJFK",
+                Status = "Boarding",
+                DepartureTime = DateTime.Parse("2026-03-22T09:00:00+00:00"),
+                ArrivalTime = DateTime.Parse("2026-03-22T17:30:00+00:00"),
+                IsManualEntry = true
+            }
+        };
+
+        var merged = _service.MergeManualFlights(apiFlights, manualFlights);
+
+        var flight = Assert.Single(merged);
+        Assert.Equal("JFK", flight.Arrival?.Airport?.Iata);
+    }
 }

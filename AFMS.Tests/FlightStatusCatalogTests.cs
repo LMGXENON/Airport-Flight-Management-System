@@ -21,6 +21,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsScheduledForEstimatedAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("estimated");
+
+        Assert.Equal("Scheduled", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsDepartedForGateCloseAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("gate-close");
@@ -48,6 +56,14 @@ public class FlightStatusCatalogTests
     public void Normalize_ReturnsDepartedForInFlightAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("in-flight");
+
+        Assert.Equal("Departed", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsDepartedForTaxiOutAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("taxi out");
 
         Assert.Equal("Departed", normalized);
     }
@@ -104,6 +120,14 @@ public class FlightStatusCatalogTests
     public void Normalize_ReturnsBoardingForBoardingNowAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("boarding now");
+
+        Assert.Equal("Boarding", normalized);
+    }
+
+    [Fact]
+    public void Normalize_ReturnsBoardingForBoardingSoonAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("boarding soon");
 
         Assert.Equal("Boarding", normalized);
     }
@@ -213,6 +237,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void IsKnown_ReturnsTrueForEstimatedAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("estimated");
+
+        Assert.True(result);
+    }
+
+    [Fact]
     public void IsKnown_ReturnsTrueForGateClosingAlias()
     {
         var result = FlightStatusCatalog.IsKnown("gate closing");
@@ -240,6 +272,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForInFlightAlias()
     {
         var result = FlightStatusCatalog.IsKnown("in flight");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForTakeoffAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("takeoff");
 
         Assert.True(result);
     }
@@ -296,6 +336,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForBoardingNowAlias()
     {
         var result = FlightStatusCatalog.IsKnown("boarding-now");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForGateOpenAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("gate open");
 
         Assert.True(result);
     }

@@ -21,6 +21,9 @@ public class FlightDetailsService
     /// </summary>
     public (int Hours, int Minutes) GetFlightDuration(DateTime departureTime, DateTime arrivalTime)
     {
+        if (arrivalTime <= departureTime)
+            return (0, 0);
+
         var duration = arrivalTime - departureTime;
         return ((int)duration.TotalHours, duration.Minutes);
     }
@@ -39,7 +42,7 @@ public class FlightDetailsService
     /// </summary>
     public string GetDisplayValue(string? value, string fallback = "TBD")
     {
-        return string.IsNullOrWhiteSpace(value) ? fallback : value;
+        return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
     }
 
     /// <summary>
@@ -47,7 +50,10 @@ public class FlightDetailsService
     /// </summary>
     public string FormatTerminal(string? terminal)
     {
-        return $"Terminal {GetDisplayValue(terminal, "1")}";
+        var normalized = GetDisplayValue(terminal, "1");
+        return normalized.StartsWith("Terminal ", StringComparison.OrdinalIgnoreCase)
+            ? normalized
+            : $"Terminal {normalized}";
     }
 
     /// <summary>
@@ -79,8 +85,23 @@ public class FlightDetailsService
     /// </summary>
     public string FormatDateTime(DateTime? dateTime, string format, string fallback = "-")
     {
-        return dateTime.HasValue ? dateTime.Value.ToString(format) : fallback;
+        if (!dateTime.HasValue || !IsSupportedFormat(format))
+            return fallback;
+
+        try
+        {
+            return dateTime.Value.ToString(format, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return fallback;
+        }
     }
+
+    private static bool IsSupportedFormat(string format) =>
+        !string.IsNullOrWhiteSpace(format)
+        && !format.Contains('[')
+        && !format.Contains(']');
 
     /// <summary>
     /// Formats date/time for header display (e.g., "Monday 24 Mar").
@@ -124,6 +145,15 @@ public class FlightDetailsService
         if (string.IsNullOrWhiteSpace(flight.Destination))
         {
             validation.AddError("Destination is missing");
+        }
+
+        if (string.IsNullOrWhiteSpace(flight.Status))
+        {
+            validation.AddError("Status is missing");
+        }
+        else if (!FlightStatusCatalog.IsKnown(flight.Status))
+        {
+            validation.AddWarning("Status is not recognized by the catalog");
         }
 
         if (!string.IsNullOrWhiteSpace(flight.Origin) && flight.Origin.Length > 100)

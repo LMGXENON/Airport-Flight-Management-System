@@ -1,0 +1,159 @@
+using AFMS.Services;
+using AFMS.Models;
+using Microsoft.Extensions.Logging.Abstractions;
+using System.Globalization;
+
+namespace AFMS.Tests;
+
+public class FlightDetailsServiceTests
+{
+    private static FlightDetailsService CreateService() =>
+        new(NullLogger<FlightDetailsService>.Instance);
+
+    [Fact]
+    public void GetDisplayValue_TrimsNonEmptyValues()
+    {
+        var service = CreateService();
+
+        var value = service.GetDisplayValue("  Boeing 777-300ER  ");
+
+        Assert.Equal("Boeing 777-300ER", value);
+    }
+
+    [Fact]
+    public void GetDisplayValue_ReturnsFallbackForWhitespaceValues()
+    {
+        var service = CreateService();
+
+        var value = service.GetDisplayValue("   ", "Unknown");
+
+        Assert.Equal("Unknown", value);
+    }
+
+    [Fact]
+    public void FormatDateTime_UsesInvariantCultureOutput()
+    {
+        var service = CreateService();
+        var originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
+
+            var value = service.FormatDateTime(
+                new DateTime(2026, 4, 14, 14, 30, 0),
+                "dddd, MMM dd");
+
+            Assert.Equal("Tuesday, Apr 14", value);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [Fact]
+    public void FormatDateTime_ReturnsFallbackForInvalidFormat()
+    {
+        var service = CreateService();
+
+        var value = service.FormatDateTime(
+            new DateTime(2026, 4, 14, 14, 30, 0),
+            "yyyy-MM-dd[",
+            "n/a");
+
+        Assert.Equal("n/a", value);
+    }
+
+    [Fact]
+    public void GetFlightDuration_ReturnsZeroWhenArrivalIsBeforeDeparture()
+    {
+        var service = CreateService();
+
+        var duration = service.GetFlightDuration(
+            new DateTime(2026, 4, 14, 16, 0, 0),
+            new DateTime(2026, 4, 14, 15, 0, 0));
+
+        Assert.Equal((0, 0), duration);
+    }
+
+    [Fact]
+    public void GetFlightDuration_ReturnsHoursAndMinutesForValidRange()
+    {
+        var service = CreateService();
+
+        var duration = service.GetFlightDuration(
+            new DateTime(2026, 4, 14, 10, 0, 0),
+            new DateTime(2026, 4, 14, 12, 45, 0));
+
+        Assert.Equal((2, 45), duration);
+    }
+
+    [Fact]
+    public void FormatTerminal_AddsPrefixWhenMissing()
+    {
+        var service = CreateService();
+
+        var terminal = service.FormatTerminal(" 5 ");
+
+        Assert.Equal("Terminal 5", terminal);
+    }
+
+    [Fact]
+    public void FormatTerminal_DoesNotDuplicatePrefixWhenAlreadyPresent()
+    {
+        var service = CreateService();
+
+        var terminal = service.FormatTerminal("Terminal 3");
+
+        Assert.Equal("Terminal 3", terminal);
+    }
+
+    [Fact]
+    public void FormatTerminal_UsesDefaultWhenBlank()
+    {
+        var service = CreateService();
+
+        var terminal = service.FormatTerminal(" ");
+
+        Assert.Equal("Terminal 1", terminal);
+    }
+
+    [Fact]
+    public void ValidateFlightDetails_AddsErrorWhenStatusIsMissing()
+    {
+        var service = CreateService();
+        var flight = CreateValidFlight();
+        flight.Status = " ";
+
+        var validation = service.ValidateFlightDetails(flight);
+
+        Assert.Contains("Status is missing", validation.Errors);
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void ValidateFlightDetails_AddsWarningWhenStatusIsUnknown()
+    {
+        var service = CreateService();
+        var flight = CreateValidFlight();
+        flight.Status = "Gate Reopened";
+
+        var validation = service.ValidateFlightDetails(flight);
+
+        Assert.Contains("Status is not recognized by the catalog", validation.Warnings);
+        Assert.True(validation.IsValid);
+    }
+
+    private static Flight CreateValidFlight() => new()
+    {
+        FlightNumber = "BA123",
+        Airline = "British Airways",
+        Destination = "JFK",
+        Origin = "LHR",
+        DepartureTime = new DateTime(2026, 4, 14, 10, 0, 0),
+        ArrivalTime = new DateTime(2026, 4, 14, 14, 0, 0),
+        Status = "Scheduled",
+        Terminal = "5"
+    };
+}

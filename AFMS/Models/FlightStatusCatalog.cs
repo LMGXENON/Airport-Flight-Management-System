@@ -21,6 +21,8 @@ public static class FlightStatusCatalog
         {
             ["scheduled"] = "Scheduled",
             ["expected"] = "Scheduled",
+            ["estimated"] = "Scheduled",
+            ["estimate"] = "Scheduled",
             ["ontime"] = "Scheduled",
             ["on time"] = "Scheduled",
             ["on-time"] = "Scheduled",
@@ -34,6 +36,8 @@ public static class FlightStatusCatalog
             ["finalcall"] = "Boarding",
             ["lastcall"] = "Boarding",
             ["boardingnow"] = "Boarding",
+            ["boardingsoon"] = "Boarding",
+            ["gateopen"] = "Boarding",
 
             ["departed"] = "Departed",
             ["departing"] = "Departed",
@@ -42,6 +46,8 @@ public static class FlightStatusCatalog
             ["gateclose"] = "Departed",
             ["gateclosing"] = "Departed",
             ["taxiing"] = "Departed",
+            ["taxiout"] = "Departed",
+            ["takeoff"] = "Departed",
 
             ["airborne"] = "Departed",
             ["inflight"] = "Departed",
