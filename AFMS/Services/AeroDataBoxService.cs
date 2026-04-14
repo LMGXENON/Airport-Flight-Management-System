@@ -31,8 +31,8 @@ public class AeroDataBoxService
     {
         try
         {
-            var apiKey = _configuration["AeroDataBox:ApiKey"];
-            var apiHost = _configuration["AeroDataBox:ApiHost"];
+            var apiKey = NormalizeConfigValue(_configuration["AeroDataBox:ApiKey"]);
+            var apiHost = NormalizeConfigValue(_configuration["AeroDataBox:ApiHost"]);
 
             if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiHost))
             {
@@ -42,6 +42,16 @@ public class AeroDataBoxService
                     "Live data is unavailable because AeroDataBox credentials are missing in the deployment environment.",
                     TimeSpan.FromMinutes(5));
                 return []; // Return empty list instead of mock data
+            }
+
+            if (ContainsInvalidHeaderCharacters(apiKey) || ContainsInvalidHeaderCharacters(apiHost))
+            {
+                _logger.LogError("AeroDataBox API credentials contain invalid header characters (newline or NUL). Check the deployed secret values.");
+                _cache.Set(
+                    ApiErrorCacheKey,
+                    "Live data is unavailable because AeroDataBox credentials are malformed in the deployment environment.",
+                    TimeSpan.FromMinutes(5));
+                return [];
             }
 
             if (dateTo < dateFrom)
@@ -168,5 +178,11 @@ public class AeroDataBoxService
 
         return flights;
     }
+
+    private static string? NormalizeConfigValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool ContainsInvalidHeaderCharacters(string value) =>
+        value.IndexOfAny(['\r', '\n', '\0']) >= 0;
 
 }
