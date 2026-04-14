@@ -19,6 +19,8 @@ public static class FlightStatusCatalog
         {
             ["scheduled"] = "Scheduled",
             ["expected"] = "Scheduled",
+            ["estimated"] = "Scheduled",
+            ["estimate"] = "Scheduled",
             ["ontime"] = "Scheduled",
             ["on time"] = "Scheduled",
             ["on-time"] = "Scheduled",

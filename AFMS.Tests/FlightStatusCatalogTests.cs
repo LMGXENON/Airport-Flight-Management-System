@@ -21,6 +21,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsScheduledForEstimatedAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("estimated");
+
+        Assert.Equal("Scheduled", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsDepartedForGateCloseAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("gate-close");
@@ -208,6 +216,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForOnScheduleAlias()
     {
         var result = FlightStatusCatalog.IsKnown("on schedule");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForEstimatedAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("estimated");
 
         Assert.True(result);
     }
