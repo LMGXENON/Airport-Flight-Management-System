@@ -193,4 +193,12 @@ public class TesterWorkflowTests
         var service = CreateDetailsService();
         Assert.Equal("TBD", service.FormatGate(" "));
     }
+
+    [Fact]
+    public void TesterRegressionCommit28_Scenario8()
+    {
+        var statuses = FlightStatusCatalog.NormalizeStatuses(new[] { "Delayed", "late", "not-real" });
+        Assert.Single(statuses);
+        Assert.Equal("Delayed", statuses[0]);
+    }
 }
