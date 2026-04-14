@@ -166,4 +166,10 @@ public class TesterWorkflowTests
     {
         Assert.Equal("status-delayed", FlightStatusCatalog.GetCssClass("late"));
     }
+
+    [Fact]
+    public void TesterRegressionCommit24_Scenario4()
+    {
+        Assert.Equal("LHR", FlightFormattingHelpers.ConvertToIata(" e-gll "));
+    }
 }
