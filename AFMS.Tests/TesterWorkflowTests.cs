@@ -270,4 +270,11 @@ public class TesterWorkflowTests
         Assert.Single(statuses);
         Assert.Equal("Delayed", statuses[0]);
     }
+
+    [Fact]
+    public void TesterRegressionCommit39_Scenario9()
+    {
+        var pagination = new PaginationState { Page = 3, PageSize = 25, TotalCount = 60 };
+        Assert.Equal(60, pagination.PageEnd);
+    }
 }
