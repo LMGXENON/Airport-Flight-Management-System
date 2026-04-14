@@ -21,6 +21,9 @@ public class FlightDetailsService
     /// </summary>
     public (int Hours, int Minutes) GetFlightDuration(DateTime departureTime, DateTime arrivalTime)
     {
+        if (arrivalTime <= departureTime)
+            return (0, 0);
+
         var duration = arrivalTime - departureTime;
         return ((int)duration.TotalHours, duration.Minutes);
     }

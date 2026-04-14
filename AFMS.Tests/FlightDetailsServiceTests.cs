@@ -63,4 +63,28 @@ public class FlightDetailsServiceTests
 
         Assert.Equal("n/a", value);
     }
+
+    [Fact]
+    public void GetFlightDuration_ReturnsZeroWhenArrivalIsBeforeDeparture()
+    {
+        var service = CreateService();
+
+        var duration = service.GetFlightDuration(
+            new DateTime(2026, 4, 14, 16, 0, 0),
+            new DateTime(2026, 4, 14, 15, 0, 0));
+
+        Assert.Equal((0, 0), duration);
+    }
+
+    [Fact]
+    public void GetFlightDuration_ReturnsHoursAndMinutesForValidRange()
+    {
+        var service = CreateService();
+
+        var duration = service.GetFlightDuration(
+            new DateTime(2026, 4, 14, 10, 0, 0),
+            new DateTime(2026, 4, 14, 12, 45, 0));
+
+        Assert.Equal((2, 45), duration);
+    }
 }
