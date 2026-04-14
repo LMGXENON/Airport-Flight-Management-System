@@ -117,6 +117,14 @@ public class FlightStatusCatalogTests
     }
 
     [Fact]
+    public void Normalize_ReturnsBoardingForBoardingSoonAlias()
+    {
+        var normalized = FlightStatusCatalog.Normalize("boarding soon");
+
+        Assert.Equal("Boarding", normalized);
+    }
+
+    [Fact]
     public void Normalize_ReturnsCanceledForCancellationAlias()
     {
         var normalized = FlightStatusCatalog.Normalize("cancellation");
@@ -312,6 +320,14 @@ public class FlightStatusCatalogTests
     public void IsKnown_ReturnsTrueForBoardingNowAlias()
     {
         var result = FlightStatusCatalog.IsKnown("boarding-now");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsKnown_ReturnsTrueForGateOpenAlias()
+    {
+        var result = FlightStatusCatalog.IsKnown("gate open");
 
         Assert.True(result);
     }

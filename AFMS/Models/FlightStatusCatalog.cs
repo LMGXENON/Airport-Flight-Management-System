@@ -34,6 +34,8 @@ public static class FlightStatusCatalog
             ["finalcall"] = "Boarding",
             ["lastcall"] = "Boarding",
             ["boardingnow"] = "Boarding",
+            ["boardingsoon"] = "Boarding",
+            ["gateopen"] = "Boarding",
 
             ["departed"] = "Departed",
             ["departing"] = "Departed",
