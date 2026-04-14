@@ -1,5 +1,6 @@
 using AFMS.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Globalization;
 
 namespace AFMS.Tests;
 
@@ -26,5 +27,40 @@ public class FlightDetailsServiceTests
         var value = service.GetDisplayValue("   ", "Unknown");
 
         Assert.Equal("Unknown", value);
+    }
+
+    [Fact]
+    public void FormatDateTime_UsesInvariantCultureOutput()
+    {
+        var service = CreateService();
+        var originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
+
+            var value = service.FormatDateTime(
+                new DateTime(2026, 4, 14, 14, 30, 0),
+                "dddd, MMM dd");
+
+            Assert.Equal("Tuesday, Apr 14", value);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [Fact]
+    public void FormatDateTime_ReturnsFallbackForInvalidFormat()
+    {
+        var service = CreateService();
+
+        var value = service.FormatDateTime(
+            new DateTime(2026, 4, 14, 14, 30, 0),
+            "yyyy-MM-dd[",
+            "n/a");
+
+        Assert.Equal("n/a", value);
     }
 }

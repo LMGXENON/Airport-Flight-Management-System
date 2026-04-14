@@ -79,8 +79,23 @@ public class FlightDetailsService
     /// </summary>
     public string FormatDateTime(DateTime? dateTime, string format, string fallback = "-")
     {
-        return dateTime.HasValue ? dateTime.Value.ToString(format) : fallback;
+        if (!dateTime.HasValue || !IsSupportedFormat(format))
+            return fallback;
+
+        try
+        {
+            return dateTime.Value.ToString(format, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return fallback;
+        }
     }
+
+    private static bool IsSupportedFormat(string format) =>
+        !string.IsNullOrWhiteSpace(format)
+        && !format.Contains('[')
+        && !format.Contains(']');
 
     /// <summary>
     /// Formats date/time for header display (e.g., "Monday 24 Mar").
