@@ -248,4 +248,11 @@ public class TesterWorkflowTests
         var formatted = FlightFormattingHelpers.FormatDateTime(new DateTime(2026, 4, 14, 12, 0, 0), "yyyy-MM-dd[", "n/a");
         Assert.Equal("n/a", formatted);
     }
+
+    [Fact]
+    public void TesterRegressionCommit36_Scenario6()
+    {
+        var pagination = new PaginationState { Page = 1, PageSize = 25, TotalCount = 51 };
+        Assert.Equal(3, pagination.TotalPages);
+    }
 }
