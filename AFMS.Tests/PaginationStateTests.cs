@@ -28,4 +28,30 @@ public class PaginationStateTests
 
         Assert.Equal(50, pagination.PageEnd);
     }
+
+    [Fact]
+    public void PageStart_UsesFirstPageWhenRequestedPageIsZero()
+    {
+        var pagination = new PaginationState
+        {
+            Page = 0,
+            PageSize = 25,
+            TotalCount = 90
+        };
+
+        Assert.Equal(1, pagination.PageStart);
+    }
+
+    [Fact]
+    public void HasNextPage_IsFalseWhenRequestedPageExceedsTotalPages()
+    {
+        var pagination = new PaginationState
+        {
+            Page = 99,
+            PageSize = 25,
+            TotalCount = 30
+        };
+
+        Assert.False(pagination.HasNextPage);
+    }
 }

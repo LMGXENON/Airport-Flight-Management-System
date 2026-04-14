@@ -7,15 +7,16 @@ public class PaginationState
     public int TotalCount { get; set; }
 
     private int EffectivePageSize => PageSize > 0 ? PageSize : 25;
+    private int EffectivePage => Math.Clamp(Page, 1, TotalPages);
 
     public int TotalPages => TotalCount <= 0
         ? 1
         : (int)Math.Ceiling(TotalCount / (double)EffectivePageSize);
 
-    public bool HasPreviousPage => Page > 1;
-    public bool HasNextPage => Page < TotalPages;
-    public int PageStart => TotalCount == 0 ? 0 : ((Page - 1) * EffectivePageSize) + 1;
-    public int PageEnd => TotalCount == 0 ? 0 : Math.Min(Page * EffectivePageSize, TotalCount);
+    public bool HasPreviousPage => EffectivePage > 1;
+    public bool HasNextPage => EffectivePage < TotalPages;
+    public int PageStart => TotalCount == 0 ? 0 : ((EffectivePage - 1) * EffectivePageSize) + 1;
+    public int PageEnd => TotalCount == 0 ? 0 : Math.Min(EffectivePage * EffectivePageSize, TotalCount);
 
     public IEnumerable<int> VisiblePages(int maxButtons = 7)
     {
