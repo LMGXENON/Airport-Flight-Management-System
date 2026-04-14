@@ -22,4 +22,10 @@ public class TesterWorkflowTests
     {
         Assert.True(FlightStatusCatalog.IsKnown("cancelled uncertain"));
     }
+
+    [Fact]
+    public void TesterRegressionCommit3_Scenario3()
+    {
+        Assert.Equal("status-delayed", FlightStatusCatalog.GetCssClass("late"));
+    }
 }
