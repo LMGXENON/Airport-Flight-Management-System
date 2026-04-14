@@ -43,14 +43,15 @@ public class FlightDetailsViewModel
     public static FlightDetailsViewModel FromFlight(Flight flight, FlightDetailsService detailsService)
     {
         var (hours, minutes) = detailsService.GetFlightDuration(flight.DepartureTime, flight.ArrivalTime);
+        var normalizedStatus = detailsService.GetDisplayValue(flight.Status, "Scheduled");
         
         return new FlightDetailsViewModel
         {
             Id = flight.Id,
-            FlightNumber = flight.FlightNumber,
-            Airline = flight.Airline,
-            Origin = flight.Origin ?? string.Empty,
-            Destination = flight.Destination,
+            FlightNumber = detailsService.GetDisplayValue(flight.FlightNumber, "Unknown"),
+            Airline = detailsService.GetDisplayValue(flight.Airline, "Unknown Airline"),
+            Origin = NormalizeAirportForDisplay(flight.Origin),
+            Destination = NormalizeAirportForDisplay(flight.Destination),
             DepartureTime = flight.DepartureTime,
             ArrivalTime = flight.ArrivalTime,
             DepartureTimeFormatted = detailsService.FormatDateAndTime(flight.DepartureTime),
@@ -59,10 +60,19 @@ public class FlightDetailsViewModel
             FormattedGate = detailsService.FormatGate(flight.Gate),
             FormattedTerminal = detailsService.FormatTerminal(flight.Terminal),
             FlightDuration = $"{hours}h {minutes}m",
-            Status = flight.Status,
-            StatusLabel = detailsService.GetStatusLabel(flight.Status),
-            StatusClass = detailsService.GetStatusClass(flight.Status),
+            Status = normalizedStatus,
+            StatusLabel = detailsService.GetStatusLabel(normalizedStatus),
+            StatusClass = detailsService.GetStatusClass(normalizedStatus),
             IsManualEntry = flight.IsManualEntry
         };
+    }
+
+    private static string NormalizeAirportForDisplay(string? airportCode)
+    {
+        if (string.IsNullOrWhiteSpace(airportCode))
+            return string.Empty;
+
+        var normalized = FlightFormattingHelpers.ConvertToIata(airportCode);
+        return string.IsNullOrWhiteSpace(normalized) ? airportCode.Trim() : normalized;
     }
 }
