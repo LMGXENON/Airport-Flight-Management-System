@@ -25,7 +25,8 @@ public class PaginationState
             maxButtons = 3;
         }
 
-        var startPage = Math.Max(1, Page - (maxButtons / 2));
+        var currentPage = EffectivePage;
+        var startPage = Math.Max(1, currentPage - (maxButtons / 2));
         var endPage = Math.Min(TotalPages, startPage + maxButtons - 1);
 
         if (endPage - startPage < maxButtons - 1)
