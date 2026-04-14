@@ -241,4 +241,11 @@ public class TesterWorkflowTests
     {
         Assert.Equal("LHR", FlightFormattingHelpers.ConvertToIata(" e-gll "));
     }
+
+    [Fact]
+    public void TesterRegressionCommit35_Scenario5()
+    {
+        var formatted = FlightFormattingHelpers.FormatDateTime(new DateTime(2026, 4, 14, 12, 0, 0), "yyyy-MM-dd[", "n/a");
+        Assert.Equal("n/a", formatted);
+    }
 }
