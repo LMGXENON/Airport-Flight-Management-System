@@ -26,7 +26,10 @@ public static class FlightFormattingHelpers
             "EGSS" => "STN",
             "KJFK" => "JFK",
             "KLAX" => "LAX",
+            "KORD" => "ORD",
+            "KSFO" => "SFO",
             "OMDB" => "DXB",
+            "CYYZ" => "YYZ",
             "EDDF" => "FRA",
             "RJTT" => "HND",
             "LFPG" => "CDG",
@@ -35,6 +38,8 @@ public static class FlightFormattingHelpers
             "LTFM" => "IST",
             "VHHH" => "HKG",
             "WSSS" => "SIN",
+            "YMML" => "MEL",
+            "VIDP" => "DEL",
             _ => normalizedCode
         };
     }

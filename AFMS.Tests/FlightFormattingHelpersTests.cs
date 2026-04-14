@@ -148,4 +148,44 @@ public class FlightFormattingHelpersTests
 
         Assert.Equal("AMS", result);
     }
+
+    [Fact]
+    public void ConvertToIata_MapsChicagoOharesIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("KORD");
+
+        Assert.Equal("ORD", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsSanFranciscoIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("KSFO");
+
+        Assert.Equal("SFO", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsTorontoPearsonIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("CYYZ");
+
+        Assert.Equal("YYZ", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsMelbourneIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("YMML");
+
+        Assert.Equal("MEL", result);
+    }
+
+    [Fact]
+    public void ConvertToIata_MapsDelhiIcaoCode()
+    {
+        var result = FlightFormattingHelpers.ConvertToIata("VIDP");
+
+        Assert.Equal("DEL", result);
+    }
 }
