@@ -216,4 +216,11 @@ public class TesterWorkflowTests
         Assert.False(pagination.HasPreviousPage);
         Assert.True(pagination.HasNextPage);
     }
+
+    [Fact]
+    public void TesterRegressionCommit31_Scenario1()
+    {
+        var normalized = FlightStatusCatalog.Normalize("expected");
+        Assert.Equal("Scheduled", normalized);
+    }
 }
