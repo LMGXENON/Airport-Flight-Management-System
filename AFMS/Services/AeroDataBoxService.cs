@@ -37,6 +37,10 @@ public class AeroDataBoxService
             if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiHost))
             {
                 _logger.LogWarning("AeroDataBox API credentials not configured");
+                _cache.Set(
+                    ApiErrorCacheKey,
+                    "Live data is unavailable because AeroDataBox credentials are missing in the deployment environment.",
+                    TimeSpan.FromMinutes(5));
                 return []; // Return empty list instead of mock data
             }
 
