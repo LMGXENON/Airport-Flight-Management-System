@@ -84,4 +84,17 @@ public class PaginationStateTests
 
         Assert.Equal([1, 2, 3, 4, 5], pages);
     }
+
+    [Fact]
+    public void SkipCount_UsesClampedPageAndPageSize()
+    {
+        var pagination = new PaginationState
+        {
+            Page = 99,
+            PageSize = 0,
+            TotalCount = 60
+        };
+
+        Assert.Equal(50, pagination.SkipCount);
+    }
 }

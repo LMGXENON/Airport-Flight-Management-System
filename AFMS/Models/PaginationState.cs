@@ -15,6 +15,7 @@ public class PaginationState
 
     public bool HasPreviousPage => EffectivePage > 1;
     public bool HasNextPage => EffectivePage < TotalPages;
+    public int SkipCount => TotalCount == 0 ? 0 : (EffectivePage - 1) * EffectivePageSize;
     public int PageStart => TotalCount == 0 ? 0 : ((EffectivePage - 1) * EffectivePageSize) + 1;
     public int PageEnd => TotalCount == 0 ? 0 : Math.Min(EffectivePage * EffectivePageSize, TotalCount);
 
