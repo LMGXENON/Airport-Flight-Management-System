@@ -50,7 +50,10 @@ public class FlightDetailsService
     /// </summary>
     public string FormatTerminal(string? terminal)
     {
-        return $"Terminal {GetDisplayValue(terminal, "1")}";
+        var normalized = GetDisplayValue(terminal, "1");
+        return normalized.StartsWith("Terminal ", StringComparison.OrdinalIgnoreCase)
+            ? normalized
+            : $"Terminal {normalized}";
     }
 
     /// <summary>

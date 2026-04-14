@@ -87,4 +87,34 @@ public class FlightDetailsServiceTests
 
         Assert.Equal((2, 45), duration);
     }
+
+    [Fact]
+    public void FormatTerminal_AddsPrefixWhenMissing()
+    {
+        var service = CreateService();
+
+        var terminal = service.FormatTerminal(" 5 ");
+
+        Assert.Equal("Terminal 5", terminal);
+    }
+
+    [Fact]
+    public void FormatTerminal_DoesNotDuplicatePrefixWhenAlreadyPresent()
+    {
+        var service = CreateService();
+
+        var terminal = service.FormatTerminal("Terminal 3");
+
+        Assert.Equal("Terminal 3", terminal);
+    }
+
+    [Fact]
+    public void FormatTerminal_UsesDefaultWhenBlank()
+    {
+        var service = CreateService();
+
+        var terminal = service.FormatTerminal(" ");
+
+        Assert.Equal("Terminal 1", terminal);
+    }
 }
