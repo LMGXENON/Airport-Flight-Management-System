@@ -223,4 +223,10 @@ public class TesterWorkflowTests
         var normalized = FlightStatusCatalog.Normalize("expected");
         Assert.Equal("Scheduled", normalized);
     }
+
+    [Fact]
+    public void TesterRegressionCommit32_Scenario2()
+    {
+        Assert.True(FlightStatusCatalog.IsKnown("cancelled uncertain"));
+    }
 }
