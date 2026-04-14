@@ -70,4 +70,12 @@ public class TesterWorkflowTests
         var pagination = new PaginationState { Page = 3, PageSize = 25, TotalCount = 60 };
         Assert.Equal(60, pagination.PageEnd);
     }
+
+    [Fact]
+    public void TesterRegressionCommit10_Scenario10()
+    {
+        var pagination = new PaginationState { Page = 1, PageSize = 25, TotalCount = 60 };
+        Assert.False(pagination.HasPreviousPage);
+        Assert.True(pagination.HasNextPage);
+    }
 }
