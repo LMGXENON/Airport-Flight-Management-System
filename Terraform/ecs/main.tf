@@ -38,7 +38,7 @@ resource "aws_security_group_rule" "efs_out_all" {
 }
 
 resource "aws_efs_mount_target" "afms_dp_keys" {
-  for_each        = toset(var.private_subnet_ids)
+  for_each        = var.private_subnet_ids_by_key
   file_system_id  = aws_efs_file_system.afms_dp_keys.id
   subnet_id       = each.value
   security_groups = [aws_security_group.efs_sg.id]
@@ -120,6 +120,30 @@ resource "aws_ecs_task_definition" "afms-task" {
         {
           name  = "DEFAULT_AIRPORT"
           value = var.default_airport
+        },
+        {
+          name  = "AUTH_ADMIN_USERNAME"
+          value = var.auth_admin_username
+        },
+        {
+          name  = "AUTH_ADMIN_PASSWORD"
+          value = var.auth_admin_password
+        },
+        {
+          name  = "AUTH_JWT_SECRET"
+          value = var.auth_jwt_secret
+        },
+        {
+          name  = "AUTH_ISSUER"
+          value = var.auth_issuer
+        },
+        {
+          name  = "AUTH_AUDIENCE"
+          value = var.auth_audience
+        },
+        {
+          name  = "AUTH_TOKEN_EXPIRY_HOURS"
+          value = tostring(var.auth_token_expiry_hours)
         },
         {
           name  = "DATA_PROTECTION_KEYS_PATH"

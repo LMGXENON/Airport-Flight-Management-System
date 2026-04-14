@@ -81,6 +81,7 @@ namespace AFMS.Controllers
         }
 
         // GET: Flight/Add
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add()
         {
             var now = DateTime.Now;
@@ -96,6 +97,7 @@ namespace AFMS.Controllers
         }
 
         // POST: Flight/Add
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(Flight flight)
@@ -135,6 +137,7 @@ namespace AFMS.Controllers
         }
 
         // GET: Flight/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -147,6 +150,12 @@ namespace AFMS.Controllers
             {
                 return NotFound();
             }
+
+            // Datetime-local inputs are local-time values. Persisted flight times are treated as UTC,
+            // so convert to local once for display to avoid offset drift on repeated edits.
+            flight.DepartureTime = DateTime.SpecifyKind(flight.DepartureTime, DateTimeKind.Utc).ToLocalTime();
+            flight.ArrivalTime = DateTime.SpecifyKind(flight.ArrivalTime, DateTimeKind.Utc).ToLocalTime();
+
             flight.Status = FlightStatusCatalog.Normalize(flight.Status);
             ViewBag.Airlines = await FlightFormHelpers.GetAirlinesSelectListAsync(_context, flight.Airline);
             ViewBag.AircraftModels = FlightFormHelpers.GetAircraftModelsSelectList(flight.AircraftType);
@@ -154,6 +163,7 @@ namespace AFMS.Controllers
         }
 
         // POST: Flight/Edit/5
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Flight flight)
@@ -183,7 +193,7 @@ namespace AFMS.Controllers
                     }
                     throw;
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Home");
             }
             ViewBag.Airlines = await FlightFormHelpers.GetAirlinesSelectListAsync(_context, flight.Airline);
             ViewBag.AircraftModels = FlightFormHelpers.GetAircraftModelsSelectList(flight.AircraftType);
@@ -191,23 +201,15 @@ namespace AFMS.Controllers
         }
 
         // GET: Flight/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var flight = await _context.Flights.FindAsync(id);
-            if (flight == null)
-            {
-                return NotFound();
-            }
-
-            return View(flight);
+            await Task.CompletedTask;
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: Flight/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

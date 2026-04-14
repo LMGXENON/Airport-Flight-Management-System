@@ -13,5 +13,8 @@ public class LoginAuditEntry
     [StringLength(120)]
     public string IpAddress { get; set; } = string.Empty;
 
+    [StringLength(512)]
+    public string UserAgent { get; set; } = string.Empty;
+
     public DateTime OccurredUtc { get; set; } = DateTime.UtcNow;
 }

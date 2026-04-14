@@ -8,6 +8,13 @@ output "public_subnet_ids" {
 output "private_subnet_ids" {
   value = aws_subnet.private[*].id
 }
+
+output "private_subnet_ids_by_az" {
+  value = {
+    for idx, az in var.azs : az => aws_subnet.private[idx].id
+  }
+}
+
 output "route_table_public_id" {
   value = aws_route_table.public.id
 }

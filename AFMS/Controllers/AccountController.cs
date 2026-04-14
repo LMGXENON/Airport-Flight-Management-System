@@ -1,5 +1,7 @@
 using AFMS.Models;
 using AFMS.Data;
+using AFMS.Helpers;
+using AFMS.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,16 +18,21 @@ public class AccountController : Controller
     private static readonly HashSet<string> AllowedThemes = new(StringComparer.OrdinalIgnoreCase) { "light", "dark" };
     private static readonly HashSet<string> AllowedAirports = new(StringComparer.OrdinalIgnoreCase) { "EGLL", "EGKK", "EGSS", "EGGW", "EGLC", "KJFK", "KLAX" };
     private static readonly HashSet<string> AllowedTimeFormats = new(StringComparer.OrdinalIgnoreCase) { "12", "24" };
-    private static readonly HashSet<string> AllowedLanguages = new(StringComparer.OrdinalIgnoreCase) { "en" };
+    private static readonly HashSet<string> AllowedLanguages  = new(StringComparer.OrdinalIgnoreCase) { "en", "es", "fr", "pl", "ro", "pa" };
 
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly LoginLocationService _loginLocationService;
     private readonly PasswordHasher<string> _passwordHasher = new();
 
-    public AccountController(IConfiguration configuration, ApplicationDbContext context)
+    public AccountController(
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        LoginLocationService loginLocationService)
     {
         _configuration = configuration;
         _context = context;
+        _loginLocationService = loginLocationService;
     }
 
     [HttpGet]
@@ -58,7 +65,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var token = CreateToken(credentialCheck.CanonicalUsername);
+        var token = CreateToken(credentialCheck.CanonicalUsername, credentialCheck.Role);
         Response.Cookies.Append("afms_auth_token", token, new CookieOptions
         {
             HttpOnly = true,
@@ -81,6 +88,7 @@ public class AccountController : Controller
         {
             Username = credentialCheck.CanonicalUsername,
             IpAddress = GetRequestIpAddress(),
+            UserAgent = GetRequestUserAgent(),
             OccurredUtc = DateTime.UtcNow
         });
         await _context.SaveChangesAsync();
@@ -142,9 +150,18 @@ public class AccountController : Controller
             .Select(entry => new LoginHistoryItem
             {
                 OccurredUtc = entry.OccurredUtc,
-                IpAddress = entry.IpAddress
+                IpAddress = entry.IpAddress,
+                UserAgent = entry.UserAgent
             })
             .ToListAsync();
+
+        for (var i = 0; i < loginHistory.Count; i++)
+        {
+            var entry = loginHistory[i];
+            entry.DeviceBrowser = UserAgentParser.ToDeviceBrowserLabel(entry.UserAgent);
+            entry.Location = await _loginLocationService.ResolveLocationAsync(entry.IpAddress);
+            entry.IsCurrentSession = i == 0;
+        }
 
         var model = new AccountProfileViewModel
         {
@@ -269,7 +286,7 @@ public class AccountController : Controller
         return RedirectToAction(nameof(Settings));
     }
 
-    private string CreateToken(string username)
+    private string CreateToken(string username, string role)
     {
         var issuer = _configuration["Auth:Issuer"] ?? "AFMS";
         var audience = _configuration["Auth:Audience"] ?? "AFMS.Users";
@@ -283,7 +300,7 @@ public class AccountController : Controller
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.Role, role)
         };
 
         var token = new JwtSecurityToken(
@@ -331,27 +348,91 @@ public class AccountController : Controller
         return allowedValues.Contains(normalized) ? normalized : fallback;
     }
 
-    private async Task<(bool IsValid, string CanonicalUsername)> ValidateCredentialsAsync(string username, string password)
+    private async Task<(bool IsValid, string CanonicalUsername, string Role)> ValidateCredentialsAsync(string username, string password)
     {
-        var configuredUsername = (_configuration["Auth:AdminUsername"] ?? string.Empty).Trim();
-        var configuredPassword = _configuration["Auth:AdminPassword"] ?? string.Empty;
         var requestedUsername = username.Trim();
 
-        if (!string.Equals(requestedUsername, configuredUsername, StringComparison.Ordinal))
+        // ── Admin account ──────────────────────────────────────────────────────
+        var configuredAdmin = (_configuration["Auth:AdminUsername"] ?? string.Empty).Trim();
+        var configuredAdminPassword = _configuration["Auth:AdminPassword"] ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(configuredAdmin)
+            && string.Equals(requestedUsername, configuredAdmin, StringComparison.OrdinalIgnoreCase))
         {
-            return (false, configuredUsername);
+            var normalizedAdmin = configuredAdmin.ToUpperInvariant();
+            var storedCredential = await _context.AuthCredentials
+                .FirstOrDefaultAsync(c => c.Username.ToUpper() == normalizedAdmin);
+
+            if (storedCredential is not null)
+            {
+                var hashUsername = string.IsNullOrWhiteSpace(storedCredential.Username)
+                    ? configuredAdmin : storedCredential.Username;
+
+                var candidates = new[] { hashUsername, configuredAdmin, requestedUsername }
+                    .Where(c => !string.IsNullOrWhiteSpace(c)).Distinct(StringComparer.Ordinal).ToList();
+
+                var hashMatched = false;
+                var needsRehash = false;
+                foreach (var candidate in candidates)
+                {
+                    var result = _passwordHasher.VerifyHashedPassword(candidate, storedCredential.PasswordHash, password);
+                    if (result != PasswordVerificationResult.Failed)
+                    {
+                        hashMatched = true;
+                        needsRehash = result == PasswordVerificationResult.SuccessRehashNeeded
+                            || !string.Equals(storedCredential.Username, configuredAdmin, StringComparison.Ordinal);
+                        break;
+                    }
+                }
+
+                if (hashMatched)
+                {
+                    if (needsRehash)
+                    {
+                        storedCredential.Username = configuredAdmin;
+                        storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredAdmin, password);
+                        storedCredential.UpdatedUtc = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                    }
+                    return (true, configuredAdmin, "Admin");
+                }
+
+                // Legacy plain-text or rotated-password recovery
+                if (string.Equals(storedCredential.PasswordHash, password, StringComparison.Ordinal)
+                    || (!string.IsNullOrWhiteSpace(configuredAdminPassword)
+                        && string.Equals(password, configuredAdminPassword, StringComparison.Ordinal)))
+                {
+                    storedCredential.Username = configuredAdmin;
+                    storedCredential.PasswordHash = _passwordHasher.HashPassword(configuredAdmin, password);
+                    storedCredential.UpdatedUtc = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    return (true, configuredAdmin, "Admin");
+                }
+
+                return (false, configuredAdmin, "Admin");
+            }
+
+            // No DB row — compare directly against config password
+            if (string.Equals(password, configuredAdminPassword, StringComparison.Ordinal))
+                return (true, configuredAdmin, "Admin");
+
+            return (false, configuredAdmin, "Admin");
         }
 
-        var storedCredential = await _context.AuthCredentials
-            .FirstOrDefaultAsync(c => c.Username == configuredUsername);
+        // ── Standard User account ──────────────────────────────────────────────
+        var configuredUser = (_configuration["Auth:UserUsername"] ?? string.Empty).Trim();
+        var configuredUserPassword = _configuration["Auth:UserPassword"] ?? string.Empty;
 
-        if (storedCredential is not null)
+        if (!string.IsNullOrWhiteSpace(configuredUser)
+            && string.Equals(requestedUsername, configuredUser, StringComparison.OrdinalIgnoreCase))
         {
-            var result = _passwordHasher.VerifyHashedPassword(configuredUsername, storedCredential.PasswordHash, password);
-            return (result != PasswordVerificationResult.Failed, configuredUsername);
+            if (string.Equals(password, configuredUserPassword, StringComparison.Ordinal))
+                return (true, configuredUser, "User");
+
+            return (false, configuredUser, "User");
         }
 
-        return (string.Equals(password, configuredPassword, StringComparison.Ordinal), configuredUsername);
+        return (false, string.Empty, string.Empty);
     }
 
     private string GetRequestIpAddress()
@@ -361,10 +442,26 @@ public class AccountController : Controller
         {
             var first = forwardedFor.Split(',')[0].Trim();
             if (!string.IsNullOrWhiteSpace(first))
-                return first;
+                return NormalizeIpAddress(first);
         }
 
-        return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        return NormalizeIpAddress(ip);
     }
+
+    private string GetRequestUserAgent()
+    {
+        var userAgent = Request.Headers.UserAgent.ToString();
+        if (string.IsNullOrWhiteSpace(userAgent))
+            return "Unknown";
+
+        return userAgent.Length <= 512 ? userAgent : userAgent[..512];
+    }
+
+    /// <summary>Maps loopback addresses to a human-readable label.</summary>
+    private static string NormalizeIpAddress(string ip) =>
+        ip is "::1" or "127.0.0.1" or "::ffff:127.0.0.1" or "localhost"
+            ? "localhost"
+            : ip;
 }
 

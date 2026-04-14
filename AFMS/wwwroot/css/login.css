@@ -3,12 +3,31 @@
 .login-body {
     margin: 0;
     min-height: 100vh;
-    background:
-        radial-gradient(ellipse at 50% 68%, rgba(6, 8, 12, 0.72) 0%, rgba(6, 8, 12, 0.45) 38%, rgba(6, 8, 12, 0.12) 68%, rgba(6, 8, 12, 0) 100%),
-        linear-gradient(to bottom, rgba(8, 11, 18, 0.22) 0%, rgba(8, 11, 18, 0.35) 45%, rgba(8, 11, 18, 0.68) 100%),
-        url('/images/airport-terminal_1417-1456.avif') center/cover no-repeat fixed;
+    background: #070b12;
     color: var(--text-primary, #ffffff);
     font-family: 'Oxanium', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse at 50% 68%, rgba(6, 8, 12, 0.72) 0%, rgba(6, 8, 12, 0.45) 38%, rgba(6, 8, 12, 0.12) 68%, rgba(6, 8, 12, 0) 100%),
+        linear-gradient(to bottom, rgba(8, 11, 18, 0.22) 0%, rgba(8, 11, 18, 0.35) 45%, rgba(8, 11, 18, 0.68) 100%);
+    pointer-events: none;
+}
+
+.login-background-video {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
 }
 
 .login-page-header .page-title,
@@ -26,6 +45,8 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
+    position: relative;
+    z-index: 1;
 }
 
 .login-panel {
@@ -100,6 +121,8 @@
 
 .login-submit {
     width: 100%;
+    justify-content: center;
+    text-align: center;
     background: linear-gradient(135deg, #2f79ff 0%, #55b7ff 100%);
     color: #ffffff;
     border: 1px solid rgba(146, 202, 255, 0.38);

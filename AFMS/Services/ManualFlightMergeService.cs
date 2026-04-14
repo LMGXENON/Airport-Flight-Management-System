@@ -117,6 +117,8 @@ public class ManualFlightMergeService
             destinationIata = destination;
 
         var normalizedStatus = FlightStatusCatalog.Normalize(flight.Status);
+        var departureUtc = DateTime.SpecifyKind(flight.DepartureTime, DateTimeKind.Utc);
+        var arrivalUtc = DateTime.SpecifyKind(flight.ArrivalTime, DateTimeKind.Utc);
 
         return new AeroDataBoxFlight
         {
@@ -137,8 +139,8 @@ public class ManualFlightMergeService
                 Status = normalizedStatus,
                 ScheduledTime = new ScheduledTime
                 {
-                    Local = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                    Utc = flight.DepartureTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                    Local = departureUtc.ToLocalTime().ToString("yyyy-MM-ddTHH:mmzzz"),
+                    Utc = departureUtc.ToString("yyyy-MM-ddTHH:mm:ssZ")
                 }
             },
             Arrival = new FlightMovement
@@ -146,8 +148,8 @@ public class ManualFlightMergeService
                 Airport = new Airport { Iata = destinationIata, Name = destination },
                 ScheduledTime = new ScheduledTime
                 {
-                    Local = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mmzzz"),
-                    Utc = flight.ArrivalTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+                    Local = arrivalUtc.ToLocalTime().ToString("yyyy-MM-ddTHH:mmzzz"),
+                    Utc = arrivalUtc.ToString("yyyy-MM-ddTHH:mm:ssZ")
                 }
             }
         };

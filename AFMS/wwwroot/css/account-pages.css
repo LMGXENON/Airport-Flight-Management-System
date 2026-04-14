@@ -167,6 +167,56 @@
     text-align: right;
 }
 
+/* Localhost IP badge */
+.ip-local {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2px 10px;
+    cursor: default;
+    letter-spacing: 0.02em;
+}
+
+.ip-local::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    flex-shrink: 0;
+}
+
+.session-active-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.14);
+    color: #b8f8cf;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.session-active-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+
 @media (max-width: 640px) {
     .account-list-row {
         flex-direction: column;
@@ -176,5 +226,322 @@
 
     .account-list-row dd {
         text-align: left;
+    }
+}
+
+/* ── Settings sections layout ────────────────────────────────── */
+.settings-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    transition: box-shadow 0.2s;
+}
+
+.settings-section:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+}
+
+.settings-section--locked {
+    opacity: 0.85;
+}
+
+/* ── Section header (icon + title + desc) ────────────────────── */
+.settings-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.settings-section-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.settings-section-icon--appearance {
+    background: linear-gradient(135deg, rgba(79, 115, 255, 0.25), rgba(79, 115, 255, 0.1));
+    color: #7a9bff;
+    border: 1px solid rgba(79, 115, 255, 0.3);
+}
+
+.settings-section-icon--airport {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.settings-section-icon--notify {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.08));
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.settings-section-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-section-title {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.settings-section-desc {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ── Inline badges ───────────────────────────────────────────── */
+.settings-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.settings-badge--fixed {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.settings-badge--soon {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ── Appearance grid ─────────────────────────────────────────── */
+.settings-form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* ── Airport card ────────────────────────────────────────────── */
+.settings-airport-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+}
+
+.settings-airport-codes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.settings-airport-iata {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.settings-airport-icao {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1px 5px;
+}
+
+.settings-airport-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-airport-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.settings-airport-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.settings-airport-meta i {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.settings-airport-lock {
+    font-size: 18px;
+    color: var(--text-secondary);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.settings-future-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.8;
+}
+
+.settings-future-note i {
+    font-size: 14px;
+    color: #7a9bff;
+    flex-shrink: 0;
+}
+
+/* ── Notification toggle rows ────────────────────────────────── */
+.settings-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px dashed rgba(136, 145, 178, 0.2);
+    cursor: not-allowed;
+}
+
+.settings-toggle-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.settings-toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-toggle-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    opacity: 0.55;
+}
+
+.settings-toggle-hint {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.settings-toggle-switch {
+    flex-shrink: 0;
+    width: 38px;
+    height: 21px;
+    border-radius: 999px;
+    position: relative;
+}
+
+.settings-toggle-switch--disabled {
+    background: rgba(136, 145, 178, 0.2);
+    border: 1px solid rgba(136, 145, 178, 0.25);
+}
+
+.settings-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: rgba(136, 145, 178, 0.5);
+}
+
+/* ── Form footer (save button) ───────────────────────────────── */
+.settings-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.settings-save-hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.settings-save-hint strong {
+    color: #7a9bff;
+}
+
+@media (max-width: 560px) {
+    .settings-section {
+        padding: 18px;
+    }
+
+    .settings-airport-card {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .settings-form-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .settings-save-hint {
+        text-align: center;
+    }
+
+    .account-save-btn {
+        width: 100%;
+        text-align: center;
     }
 }

@@ -39,6 +39,11 @@
                     <span asp-validation-for="Destination" class="validation-error"></span>
                 </div>
                 <div class="form-group">
+                    <label asp-for="Origin" class="form-label">Origin</label>
+                    <input asp-for="Origin" class="form-input" placeholder="e.g. JFK or New York" maxlength="100" />
+                    <span asp-validation-for="Origin" class="validation-error"></span>
+                </div>
+                <div class="form-group">
                     <label asp-for="AircraftType" class="form-label">Aircraft Type</label>
                     <select asp-for="AircraftType" asp-items="ViewBag.AircraftModels" class="form-select">
                         <option value="">— Select Aircraft Model —</option>

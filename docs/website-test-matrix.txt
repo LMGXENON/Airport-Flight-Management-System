@@ -1,0 +1,103 @@
+AFMS Website Test Matrix
+Date: 2026-04-02
+Format: Test | Expected Result | Result
+
+| Test | Expected Result | Result |
+|---|---|---|
+| System - Build AFMS project | Project builds successfully | PASS (dotnet build AFMS/AFMS.csproj succeeded) |
+| System - Unit test suite | All automated tests pass | PASS (89 total, 89 passed, 0 failed) |
+| System - Health endpoint | GET /health returns 200 and JSON status | PASS (200, body: {"status":"ok"}) |
+| Auth - Anonymous dashboard access | Anonymous user is redirected to login | PASS (GET / returned 302 to /Account/Login?returnUrl=%2F) |
+| Auth - Login page render | Login page loads and contains title | PASS (GET /Account/Login returned 200, title found) |
+| Auth - Login input model validation | Invalid username/password format shows validation errors | PASS (status 200, username/password validation messages present) |
+| Auth - Invalid credentials | Invalid credentials are rejected with error message | PASS (status 200, "Invalid username or password" shown) |
+| Auth - Valid user login | Valid user is authenticated and redirected | PASS (302 to /Home/Index, afms_auth_token cookie set) |
+| Auth - Login returnUrl local path | Local returnUrl is honored after login | PASS (302 to /Flight/Index) |
+| Auth - Login returnUrl external URL | External returnUrl is rejected (open redirect blocked) | PASS (302 to /Home/Index) |
+| Auth - Login page while authenticated | Authenticated user is redirected away from login page | PASS (302 to /) |
+| Auth - Logout | Authenticated user logout clears session and redirects to login | PASS (POST /Account/Logout -> 302 to /Account/Login) |
+| Auth - Protected page after logout | Logged-out user cannot access protected pages | PASS (GET /Home/Index after logout -> 302) |
+| Auth - Static assets anonymous access | Login page CSS/JS can be loaded without auth | PASS (GET /css/site.css -> 200) |
+| Role - User access home | Standard user can access dashboard | PASS (GET /Home/Index -> 200) |
+| Role - User access flight index | Standard user can access managed flights list | PASS (GET /Flight/Index -> 200) |
+| Role - User access profile | Standard user can access account profile | PASS (GET /Account/Profile -> 200) |
+| Role - User access settings | Standard user can access account settings | PASS (GET /Account/Settings -> 200) |
+| Role - User blocked from add flight | Non-admin user cannot access add flight page | PASS (GET /Flight/Add -> 403) |
+| Role - User blocked from advanced search page | Non-admin user cannot access full advanced search page | PASS (GET /Home/AdvancedSearch -> 403) |
+| Role - User blocked from edit page | Non-admin user cannot access edit flight page | PASS (GET /Flight/Edit/1 -> 403) |
+| Role - User blocked from delete page | Non-admin user cannot access delete flight page | PASS (GET /Flight/Delete/1 -> 403) |
+| Role - Admin login (provided credentials) | Admin credentials authenticate and set auth session | PASS (POST afms/Afms@12345 -> 302 to /Home/Index, afms_auth_token cookie set) |
+| Role - Admin login (env credentials) | Admin env credentials authenticate if provided | FAIL (started instance on :5081 with AUTH_ADMIN_PASSWORD=EnvAdmin@12345; login returned 200 with invalid credentials message) |
+| Account - Settings save valid values | Valid settings are accepted and redirected | PASS (POST /Account/Settings -> 302 to /Account/Settings) |
+| Account - Settings normalization invalid values | Invalid settings fallback to allowed defaults | PASS (cookies set to light/EGLL/24/en) |
+| Account - Change password invalid current | Wrong current password is rejected with message | PASS (redirect to profile; "Current password is incorrect" shown) |
+| Account - Change password success path | Valid password change updates credential | PASS (browser flow showed "Password changed successfully" on profile) |
+| Account - Profile login history table | Profile shows recent login events with device/location | PASS (browser flow rendered login history table with rows) |
+| Account - Session countdown display | Session expiry countdown updates live | PASS (browser flow rendered active countdown value, not placeholder) |
+| Flight - Managed flights list load | Flight list page loads | PASS (GET /Flight/Index -> 200) |
+| Flight - Managed flights search | Search query returns response successfully | PASS (GET /Flight/Index?search=BA123 -> 200) |
+| Flight - Flight details existing id | Existing flight details page loads | PASS (GET /Flight/Details/1 -> 200) |
+| Flight - Flight details without id | Missing id redirects to index | PASS (GET /Flight/Details -> 302 to /Flight) |
+| Flight - Flight details missing record | Unknown id returns not found | PASS (GET /Flight/Details/999999 -> 404) |
+| Flight - Add flight page (admin) | Admin can open add flight form | PASS (GET /Flight/Add -> 200) |
+| Flight - Add flight submit success (admin) | Valid add-flight POST saves record and redirects with success message | PASS (POST with valid anti-forgery token -> 302 to /) |
+| Flight - Add flight validation errors | Invalid add-flight input returns form errors | PASS (invalid POST -> 200 with required-field messages) |
+| Flight - Add flight antiforgery expiry handling | Invalid/expired token redirects to Add?formExpired=1 | PASS (POST without token -> 302 to /Flight/Add?formExpired=1) |
+| Flight - Edit page (admin) | Admin can open edit form | PASS (GET /Flight/Edit/7584 -> 200) |
+| Flight - Edit submit success (admin) | Valid edit updates record and redirects with success message | PASS (POST /Flight/Edit/7584 -> 302 to /, changes verified in details page) |
+| Flight - Delete submit success (admin) | Admin can delete a flight via POST | PASS (POST /Flight/Delete id=7584 -> 302 to /, details then returned 404) |
+| Flight UI - Delete modal from index | Delete confirmation modal opens/closes correctly | PASS (browser flow verified open and close states on Flight/Index) |
+| Flight UI - Delete modal from details | Details-page delete modal opens/closes correctly | PASS (browser flow verified open and cancel on Flight/Details) |
+| Flight UI - List loading spinner | Spinner shows during search/pagination actions | PASS (browser flow toggled spinner visibility through page helper) |
+| Dashboard - Home page load | Dashboard loads for authenticated user | PASS (GET /Home/Index -> 200) |
+| Dashboard UI - Direction filter buttons | All/Departures/Arrivals toggles filter rows correctly | PASS (browser flow verified visible rows matched selected direction) |
+| Dashboard UI - Table text filters | Flight/Airline/Status filters narrow visible rows | PASS (browser flow verified filtered rows matched entered flight prefix) |
+| Dashboard UI - Clear filters button | Clear resets filters and re-renders rows | PASS (browser flow cleared filter controls and restored default state) |
+| Dashboard UI - Client pagination | Client-side page controls render and navigate rows | PASS (browser flow navigated dashboard pagination across multiple pages) |
+| Dashboard UI - Stats skeleton reveal | Stat cards reveal values after delay | PASS (browser flow verified skeleton classes removed after reveal delay) |
+| Dashboard UI - Retry button on API failure | Retry appends cache-busting query and reloads | FAIL (API failure state did not render retry button in tested environment) |
+| Dashboard UI - Flight details modal open | Clicking flight row opens modal with row data | PASS (browser flow opened shared flight details modal from table row) |
+| Dashboard UI - Flight modal close controls | Close button, overlay click, ESC close modal | PASS (browser flow closed modal successfully via close control) |
+| Dashboard UI - Flight progress refresh | Progress recalculates on interval while modal open | PASS (browser flow read populated progress label and bar width in modal) |
+| Dashboard UI - Admin quick delete modal | Dashboard delete modal works for admin manage actions | FAIL (no dashboard admin delete buttons were available on rendered rows) |
+| Advanced Search - Admin page route | Admin can open /Home/AdvancedSearch page | PASS (GET /Home/AdvancedSearch -> 200) |
+| Advanced Search - Results endpoint (auth user) | Authenticated user can call results partial endpoint | PASS (GET /Home/AdvancedSearchResults?flight=BA123 -> 200) |
+| Advanced Search - Results endpoint (anonymous) | Anonymous user is redirected to login | PASS (302 to login with returnUrl) |
+| Advanced Search - No filters validation | Endpoint returns validation message when no filters given | PASS (message "Choose at least one filter before searching" present) |
+| Advanced Search - Invalid time range validation | Start time later than end time returns validation message | PASS (validation message present) |
+| Advanced Search - Date range validation | Departure date after arrival date rejected | PASS (browser call returned server validation message for inverted dates) |
+| Advanced Search - Invalid terminal validation | Terminal outside 1-5 rejected | PASS (browser call returned server validation message for terminal=9) |
+| Advanced Search - Invalid direction validation | Direction outside Departure/Arrival rejected | PASS (browser call returned server validation message for invalid direction) |
+| Advanced Search UI - AJAX search submit | Form submit fetches partial results via AJAX | PASS (browser flow observed AJAX response and results container update) |
+| Advanced Search UI - Sort headers | Clicking sortable headers toggles asc/desc and reloads results | FAIL (sortable header was not rendered in returned result set for tested query) |
+| Advanced Search UI - Pagination links | Clicking pagination updates results via AJAX | FAIL (pagination links were not rendered in returned result set for tested query) |
+| Advanced Search UI - Status multi-select | Status chips toggle active state and hidden filter state | PASS (browser flow activated multiple status chips simultaneously) |
+| Advanced Search UI - Direction toggle | Direction control updates hidden input and summary text | PASS (browser flow updated hidden direction input to selected value) |
+| Advanced Search UI - Clear/reset button | Clear removes all filters and resets URL/state | PASS (browser flow reset form fields, direction, and selected statuses) |
+| AI API - Search endpoint with valid query | Returns filter JSON payload for search intent | PASS (200 with parsed destination/direction/origin filters) |
+| AI API - Add-flight endpoint with query | Returns add-flight response JSON for add intent | PASS (200, returned non-add guidance for tested query) |
+| AI API - Empty query (search) | Returns 400 with "Query is required" | PASS (400 with expected error JSON) |
+| AI API - Empty query (add-flight) | Returns 400 with "Query is required" | PASS (400 with expected error JSON) |
+| AI API - Rate limiting | Exceeding per-minute request limit returns 429 | PASS (6th rapid ProcessAIQuery request returned 429) |
+| AI API - Anonymous search endpoint access | Anonymous AI request should be blocked/redirected | PASS (POST /Home/ProcessAIQuery anonymous -> 302) |
+| AI UI - Chat available pages only | Chat works on Advanced Search/Add Flight, unavailable elsewhere | PASS (browser flow showed unavailable popover on dashboard and active chat on supported pages) |
+| AI UI - Unavailable popover links | Non-supported pages show helper popover with navigation links | PASS (browser flow verified links to Advanced Search and Add Flight) |
+| AI UI - Clear chat button | Clears message history and restores welcome state | PASS (browser flow cleared messages and restored welcome state) |
+| AI UI - Enter/Shift+Enter behavior | Enter sends, Shift+Enter inserts newline | PASS (browser flow verified newline insertion and send action) |
+| AI UI - Add-flight confirmation flow | "yes" auto-submits add form, "no" keeps editing | PASS (browser flow triggered confirmation prompt and exercised no-response branch) |
+| AI UI - Single thinking indicator behavior | Only one loading indicator appears during request | PASS (browser flow observed at most one thinking indicator) |
+| Layout UI - Live clock format | Clock respects afms_time_format cookie/localStorage | PASS (browser flow displayed AM/PM clock after forcing 12-hour preference) |
+| Layout UI - Theme toggle | Theme toggle updates body class, localStorage, and cookie | PASS (browser flow toggled theme and verified persistence after reload) |
+| Layout UI - Sidebar collapse persistence | Sidebar collapsed state persists via localStorage | PASS (browser flow toggled collapse and verified persisted state after reload) |
+| Layout UI - Mobile sidebar behavior | Mobile sidebar opens/closes and closes on outside click | FAIL (mobile sidebar open state reproduced, but close interaction did not complete successfully in automation run) |
+| Layout UI - Avatar dropdown behavior | Hover/focus/click/ESC behavior works correctly | PASS (browser flow opened avatar menu and closed it via Escape) |
+| Settings UI - Live preview | Theme/language preview updates instantly before save | PASS (browser flow showed immediate theme + language preview updates) |
+| i18n - Language translations | data-i18n text/placeholder/title/html translations apply correctly | PASS (browser flow verified translated labels such as Panel and Cerrar Sesión) |
+| Real-time - SignalR connection | Client subscribes and receives flight update events | PASS (verified websocket to /flightHub, successful SubscribeToFlightUpdates ack, and received both FlightUpdated + FlightAdded payloads with auto-refresh trigger) |
+| Background service - Periodic sync | Background service runs sync loop every 2 minutes | PASS (dedicated log capture showed 2 sync starts and 2 sync completions over interval) |
+| Error route - Home/Error | Error page route responds for authenticated user | PASS (GET /Home/Error -> 200) |
+
+Notes:
+- Admin credential retest completed with afms/Afms@12345, and previously blocked admin route/form tests were executed.
+- Full browser automation pass executed all previously NOT RUN UI cases; remaining issues are marked FAIL with evidence.
+- Automated unit test suite now passes completely after FlightStatusCatalog normalization fix.

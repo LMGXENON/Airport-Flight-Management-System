@@ -1,13 +1,10 @@
-﻿@model List<AFMS.Models.AeroDataBoxFlight>
+@model List<AFMS.Models.AeroDataBoxFlight>
 
 @{
     ViewData["Title"] = "Dashboard";
 
     var selectedAirportName = ViewBag.SelectedAirportName as string ?? "London Heathrow Airport";
     var selectedAirportIata = ViewBag.SelectedAirportIata as string ?? "LHR";
-    var selectedAirportIcao = ViewBag.SelectedAirportIcao as string ?? "EGLL";
-    var airportOptions = ViewBag.AirportOptions as IEnumerable<KeyValuePair<string, string>>
-        ?? Enumerable.Empty<KeyValuePair<string, string>>();
     var lastSyncedDisplay = ViewBag.LastSyncedDisplay as string ?? "--:--";
 
     var apiUnavailable = ViewBag.ApiError != null;
@@ -20,111 +17,100 @@
     var arrivalsDisplay = apiUnavailable ? "N/A" : totalArrivals.ToString();
     var airlinesDisplay = apiUnavailable ? "N/A" : totalAirlines.ToString();
 
-    var statBadgeText = apiUnavailable ? "Data Unavailable" : "Live Data";
-    var statBadgeClass = apiUnavailable ? "unavailable" : "positive";
+    var statBadgeText    = apiUnavailable ? "Data Unavailable" : "Live Data";
+    var statBadgeClass   = apiUnavailable ? "unavailable" : "positive";
+    var statBadgeI18nKey = apiUnavailable ? "dash.dataUnavailable" : "dash.liveData";
 }
 
-<!-- Page Header -->
+@* Page Header *@
 <div class="page-header page-header--split">
     <div>
         <h1 class="page-title dashboard-title">Dashboard</h1>
-        <p class="page-subtitle">@selectedAirportName (@selectedAirportIata/@selectedAirportIcao) - Live Flight Data</p>
+        <p class="page-subtitle">@selectedAirportName (@selectedAirportIata/EGLL) - Live Flight Data</p>
     </div>
-    <form method="get" class="airport-switcher-form" aria-label="Choose dashboard airport">
-        <label for="airportSwitcher" class="airport-switcher-label">Airport</label>
-        <select id="airportSwitcher" name="airport" class="airport-switcher-select" onchange="this.form.submit()">
-            @foreach (var option in airportOptions)
-            {
-                <option value="@option.Key" selected="@(option.Key == selectedAirportIcao)">@option.Value</option>
-            }
-        </select>
-    </form>
 </div>
 
-<!-- Stats Grid - Main -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="flight-success-banner" id="dashboardSuccessBanner" aria-live="polite">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@* Stats Grid - Main *@
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-metric">
                 <div class="stat-icon stat-icon--flights" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.5 13.2L11 11V4.7c0-1.2 1.1-2.2 2.4-2l.9.2c.9.2 1.6 1 1.6 1.9v5.6l4.3-1.1c1.2-.3 2.4.4 2.7 1.5.3 1.1-.4 2.2-1.6 2.5l-5.4 1.4v4.5l1.9 1.4v1.8l-3.7-1-3.7 1v-1.8l1.9-1.4v-3.4L4 17.4l-1.5-1.2V13.2z" fill="currentColor"/>
-                    </svg>
+                    <i class='bx bxs-plane-alt'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Total Flights</div>
+                    <div class="stat-label" data-i18n="dash.totalFlights">Total Flights</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@totalFlightsDisplay" aria-label="Loading total flights"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-metric">
                 <div class="stat-icon stat-icon--departures" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 3l5 5h-3v7h-4V8H7l5-5z" fill="currentColor"/>
-                        <rect x="5" y="17" width="14" height="3" rx="1.5" fill="currentColor"/>
-                    </svg>
+                    <i class='bx bxs-plane-take-off'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Departures</div>
+                    <div class="stat-label" data-i18n="dash.departures">Departures</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@departuresDisplay" aria-label="Loading departures"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-metric">
                 <div class="stat-icon stat-icon--arrivals" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 21l-5-5h3V9h4v7h3l-5 5z" fill="currentColor"/>
-                        <rect x="5" y="4" width="14" height="3" rx="1.5" fill="currentColor"/>
-                    </svg>
+                    <i class='bx bxs-plane-land'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Arrivals</div>
+                    <div class="stat-label" data-i18n="dash.arrivals">Arrivals</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@arrivalsDisplay" aria-label="Loading arrivals"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 
     <div class="stat-card">
         <div class="stat-content">
             <div class="stat-metric">
                 <div class="stat-icon stat-icon--airlines" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 20h18v-2H3v2zm2-3h3V9H5v8zm5 0h4V5h-4v12zm6 0h3V11h-3v6z" fill="currentColor"/>
-                    </svg>
+                    <i class='bx bxs-buildings'></i>
                 </div>
                 <div>
-                    <div class="stat-label">Airlines</div>
+                    <div class="stat-label" data-i18n="dash.airlines">Airlines</div>
                     <div class="stat-value stat-value-skeleton" data-final-value="@airlinesDisplay" aria-label="Loading airlines"></div>
                 </div>
             </div>
         </div>
-        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" aria-label="Loading status"></div>
+        <div class="stat-badge @statBadgeClass stat-badge-skeleton" data-final-text="@statBadgeText" data-i18n-badge="@statBadgeI18nKey" aria-label="Loading status"></div>
     </div>
 </div>
 
-<!-- Flights Section -->
+@* Flights Section *@
 <div class="flights-section">
     <div class="flights-header">
         <div class="section-title-wrap">
-            <h2 class="section-title">Live Flights - @selectedAirportName (@selectedAirportIata)</h2>
-            <span class="section-meta">Last updated @lastSyncedDisplay</span>
+            <h2 class="section-title"><span data-i18n="dash.liveFlights">Live Flights</span> - @selectedAirportName (@selectedAirportIata)</h2>
+            <span class="section-meta"><span data-i18n="dash.lastUpdated">Last updated</span> @lastSyncedDisplay</span>
         </div>
         <div class="direction-filters">
-            <button class="filter-btn active" data-direction="all" data-label="All">All</button>
-            <button class="filter-btn" data-direction="Departure" data-label="Departures">Departures</button>
-            <button class="filter-btn" data-direction="Arrival" data-label="Arrivals">Arrivals</button>
+            <button class="filter-btn active" data-direction="all"    data-label="All"        data-i18n="dash.filterAll">All</button>
+            <button class="filter-btn"        data-direction="Departure" data-label="Departures" data-i18n="dash.filterDep">Departures</button>
+            <button class="filter-btn"        data-direction="Arrival"   data-label="Arrivals"   data-i18n="dash.filterArr">Arrivals</button>
         </div>
     </div>
     <div class="table-filter-bar" role="search" aria-label="Filter flights in table">
@@ -133,38 +119,40 @@
             id="filterFlightNumber"
             class="table-filter-input"
             placeholder="Filter by flight number"
+            data-i18n-placeholder="dash.phFlight"
             aria-label="Filter by flight number" />
         <input
             type="text"
             id="filterAirline"
             class="table-filter-input"
             placeholder="Filter by airline"
+            data-i18n-placeholder="dash.phAirline"
             aria-label="Filter by airline" />
         <select id="filterStatus" class="table-filter-select" aria-label="Filter by status">
-            <option value="">All statuses</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="boarding">Boarding</option>
-            <option value="departed">Departed</option>
-            <option value="arrived">Arrived</option>
-            <option value="delayed">Delayed</option>
-            <option value="canceled">Canceled</option>
-            <option value="in flight">In Flight</option>
-            <option value="approaching">Approaching</option>
+            <option value=""           data-i18n="dash.allStatuses">All statuses</option>
+            <option value="scheduled"  data-i18n="dash.statusScheduled">Scheduled</option>
+            <option value="boarding"   data-i18n="dash.statusBoarding">Boarding</option>
+            <option value="departed"   data-i18n="dash.statusDeparted">Departed</option>
+            <option value="arrived"    data-i18n="dash.statusArrived">Arrived</option>
+            <option value="delayed"    data-i18n="dash.statusDelayed">Delayed</option>
+            <option value="canceled"   data-i18n="dash.statusCanceled">Canceled</option>
+            <option value="in flight"  data-i18n="dash.statusInFlight">In Flight</option>
+            <option value="approaching" data-i18n="dash.statusApproaching">Approaching</option>
         </select>
-        <button type="button" id="clearTableFilters" class="table-filter-clear">Clear</button>
+        <button type="button" id="clearTableFilters" class="table-filter-clear" data-i18n="dash.clearFilters">Clear</button>
     </div>
     <div class="table-wrapper">
         <table class="flights-table" id="flightsTable">
             <thead>
                 <tr>
-                    <th>TIME</th>
-                    <th>FLIGHT</th>
-                    <th class="from-col">FROM</th>
-                    <th class="to-col">TO</th>
-                    <th>AIRLINE</th>
-                    <th>AIRCRAFT</th>
-                    <th>STATUS</th>
-                    <th>MANAGE</th>
+                    <th data-i18n="dash.colTime">TIME</th>
+                    <th data-i18n="dash.colFlight">FLIGHT</th>
+                    <th class="from-col" data-i18n="dash.colFrom">FROM</th>
+                    <th class="to-col"   data-i18n="dash.colTo">TO</th>
+                    <th data-i18n="dash.colAirline">AIRLINE</th>
+                    <th data-i18n="dash.colAircraft">AIRCRAFT</th>
+                    <th data-i18n="dash.colStatus">STATUS</th>
+                    <th data-i18n="dash.colManage">MANAGE</th>
                 </tr>
             </thead>
             <tbody>
@@ -278,7 +266,7 @@
                         // Arrival that's in flight
                         detailedStatus = rawStatus == "approaching" ? "Approaching" : "In Flight";
                         statusLabel = detailedStatus;
-                        statusClass = "status-departed";
+                        statusClass = rawStatus == "approaching" ? "status-approaching" : "status-inflight";
                     }
                     else if (normalizedStatus == "Delayed")
                     {
@@ -351,22 +339,33 @@
                             {
                                 var dbId = dbIds[fNum];
                                 <div class="manage-actions" role="group" aria-label="Manage flight @fNum">
-                                    <a href="/Flight/Edit/@dbId" class="manage-link manage-edit" title="Edit flight">
+                                    <a href="/Flight/Edit/@dbId" class="manage-link manage-edit" title="Edit this flight">
                                         <i class='bx bx-edit-alt' aria-hidden="true"></i>
+                                        <span class="manage-label">Edit</span>
                                     </a>
-                                    <a href="/Flight/Delete/@dbId" class="manage-link manage-delete" title="Delete flight">
+                                    <button type="button"
+                                            class="manage-link manage-delete manage-link-button js-open-delete-modal-home"
+                                            title="Delete this flight"
+                                            data-flight-id="@dbId"
+                                            data-flight-number="@fNum"
+                                            data-flight-airline="@(flight.Airline?.Name ?? "-")"
+                                            data-flight-destination="@toLocation"
+                                            data-flight-departure="@displayTime">
                                         <i class='bx bx-trash' aria-hidden="true"></i>
-                                    </a>
+                                        <span class="manage-label">Delete</span>
+                                    </button>
                                 </div>
                             }
                             else
                             {
-                                <div class="manage-actions" role="group" aria-label="Manage flight unavailable for @fNum">
-                                    <span class="manage-link manage-edit manage-link--placeholder" aria-disabled="true" title="Edit unavailable">
+                                <div class="manage-actions" role="group" aria-label="Not in managed flights">
+                                    <span class="manage-link manage-edit manage-link--placeholder" aria-disabled="true" title="Not in managed flights — add via Flight Details">
                                         <i class='bx bx-edit-alt' aria-hidden="true"></i>
+                                        <span class="manage-label">Edit</span>
                                     </span>
-                                    <span class="manage-link manage-delete manage-link--placeholder" aria-disabled="true" title="Delete unavailable">
+                                    <span class="manage-link manage-delete manage-link--placeholder" aria-disabled="true" title="Not in managed flights — add via Flight Details">
                                         <i class='bx bx-trash' aria-hidden="true"></i>
+                                        <span class="manage-label">Delete</span>
                                     </span>
                                 </div>
                             }
@@ -381,9 +380,9 @@
             @if (ViewBag.ApiError != null)
             {
                 <div class="empty-state">
-                    <p class="empty-state-title empty-state-title--danger">Live data unavailable</p>
-                    <p class="empty-state-muted">Flight data temporarily unavailable - quota resets shortly.</p>
-                    <button type="button" id="retryDashboardBtn" class="empty-state-retry-btn" aria-label="Retry loading live flight data">
+                    <p class="empty-state-title empty-state-title--danger" data-i18n="dash.errorTitle">Live data unavailable</p>
+                    <p class="empty-state-muted" data-i18n="dash.errorText">Flight data temporarily unavailable — quota resets shortly.</p>
+                    <button type="button" id="retryDashboardBtn" class="empty-state-retry-btn" aria-label="Retry loading live flight data" data-i18n="dash.retryBtn">
                         ↺ Retry
                     </button>
                 </div>
@@ -391,23 +390,75 @@
             else
             {
                 <div class="empty-state">
-                    <p class="empty-state-title">No live flight data available</p>
-                    <p class="empty-state-muted">The API did not return flights for the current time window.</p>
+                    <p class="empty-state-title" data-i18n="dash.noDataTitle">No live flight data available</p>
+                    <p class="empty-state-muted" data-i18n="dash.noDataText">The API did not return flights for the current time window.</p>
                 </div>
             }
         }
     </div>
 
-    <!-- Pagination -->
+    @* Pagination *@
     <div class="pagination" id="pagination"></div>
 </div>
 
-<!-- Flight Details Modal (shared partial) -->
+@* Flight Details Modal (shared partial) *@
 @await Html.PartialAsync("_FlightDetailsModal")
+
+@if (User.IsInRole("Admin"))
+{
+    <div id="deleteConfirmOverlayHome" class="delete-confirm-overlay" aria-hidden="true">
+        <div class="delete-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitleHome">
+            <button type="button" class="delete-confirm-close" aria-label="Close delete confirmation">&times;</button>
+
+            <div class="delete-confirm-header">
+                <span class="delete-confirm-kicker">Confirm Delete</span>
+                <h3 id="deleteConfirmTitleHome" class="delete-confirm-title">Delete this flight?</h3>
+                <p class="delete-confirm-subtitle">You are about to remove this flight from AFMS.</p>
+            </div>
+
+            <div class="delete-confirm-warning" role="status" aria-live="polite">
+                This action is permanent and cannot be undone.
+            </div>
+
+            <dl class="delete-confirm-list">
+                <div class="delete-confirm-row">
+                    <dt>Flight</dt>
+                    <dd id="deleteConfirmFlightNumberHome">-</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Airline</dt>
+                    <dd id="deleteConfirmAirlineHome">-</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Destination</dt>
+                    <dd id="deleteConfirmDestinationHome">-</dd>
+                </div>
+                <div class="delete-confirm-row">
+                    <dt>Departure</dt>
+                    <dd id="deleteConfirmDepartureHome">-</dd>
+                </div>
+            </dl>
+
+            <form asp-controller="Flight" asp-action="Delete" method="post" class="delete-confirm-actions">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="deleteConfirmFlightIdHome" name="id" value="" />
+                <button type="button" class="delete-cancel-btn">Keep Flight</button>
+                <button type="submit" class="delete-submit-btn">Yes, Delete Flight</button>
+            </form>
+        </div>
+    </div>
+}
 
 @section Scripts {
 <script>
 (function () {
+    const dashboardSuccessBanner = document.getElementById('dashboardSuccessBanner');
+    if (dashboardSuccessBanner) {
+        window.setTimeout(function () {
+            dashboardSuccessBanner.remove();
+        }, 4500);
+    }
+
     const retryBtn = document.getElementById('retryDashboardBtn');
 
     if (retryBtn) {
@@ -433,8 +484,13 @@
             el.removeAttribute('aria-label');
         });
 
+        const lang = window.afmsI18n ? window.afmsI18n.lang() : 'en';
+        const dict = window.afmsI18n ? window.afmsI18n.dict[lang] : null;
+
         statBadgeEls.forEach(function (el) {
-            el.textContent = el.getAttribute('data-final-text') || '';
+            const i18nKey = el.getAttribute('data-i18n-badge');
+            const translated = dict && i18nKey ? (dict[i18nKey] || el.getAttribute('data-final-text')) : el.getAttribute('data-final-text');
+            el.textContent = translated || '';
             el.classList.remove('stat-badge-skeleton');
             el.removeAttribute('aria-label');
         });
@@ -635,6 +691,93 @@
     
     // Attach click handlers after initial render
     attachFlightRowHandlers();
+
+    var deleteOverlay = document.getElementById('deleteConfirmOverlayHome');
+    if (deleteOverlay) {
+        var deleteCloseBtn = deleteOverlay.querySelector('.delete-confirm-close');
+        var deleteCancelBtn = deleteOverlay.querySelector('.delete-cancel-btn');
+        var deleteIdInput = document.getElementById('deleteConfirmFlightIdHome');
+        var deleteFlightNumber = document.getElementById('deleteConfirmFlightNumberHome');
+        var deleteAirline = document.getElementById('deleteConfirmAirlineHome');
+        var deleteDestination = document.getElementById('deleteConfirmDestinationHome');
+        var deleteDeparture = document.getElementById('deleteConfirmDepartureHome');
+        var lastDeleteTrigger = null;
+
+        function setDeleteText(el, value) {
+            if (el) {
+                el.textContent = value && value.trim() ? value : '-';
+            }
+        }
+
+        function closeDeleteModal() {
+            deleteOverlay.classList.remove('active');
+            deleteOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            if (lastDeleteTrigger) {
+                lastDeleteTrigger.focus();
+            }
+        }
+
+        function openDeleteModal(trigger) {
+            lastDeleteTrigger = trigger;
+            deleteIdInput.value = trigger.getAttribute('data-flight-id') || '';
+            setDeleteText(deleteFlightNumber, trigger.getAttribute('data-flight-number') || '');
+            setDeleteText(deleteAirline, trigger.getAttribute('data-flight-airline') || '');
+            setDeleteText(deleteDestination, trigger.getAttribute('data-flight-destination') || '');
+            setDeleteText(deleteDeparture, trigger.getAttribute('data-flight-departure') || '');
+
+            deleteOverlay.classList.add('active');
+            deleteOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            if (deleteCloseBtn) {
+                deleteCloseBtn.focus();
+            }
+        }
+
+        function bindDeleteTriggers() {
+            var deleteTriggers = document.querySelectorAll('.js-open-delete-modal-home');
+            deleteTriggers.forEach(function (trigger) {
+                if (trigger.dataset.deleteBound === 'true') {
+                    return;
+                }
+
+                trigger.dataset.deleteBound = 'true';
+                trigger.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openDeleteModal(trigger);
+                });
+            });
+        }
+
+        bindDeleteTriggers();
+
+        if (deleteCloseBtn) {
+            deleteCloseBtn.addEventListener('click', closeDeleteModal);
+        }
+
+        if (deleteCancelBtn) {
+            deleteCancelBtn.addEventListener('click', closeDeleteModal);
+        }
+
+        deleteOverlay.addEventListener('click', function (event) {
+            if (event.target === deleteOverlay) {
+                closeDeleteModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && deleteOverlay.classList.contains('active')) {
+                closeDeleteModal();
+            }
+        });
+
+        var originalRender = render;
+        render = function () {
+            originalRender();
+            bindDeleteTriggers();
+        };
+    }
 })();
 </script>
 }

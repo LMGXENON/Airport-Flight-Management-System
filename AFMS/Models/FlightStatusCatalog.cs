@@ -6,12 +6,14 @@ public static class FlightStatusCatalog
 
     private static readonly IReadOnlyList<StatusOption> AllStatuses =
     [
-        new("Scheduled", "Scheduled", "status-scheduled"),
-        new("Boarding", "Boarding", "status-boarding"),
-        new("Departed", "Departed", "status-departed"),
-        new("Arrived", "Arrived", "status-arrived"),
-        new("Delayed", "Delayed", "status-delayed"),
-        new("Canceled", "Canceled", "status-cancelled")
+        new("Scheduled",  "Scheduled",  "status-scheduled"),
+        new("Boarding",   "Boarding",   "status-boarding"),
+        new("Departed",   "Departed",   "status-departed"),
+        new("InFlight",   "In Flight",  "status-inflight"),
+        new("Approaching","Approaching","status-approaching"),
+        new("Arrived",    "Arrived",    "status-arrived"),
+        new("Delayed",    "Delayed",    "status-delayed"),
+        new("Canceled",   "Canceled",   "status-cancelled")
     ];
 
     private static readonly IReadOnlyDictionary<string, string> AliasToCanonical =
@@ -39,18 +41,22 @@ public static class FlightStatusCatalog
 
             ["departed"] = "Departed",
             ["departing"] = "Departed",
-            ["airborne"] = "Departed",
-            ["inflight"] = "Departed",
-            ["enroute"] = "Departed",
-            ["en route"] = "Departed",
             ["gateclosed"] = "Departed",
             ["gate closed"] = "Departed",
             ["gateclose"] = "Departed",
             ["gateclosing"] = "Departed",
-            ["approaching"] = "Departed",
             ["taxiing"] = "Departed",
             ["taxiout"] = "Departed",
             ["takeoff"] = "Departed",
+
+            ["airborne"] = "Departed",
+            ["inflight"] = "Departed",
+            ["in flight"] = "Departed",
+            ["enroute"] = "Departed",
+            ["en route"] = "Departed",
+            ["en-route"] = "Departed",
+
+            ["approaching"] = "Approaching",
 
             ["arrived"] = "Arrived",
             ["arriving"] = "Arrived",
@@ -93,6 +99,14 @@ public static class FlightStatusCatalog
 
     public static string Normalize(string? value)
     {
+        // Keep exact canonical values stable (for form submissions), then apply alias mapping.
+        var trimmed = value?.Trim();
+        if (!string.IsNullOrWhiteSpace(trimmed)
+            && OptionByValue.TryGetValue(trimmed, out var optionMatch))
+        {
+            return optionMatch.Value;
+        }
+
         var key = NormalizeKey(value);
         if (string.IsNullOrWhiteSpace(key))
             return "Scheduled";
