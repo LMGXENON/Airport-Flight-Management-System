@@ -50,18 +50,33 @@ Behind the scenes, AFMS is built on ASP.NET Core MVC, with a database backend an
 - Secure login for operational staff
 - Real-time dashboard for live airport traffic
 - Manual add/edit workflow for managed flights
-- Flight details administration and search tools
+- Flight details administration and advanced search
 
-### UI modules included in this project
+### Screenshots
 
-| Module | Purpose |
-|---|---|
-| Dashboard | Live flight overview with status tracking |
-| Add Flight | Manual entry form for operations teams |
-| Flight Details | Managed list with actions (view/edit/delete) |
-| Advanced Search | Multi-filter search over flight records |
+#### Login
 
-> Tip: Add your latest UI screenshots to `docs/images/` and reference them in this section for project demos and release notes.
+![AFMS Login](AFMS/wwwroot/images/Screenshot%202026-04-15%20211436.png)
+
+#### Dashboard
+
+![AFMS Dashboard](AFMS/wwwroot/images/Screenshot%202026-04-15%20211503.png)
+
+#### Add Flight
+
+![AFMS Add Flight](AFMS/wwwroot/images/Screenshot%202026-04-15%20211517.png)
+
+#### Flight Details
+
+![AFMS Flight Details](AFMS/wwwroot/images/Screenshot%202026-04-15%20211652.png)
+
+#### Flight Details (Extended List)
+
+![AFMS Flight Details Extended](AFMS/wwwroot/images/Screenshot%202026-04-15%20211706.png)
+
+#### Advanced Search
+
+![AFMS Advanced Search](AFMS/wwwroot/images/Screenshot%202026-04-15%20211738.png)
 
 ## What this repository contains
 
