@@ -1,5 +1,40 @@
 # Airport Flight Management System (AFMS)
 
+<p align="center">
+	<img src="AFMS/wwwroot/images/AFMS%20Logo.png" alt="AFMS logo" width="88" />
+</p>
+
+<p align="center">
+	<strong>Live airport operations dashboard for flight tracking, management, and search.</strong>
+</p>
+
+<p align="center">
+	<img alt=".NET" src="https://img.shields.io/badge/.NET-10-1f4acc?style=flat-square" />
+	<img alt="ASP.NET Core MVC" src="https://img.shields.io/badge/ASP.NET_Core-MVC-143b85?style=flat-square" />
+	<img alt="SignalR" src="https://img.shields.io/badge/SignalR-Live_Updates-0f6f94?style=flat-square" />
+	<img alt="Terraform" src="https://img.shields.io/badge/Terraform-AWS_IaC-2a3b76?style=flat-square" />
+</p>
+
+## Table of contents
+
+- [Overview](#overview)
+- [Visual tour](#visual-tour)
+- [What this repository contains](#what-this-repository-contains)
+- [Key features](#key-features)
+- [Tech stack](#tech-stack)
+- [Application architecture overview](#application-architecture-overview)
+- [Architecture diagram](#architecture-diagram)
+- [Prerequisites](#prerequisites)
+- [Configuration](#configuration)
+- [Running locally](#running-locally)
+- [Running tests](#running-tests)
+- [Docker](#docker)
+- [Infrastructure (Terraform)](#infrastructure-terraform)
+- [Automation & CI/CD](#automation--cicd)
+- [Security notes](#security-notes)
+- [Operational notes](#operational-notes)
+- [Coursework context](#coursework-context)
+
 ## Overview
 
 AFMS is a flight management dashboard built for airports and flight operations teams. It allows users to view real-time flight information, search for specific flights, manually add or edit flight details, and receive live updates as flight statuses change.
@@ -7,6 +42,26 @@ AFMS is a flight management dashboard built for airports and flight operations t
 The system pulls live flight data from the AeroDataBox service but also allows teams to make their own adjustments and overrides—ensuring that critical manual edits are never lost when new data arrives.
 
 Behind the scenes, AFMS is built on ASP.NET Core MVC, with a database backend and live notifications powered by SignalR.
+
+## Visual tour
+
+### Main product flows
+
+- Secure login for operational staff
+- Real-time dashboard for live airport traffic
+- Manual add/edit workflow for managed flights
+- Flight details administration and search tools
+
+### UI modules included in this project
+
+| Module | Purpose |
+|---|---|
+| Dashboard | Live flight overview with status tracking |
+| Add Flight | Manual entry form for operations teams |
+| Flight Details | Managed list with actions (view/edit/delete) |
+| Advanced Search | Multi-filter search over flight records |
+
+> Tip: Add your latest UI screenshots to `docs/images/` and reference them in this section for project demos and release notes.
 
 ## What this repository contains
 
