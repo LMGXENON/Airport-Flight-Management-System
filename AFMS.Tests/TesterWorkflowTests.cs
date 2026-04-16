@@ -329,4 +329,12 @@ public class TesterWorkflowTests
         Assert.Equal(0, pagination.PageStart);
         Assert.Equal(0, pagination.PageEnd);
     }
+
+    [Fact]
+    public void TesterRegressionCommit47_FinalFlightDetailsTerminalDefault()
+    {
+        var service = CreateDetailsService();
+        var terminal = service.FormatTerminal(null);
+        Assert.Equal("Terminal 1", terminal);
+    }
 }
