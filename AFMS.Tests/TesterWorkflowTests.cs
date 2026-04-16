@@ -292,4 +292,11 @@ public class TesterWorkflowTests
         var label = FlightStatusCatalog.GetLabel("unknown-status");
         Assert.Equal("Scheduled", label);
     }
+
+    [Fact]
+    public void TesterRegressionCommit42_FinalStatusKnownNull()
+    {
+        var isKnown = FlightStatusCatalog.IsKnown(null);
+        Assert.False(isKnown);
+    }
 }
