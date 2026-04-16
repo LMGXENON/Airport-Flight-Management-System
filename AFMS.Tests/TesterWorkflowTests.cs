@@ -285,4 +285,63 @@ public class TesterWorkflowTests
         Assert.False(pagination.HasPreviousPage);
         Assert.True(pagination.HasNextPage);
     }
+
+    [Fact]
+    public void TesterRegressionCommit41_FinalStatusLabelFallback()
+    {
+        var label = FlightStatusCatalog.GetLabel("unknown-status");
+        Assert.Equal("Scheduled", label);
+    }
+
+    [Fact]
+    public void TesterRegressionCommit42_FinalStatusKnownNull()
+    {
+        var isKnown = FlightStatusCatalog.IsKnown(null);
+        Assert.False(isKnown);
+    }
+
+    [Fact]
+    public void TesterRegressionCommit43_FinalConvertIataBlank()
+    {
+        var code = FlightFormattingHelpers.ConvertToIata("---");
+        Assert.Equal(string.Empty, code);
+    }
+
+    [Fact]
+    public void TesterRegressionCommit44_FinalFormatLocalTimeFallback()
+    {
+        var value = FlightFormattingHelpers.FormatLocalTime("not-a-date", "n/a");
+        Assert.Equal("n/a", value);
+    }
+
+    [Fact]
+    public void TesterRegressionCommit45_FinalPaginationVisiblePagesMinimum()
+    {
+        var pagination = new PaginationState { Page = 2, PageSize = 25, TotalCount = 200 };
+        var pages = pagination.VisiblePages(1).ToList();
+        Assert.Equal(new[] { 1, 2, 3 }, pages);
+    }
+
+    [Fact]
+    public void TesterRegressionCommit46_FinalPaginationRangeOnEmpty()
+    {
+        var pagination = new PaginationState { Page = 1, PageSize = 25, TotalCount = 0 };
+        Assert.Equal(0, pagination.PageStart);
+        Assert.Equal(0, pagination.PageEnd);
+    }
+
+    [Fact]
+    public void TesterRegressionCommit47_FinalFlightDetailsTerminalDefault()
+    {
+        var service = CreateDetailsService();
+        var terminal = service.FormatTerminal(null);
+        Assert.Equal("Terminal 1", terminal);
+    }
+
+    [Fact]
+    public void TesterRegressionCommit48_FinalNormalizeStatusesNullCollection()
+    {
+        var statuses = FlightStatusCatalog.NormalizeStatuses(null);
+        Assert.Empty(statuses);
+    }
 }
