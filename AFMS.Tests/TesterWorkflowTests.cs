@@ -285,4 +285,11 @@ public class TesterWorkflowTests
         Assert.False(pagination.HasPreviousPage);
         Assert.True(pagination.HasNextPage);
     }
+
+    [Fact]
+    public void TesterRegressionCommit41_FinalStatusLabelFallback()
+    {
+        var label = FlightStatusCatalog.GetLabel("unknown-status");
+        Assert.Equal("Scheduled", label);
+    }
 }
