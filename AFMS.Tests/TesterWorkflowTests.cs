@@ -306,4 +306,11 @@ public class TesterWorkflowTests
         var code = FlightFormattingHelpers.ConvertToIata("---");
         Assert.Equal(string.Empty, code);
     }
+
+    [Fact]
+    public void TesterRegressionCommit44_FinalFormatLocalTimeFallback()
+    {
+        var value = FlightFormattingHelpers.FormatLocalTime("not-a-date", "n/a");
+        Assert.Equal("n/a", value);
+    }
 }
