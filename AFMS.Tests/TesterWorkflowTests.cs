@@ -321,4 +321,12 @@ public class TesterWorkflowTests
         var pages = pagination.VisiblePages(1).ToList();
         Assert.Equal(new[] { 1, 2, 3 }, pages);
     }
+
+    [Fact]
+    public void TesterRegressionCommit46_FinalPaginationRangeOnEmpty()
+    {
+        var pagination = new PaginationState { Page = 1, PageSize = 25, TotalCount = 0 };
+        Assert.Equal(0, pagination.PageStart);
+        Assert.Equal(0, pagination.PageEnd);
+    }
 }
