@@ -14,6 +14,8 @@ Behind the scenes, AFMS is built on ASP.NET Core MVC, with a database backend an
 - `AFMS.Tests/`: unit tests (xUnit)
 - `Terraform/`: AWS infrastructure as code (VPC, ECS, ALB, RDS, Route53)
 - `docs/`: project documentation folder
+- `Standup Reports/`: dated standup meeting PDFs and template files
+- `AFMS Report.pdf`: final project report
 
 ## Key features
 
