@@ -299,4 +299,11 @@ public class TesterWorkflowTests
         var isKnown = FlightStatusCatalog.IsKnown(null);
         Assert.False(isKnown);
     }
+
+    [Fact]
+    public void TesterRegressionCommit43_FinalConvertIataBlank()
+    {
+        var code = FlightFormattingHelpers.ConvertToIata("---");
+        Assert.Equal(string.Empty, code);
+    }
 }
