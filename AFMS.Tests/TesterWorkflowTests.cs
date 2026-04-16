@@ -313,4 +313,12 @@ public class TesterWorkflowTests
         var value = FlightFormattingHelpers.FormatLocalTime("not-a-date", "n/a");
         Assert.Equal("n/a", value);
     }
+
+    [Fact]
+    public void TesterRegressionCommit45_FinalPaginationVisiblePagesMinimum()
+    {
+        var pagination = new PaginationState { Page = 2, PageSize = 25, TotalCount = 200 };
+        var pages = pagination.VisiblePages(1).ToList();
+        Assert.Equal(new[] { 1, 2, 3 }, pages);
+    }
 }
