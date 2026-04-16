@@ -337,4 +337,11 @@ public class TesterWorkflowTests
         var terminal = service.FormatTerminal(null);
         Assert.Equal("Terminal 1", terminal);
     }
+
+    [Fact]
+    public void TesterRegressionCommit48_FinalNormalizeStatusesNullCollection()
+    {
+        var statuses = FlightStatusCatalog.NormalizeStatuses(null);
+        Assert.Empty(statuses);
+    }
 }
